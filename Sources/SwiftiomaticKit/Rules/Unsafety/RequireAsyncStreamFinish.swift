@@ -8,6 +8,7 @@ import SwiftSyntax
 /// keeps holding resources for a continuation that will never be drained.
 final class RequireAsyncStreamFinish: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
+    override class var guidance: GuidanceLevel { .must }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),

@@ -8,6 +8,7 @@ import SwiftSyntax
 final class RequireRetainOfNotificationObserver: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable
 {
     override class var group: ConfigurationGroup? { .memory }
+    override class var guidance: GuidanceLevel { .must }
     override class var defaultValue: LintOnlyValue { .init(lint: .no) }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {

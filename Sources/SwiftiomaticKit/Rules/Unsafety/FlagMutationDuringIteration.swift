@@ -10,6 +10,7 @@ import SwiftSyntax
 /// method is flagged.
 final class FlagMutationDuringIteration: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
+    override class var guidance: GuidanceLevel { .must }
 
     private static let mutatingMethods: Set<String> = [
         "append",

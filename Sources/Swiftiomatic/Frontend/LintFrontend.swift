@@ -26,7 +26,8 @@ final class LintFrontend: Frontend, @unchecked Sendable {
         treatWarningsAsErrors: Bool = false,
         cache: LintCache?,
         additionalDiagnosticHandlers: [@Sendable (Diagnostic) -> Void] = [],
-        suppressDefaultDiagnosticPrinter: Bool = false
+        suppressDefaultDiagnosticPrinter: Bool = false,
+        changedLines: [ClosedRange<Int>] = []
     ) {
         self.cache = cache
         super.init(
@@ -34,7 +35,8 @@ final class LintFrontend: Frontend, @unchecked Sendable {
             lintFormatOptions: lintFormatOptions,
             treatWarningsAsErrors: treatWarningsAsErrors,
             additionalDiagnosticHandlers: additionalDiagnosticHandlers,
-            suppressDefaultDiagnosticPrinter: suppressDefaultDiagnosticPrinter
+            suppressDefaultDiagnosticPrinter: suppressDefaultDiagnosticPrinter,
+            changedLines: changedLines
         )
     }
 
@@ -162,7 +164,8 @@ private final class CapturingFindingConsumer {
             notes: finding.notes.map { note in
                 LintCache.Note(
                     message: note.message.text,
-                    location: note.location.map(LintCache.Location.init)
+                    location: note.location.map(LintCache.Location.init),
+                    role: note.role
                 )
             }
         )

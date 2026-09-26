@@ -22,5 +22,6 @@ class StaticFormatRule<V: SyntaxRuleValue>: SyntaxRule, @unchecked Sendable {
         return configurationKey(forTypeName: name)
     }
     class var group: ConfigurationGroup? { nil }
+    class var guidance: GuidanceLevel { group?.defaultGuidance ?? .should }
     class var defaultValue: V { .init() }
 }

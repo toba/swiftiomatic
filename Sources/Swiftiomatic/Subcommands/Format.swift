@@ -48,9 +48,9 @@ extension SwiftiomaticCommand {
         var reporter: Reporter = .text
 
         func validate() throws {
-            if reporter == .sarif {
+            if reporter == .sarif || reporter == .agent {
                 throw ValidationError(
-                    "'--reporter sarif' is only supported by 'lint'. Use 'text' or 'json' with 'format'."
+                    "'--reporter \(reporter.rawValue)' is only supported by 'lint'. Use 'text' or 'json' with 'format'."
                 )
             }
             if reporter == .json, !inPlace {

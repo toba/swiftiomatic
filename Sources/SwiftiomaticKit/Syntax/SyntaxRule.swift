@@ -7,7 +7,10 @@ import SwiftSyntax
 /// conform via `StaticFormatRule` and never instantiate; rules whose findings are emitted from
 /// instance traversal (lint rules and the structural-pass rewriters) conform via
 /// `InstanceSyntaxRule` so the `LintPipeline` cache can construct them.
-protocol SyntaxRule: Configurable, Sendable where Value: SyntaxRuleValue {}
+protocol SyntaxRule: Configurable, Sendable where Value: SyntaxRuleValue {
+    /// How strong the advice of the rule is. Separate from the configured severity.
+    static var guidance: GuidanceLevel { get }
+}
 
 /// A rule that owns a `Context` -bound instance — used by `LintSyntaxRule` and
 /// `StructuralFormatRule` . Static-only rules conform to bare `SyntaxRule` instead.
@@ -20,6 +23,9 @@ protocol InstanceSyntaxRule: SyntaxRule {
 }
 
 extension SyntaxRule {
+    /// The rule's group sets the default guidance level.
+    static var guidance: GuidanceLevel { group?.defaultGuidance ?? .should }
+
     /// Default value from the `SyntaxRuleValue` 's `init()` .
     static var defaultValue: Value { .init() }
 

@@ -72,6 +72,21 @@ struct Diagnostic {
     /// The part of `sm` that produced the diagnostic.
     var origin: Origin
 
+    /// What the location of a note matched. `nil` for a diagnostic that is not a rule note.
+    var role: EvidenceRole?
+
+    /// The notes of a rule finding. The engine also emits each note as its own diagnostic, so a
+    /// handler that reads this list skips `.ruleNote` diagnostics.
+    var notes: [Diagnostic] = []
+
+    /// Whether the diagnostic is on a changed line. `nil` when the run has no changed lines.
+    var changeStatus: ChangeStatus?
+
+    /// Whether the diagnostic is a note that belongs to a rule finding.
+    var isRuleNote: Bool {
+        if case .ruleNote = origin { true } else { false }
+    }
+
     var description: String { if let category { "[\(category)] \(message)" } else { message } }
 
     /// Creates a new diagnostic with the given severity, location, optional category, and message.
@@ -83,12 +98,14 @@ struct Diagnostic {
         location: Location?,
         category: String? = nil,
         message: String,
-        origin: Origin? = nil
+        origin: Origin? = nil,
+        role: EvidenceRole? = nil
     ) {
         self.severity = severity
         self.location = location
         self.category = category
         self.message = message
         self.origin = origin ?? (category == nil ? .tool : .rule)
+        self.role = role
     }
 }

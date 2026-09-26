@@ -128,6 +128,22 @@ package final class Context {
     /// module, so the walk happens once however many rules read it. See `FileDeclarationIndex` .
     lazy var fileDeclarationIndex = FileDeclarationIndex(file: sourceFileSyntax)
 
+    /// One `TypeMemberIndex` per tree, built on first lookup.
+    ///
+    /// Keyed by the root for the same reason as `freeFunctionIndexes` . The index records member
+    /// declarations as nodes, so it only answers for the tree it was built from.
+    private var typeMemberIndexes: [SyntaxIdentifier: TypeMemberIndex] = [:]
+
+    /// The members of every type in the tree that holds `node`
+    func typeMembers(around node: some SyntaxProtocol) -> TypeMemberIndex {
+        let root = node.root
+        if let cached = typeMemberIndexes[root.id] { return cached }
+
+        let index = TypeMemberIndex(root: root)
+        typeMemberIndexes[root.id] = index
+        return index
+    }
+
     /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronymsInIdentifiers` , sorted
     /// longest-first so longer acronyms match before shorter substrings. Computed once per file;
     /// reused for every identifier token visited.

@@ -26,6 +26,10 @@ public final class SARIFLintReporter: Sendable {
         public let level: Level
         public let ruleID: String
         public let message: String
+        /// The notes of the finding. Each one becomes a related location.
+        public let evidence: [LintEvidence]
+        /// Whether the finding is on a changed line. It becomes the SARIF `baselineState`.
+        public let status: ChangeStatus?
 
         public init(
             file: String?,
@@ -33,7 +37,9 @@ public final class SARIFLintReporter: Sendable {
             column: Int?,
             level: Level,
             ruleID: String,
-            message: String
+            message: String,
+            evidence: [LintEvidence] = [],
+            status: ChangeStatus? = nil
         ) {
             self.file = file
             self.line = line
@@ -41,16 +47,16 @@ public final class SARIFLintReporter: Sendable {
             self.level = level
             self.ruleID = ruleID
             self.message = message
+            self.evidence = evidence
+            self.status = status
         }
     }
 
     private static let sourceRootID = "%SRCROOT%"
 
     private let toolVersion: String
-    /// The working directory path with a trailing slash. A file path with this prefix is relative.
-    private let rootPath: String
-    /// The `file://` URI of the working directory. SARIF requires a trailing slash on a base URI.
-    private let rootURI: String
+    /// The working directory. SARIF requires the trailing slash that its `rootURI` carries.
+    private let paths: WorkingDirectoryPaths
     private let entries = Mutex<[Entry]>([])
 
     /// - Parameters:
@@ -60,12 +66,8 @@ public final class SARIFLintReporter: Sendable {
         toolVersion: String,
         workingDirectory: URL = .init(fileURLWithPath: FileManager.default.currentDirectoryPath)
     ) {
-        let directory = workingDirectory.standardizedFileURL
-        let uri = directory.absoluteString
-
         self.toolVersion = toolVersion
-        rootPath = directory.path.hasSuffix("/") ? directory.path : directory.path + "/"
-        rootURI = uri.hasSuffix("/") ? uri : uri + "/"
+        paths = WorkingDirectoryPaths(workingDirectory)
     }
 
     public func record(_ entry: Entry) { entries.append(entry) }
@@ -80,10 +82,10 @@ public final class SARIFLintReporter: Sendable {
             Run(
                 tool: Tool(driver: Driver(
                     version: toolVersion,
-                    rules: ruleIDs.map(ReportingDescriptor.init)
+                    rules: ruleIDs.map(ReportingDescriptor.init(ruleID:))
                 )),
                 originalURIBaseIDs: [Self.sourceRootID: ArtifactLocation(
-                    uri: rootURI,
+                    uri: paths.rootURI,
                     uriBaseID: nil
                 )],
                 results: snapshot.map { entry in
@@ -92,7 +94,16 @@ public final class SARIFLintReporter: Sendable {
                         ruleIndex: ruleIndex[entry.ruleID] ?? 0,
                         level: entry.level,
                         message: Message(text: entry.message),
-                        locations: entry.file.map { [location(for: entry, file: $0)] } ?? []
+                        locations: entry.file.map {
+                            [location(file: $0, line: entry.line, column: entry.column)]
+                        } ?? [],
+                        relatedLocations: relatedLocations(for: entry),
+                        baselineState: entry.status.map {
+                            switch $0 {
+                                case .introduced: .new
+                                case .existing: .unchanged
+                            }
+                        }
                     )
                 }
             )
@@ -103,23 +114,40 @@ public final class SARIFLintReporter: Sendable {
     /// Writes the SARIF log to standard output, terminated with a newline.
     public func flush() { writeLineToStandardOutput(renderJSON()) }
 
-    private func location(for entry: Entry, file: String) -> Location {
+    private func location(file: String, line: Int?, column: Int?) -> Location {
         .init(physicalLocation: PhysicalLocation(
             artifactLocation: artifactLocation(for: file),
-            region: entry.line.map { Region(startLine: $0, startColumn: entry.column) }
+            region: line.map { Region(startLine: $0, startColumn: column) }
         ))
     }
 
-    private func artifactLocation(for file: String) -> ArtifactLocation {
-        let path = URL(fileURLWithPath: file).standardizedFileURL.path
+    /// Maps the evidence of an entry to related locations. SARIF requires a physical location, so
+    /// evidence without a file uses the file of the entry, and evidence with neither is left out.
+    private func relatedLocations(for entry: Entry) -> [RelatedLocation]? {
+        let related = entry.evidence.compactMap { evidence -> (LintEvidence, String)? in
+            (evidence.file ?? entry.file).map { (evidence, $0) }
+        }
+        guard !related.isEmpty else { return nil }
 
-        if path.hasPrefix(rootPath),
-           let relative = String(path.dropFirst(rootPath.count))
-               .addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)
+        return related.enumerated().map { index, pair in
+            let (evidence, file) = pair
+            return RelatedLocation(
+                id: index,
+                physicalLocation: location(file: file, line: evidence.line, column: evidence.column)
+                    .physicalLocation,
+                message: Message(text: evidence.message),
+                properties: .init(role: evidence.role)
+            )
+        }
+    }
+
+    private func artifactLocation(for file: String) -> ArtifactLocation {
+        if let relative = paths.relativePath(of: file)?
+            .addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)
         {
             return ArtifactLocation(uri: relative, uriBaseID: Self.sourceRootID)
         }
-        return .init(uri: URL(fileURLWithPath: path).absoluteString, uriBaseID: nil)
+        return .init(uri: URL(fileURLWithPath: paths.standardized(file)).absoluteString, uriBaseID: nil)
     }
 }
 
@@ -168,6 +196,21 @@ private struct Driver: Encodable {
 
 private struct ReportingDescriptor: Encodable {
     let id: String
+    let shortDescription: Message?
+    let properties: Properties?
+
+    struct Properties: Encodable {
+        let guidance: GuidanceLevel
+    }
+
+    /// Fills in the applicability and guidance level when the rule ID names a known rule.
+    init(ruleID: String) {
+        let info = RuleCatalog.info(for: ruleID).flatMap { $0.key == ruleID ? $0 : nil }
+
+        id = ruleID
+        shortDescription = info.map { Message(text: $0.applicability) }
+        properties = info.map { Properties(guidance: $0.guidance) }
+    }
 }
 
 private struct Result: Encodable {
@@ -176,10 +219,25 @@ private struct Result: Encodable {
     let level: SARIFLintReporter.Level
     let message: Message
     let locations: [Location]
+    let relatedLocations: [RelatedLocation]?
+    let baselineState: BaselineState?
+
+    enum BaselineState: String, Encodable { case new, unchanged }
 
     private enum CodingKeys: String, CodingKey {
-        case ruleIndex, level, message, locations
+        case ruleIndex, level, message, locations, relatedLocations, baselineState
         case ruleID = "ruleId"
+    }
+}
+
+private struct RelatedLocation: Encodable {
+    let id: Int
+    let physicalLocation: PhysicalLocation
+    let message: Message
+    let properties: Properties
+
+    struct Properties: Encodable {
+        let role: EvidenceRole
     }
 }
 

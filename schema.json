@@ -746,6 +746,15 @@
       },
       "type" : "object"
     },
+    "constantForEachRowCount" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `ForEach` row closure whose number of top-level views can change.\n\nSwiftUI gives each element of a `ForEach` a fixed number of views. When one row builds a different number, SwiftUI cannot map elements to views directly and falls back to a slower path. An `if` without `else` , a nested `ForEach` , or several top-level views each break the one-view-per-element shape. Wrap the row in one container or extract a row `View` .\n\nLint: A `ForEach` content closure holds an `if` without a final `else` , a `ForEach` at its top level, or more than one top-level view.",
+      "unevaluatedProperties" : false
+    },
     "controlFlow" : {
       "additionalProperties" : false,
       "description" : "controlFlow rule group.",
@@ -756,7 +765,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Lint inline `.sorted` / `.filter` / `.map` / `.compactMap` / `.reversed` chains in the data argument of `ForEach` . The expression is recomputed on every render — hoist into a `@State` / `@Observable` value or a computed property.",
+          "description" : "Lint inline `.sorted` / `.filter` / `.map` / `.compactMap` / `.reversed` chains in the data argument of `ForEach` . The expression is recomputed on every render. A computed property does not help, because it also runs on every render. Store the result in `@State` or an `@Observable` model and update it when its inputs change.",
           "unevaluatedProperties" : false
         },
         "useForLoopNotForEach" : {
@@ -920,6 +929,15 @@
             }
           ],
           "description" : "Flag a `_read` or `_modify` accessor that only exposes stored storage.\n\nSE-0507 adds the `borrow` and `mutate` accessors in Swift 6.4. Both expose stored storage without copying it, and neither runs as a coroutine, so neither pays the allocation and the extra calls that `_read` and `_modify` pay. `borrow` also lets the exposed value outlive the call, which a coroutine accessor cannot allow.\n\n`borrow` and `mutate` replace `get` and `set` rather than joining them, and the compiler refuses a property that declares both pairs. A property that also declares `get` or `set` has no one-line conversion, so the rule leaves it alone.\n\nThe rule fires only when the body is a single `yield` over stored storage. A body that builds a temporary, or that runs code after the `yield` , must stay on the coroutine form. Storage reached through a property wrapper, a subscript, a computed property or a class member has no address to expose, so it must stay on the coroutine form too. The same holds for the `read` and `modify` spellings.\n\nFlag-only. The rewrite needs the accessor kind and the `&` on a `mutate` return, so it is left to the author.\n\nLint: A `_read` or `_modify` accessor whose body is one `yield` over stored storage raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useExtensionInitToKeepMemberwise" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Declare a custom `struct` initializer in an extension so the synthesized memberwise initializer stays available.\n\nAn initializer in the main body of a `struct` suppresses the memberwise initializer. The same initializer in an extension keeps it. The rule flags an initializer that only copies its parameters into stored properties under labels that differ from the memberwise labels. Such an initializer adds a second spelling and removes the first one for no reason.\n\nThe rule stays silent in these cases:\n\n- The labels match the memberwise labels in order. `UseSynthesizedInit` owns that case.\n- The initializer validates or normalizes its input. Any statement other than\n`self.property = parameter` counts as validation or normalization.\n- The initializer is failable or throws.\n- The type is `public`, `package` or `open` and a stored property is less visible than the\ntype. The synthesized initializer cannot reach the type's access level, so the explicit initializer must stay.\n\nLint: A plain relabeling initializer in the main body of a `struct` raises a warning.",
           "unevaluatedProperties" : false
         },
         "useMainAttributeNotMainFunc" : {
@@ -1312,6 +1330,15 @@
       "description" : "Overloads with only a closure argument should not be disambiguated by parameter labels.\n\nLint: If two overloaded functions with one closure parameter appear in the same scope, a lint error is raised.",
       "unevaluatedProperties" : false
     },
+    "flagDeepViewComposition" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a view `body` that nests three or more structural containers inside each other.\n\nSwiftUI evaluates the whole `body` of a view as one unit. A body that nests stacks, scroll views, lists and `ForEach` several levels deep rebuilds every level when any value it reads changes. An inner level extracted into its own `View` type gets its own inputs, and SwiftUI skips it when they do not change.\n\nA container counts toward the depth only when it sits inside the content of another container. Containers in sibling modifiers such as `.overlay { }` and `.background { }` do not add up.\n\nLint: The `body` of a `View` , or `body(content:)` of a `ViewModifier` , nests three or more structural containers.",
+      "unevaluatedProperties" : false
+    },
     "flagEmptyCollectionLiteral" : {
       "allOf" : [
         {
@@ -1458,6 +1485,15 @@
       "description" : "Lint `withObservationTracking { ... } onChange: { … self.f() … }` where the `onChange` closure calls the enclosing function `f()` . The pattern is a recursive re-tracker that fires forever as observed values mutate. Use the `Observations` AsyncSequence instead.\n\nSkips files under `Tests/` directories or named `*Tests.swift` . A test that counts change notifications must re-arm the tracker to observe more than one change, and `Observations` cannot count synchronously. The pattern is deliberate there.",
       "unevaluatedProperties" : false
     },
+    "flagReferenceViewInput" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a view input whose type is an `@Observable` class declared in the same file.\n\nSwiftUI compares a class input by reference. The parent passes the same reference on each of its updates, so the comparison does not tell SwiftUI whether the values the view reads changed. Observation then tracks every property the view reads through the reference, which ties the view to the model's whole lifetime. Pass the values the view reads, or read the model from the environment, so that the view's inputs describe what it shows.\n\nA property the view owns, such as `@State` or `@Environment` , is not an input. The rule is syntax-only, so a class declared in another file is unknown to it, and a type that names a generic parameter of the view is never matched.\n\nLint: A stored input of a view type has the type of a same-file `@Observable` class.",
+      "unevaluatedProperties" : false
+    },
     "flagSupersededFrameworkAPI" : {
       "allOf" : [
         {
@@ -1537,6 +1573,24 @@
         }
       ],
       "description" : "Flags `// sm:ignore` directives whose listed rules suppressed nothing.\n\nStale ignore directives accumulate as code evolves: a rule renamed, a finding stops firing, or a typo'd rule name was never valid. This rule walks every `// sm:ignore Rule1, Rule2` directive after all other passes and emits a finding for each rule name whose hit count stayed at zero.\n\nBare `// sm:ignore` (all rules) is never flagged: proving \"no rule fired\" requires running every rule against every node in the directive's range, which would be expensive and noisy.\n\nA rule that never consults `RuleMask` in a run yields no hit either way, so the finding needs a second signal: whether the run dispatches the rule at all. `Context.dispatches(_:)` answers it, which keeps a directive quiet when the configuration disables the rule and flags one when the rule runs and the file holds no node it visits.\n\nSee issue `ekr-k5l`.",
+      "unevaluatedProperties" : false
+    },
+    "flagWholeValueModelViewInput" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a view input whose type is a large struct declared in the same file.\n\nSwiftUI compares a value input as a whole. When a view stores a model with many properties and reads only a few of them, a change to any other property still makes the input look changed, and SwiftUI evaluates the view's `body` again. Pass only the properties the view reads.\n\nA struct counts as large when it and its same-file extensions declare at least five stored instance properties. A `View` type is not a model, and neither is a type that names a generic parameter of the view. A property the view owns, such as `@State` , is not an input.\n\nLint: A stored input of a view type has the type of a same-file struct with five or more stored instance properties.",
+      "unevaluatedProperties" : false
+    },
+    "forEachRowReadsOnlyElement" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `ForEach` or `List` row closure that reads a member of the enclosing view.\n\nA row that reads only its element depends only on that element. When the closure also reads a property or calls a method of the enclosing view, every row depends on that value, and a change to it re-evaluates every row. Pass what the row needs into a row `View` as a stored input.\n\nThese reads are allowed:\n\n- A `private let` or `static` member, because neither can change while the view lives.\n- A method or computed property that itself reads only allowed members. It is a pure helper.\n- A projected binding such as `$selection` . Forwarding it to a row `View` does not read the\nvalue, and the row that writes the selection needs it.\n- A read inside a derived argument of the custom row `View` the closure builds, such as\n`TagRow(tag: tag, isSelected: selection == tag)` . The row gets a small value and SwiftUI skips it when the value does not change. A bare `citations: citations` still counts, because the row then depends on the whole value.\n\nLint: A row closure reads a same-type member outside those cases.",
       "unevaluatedProperties" : false
     },
     "formatSpecialComments" : {
@@ -1912,6 +1966,15 @@
           "description" : "Flag a `do` / `catch` that exists only to wrap async work in a `Result` .\n\nSE-0530 adds an async `Result.init(catching:)` , so the whole block collapses to `await Result { try await work() }` . The long form repeats the target on three lines and lets the two assignments drift apart.\n\nThe rule fires only when the `.success` value awaits. The synchronous `Result(catching:)` already existed, and a synchronous `do` / `catch` is often doing more than building a `Result` .\n\nLint: A `do` block whose last statement assigns `.success` of an awaited value, paired with a single `catch` that assigns `.failure` to the same target, raises a warning.",
           "unevaluatedProperties" : false
         },
+        "useCanImportNotOSCheck" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Check for a framework with `#if canImport(...)`, not with `#if os(...)`.\n\nAn `#if os(...)` block that holds only an `import` uses the platform as a stand-in for the framework. `canImport` states the real question. It also keeps working when the framework comes to a new platform, such as UIKit on visionOS or Mac Catalyst.\n\nThe rule fires only on a block with a single `#if` clause, a condition made only of `os(...)` checks, and a body made only of `import` declarations. An `#else` or `#elseif` branch marks a platform split, such as AppKit on macOS and UIKit elsewhere. There the file depends on platform types, not only on one framework, so the rule stays silent.\n\nLint: An `#if os(...)` block that guards only framework imports raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "useCompoundAssignment" : {
           "allOf" : [
             {
@@ -1959,7 +2022,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` , `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.\n\n`Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no `.lazy` either, so the suggested fix does not compile there. The tree carries no type information, so the rule reads the receiver type from two syntactic signals. A chain that uses a method `Optional` does not have is a `Sequence` chain. A chain of `.map` and `.flatMap` alone is ambiguous, so the rule skips it when the surrounding code proves the value is an `Optional` . See ``isInOptionalContext(_:)`` for the four proofs.",
+          "description" : "Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` , `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.\n\nA shorter chain allocates too when a single-pass operation consumes it. `xs.map { … }.min()` builds an array that `min()` walks once and throws away, so the rule also lints a one-link or two-link chain that feeds `min` , `max` , `reduce` , `joined(separator:)` , `contains` , `allSatisfy` , or `first(where:)` .\n\n`Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no `.lazy` either, so the suggested fix does not compile there. The tree carries no type information, so the rule reads the receiver type from two syntactic signals. A chain that uses a method `Optional` does not have is a `Sequence` chain. A chain of `.map` and `.flatMap` alone is ambiguous, so the rule skips it when the surrounding code proves the value is an `Optional` . See ``isInOptionalContext(_:)`` for the four proofs.",
           "unevaluatedProperties" : false
         },
         "useOrderedSetForUniqueAppend" : {
@@ -2840,6 +2903,24 @@
       ],
       "description" : "Avoid naming enum cases or static members `none` .\n\nA `case none` or `static let none` (or `static var` / `class var` ) can be confused with `Optional<T>.none` . Especially when the enclosing type itself becomes optional, the compiler will silently prefer `Optional.none` , leading to subtle bugs.\n\nLint: A warning is raised for any `case none` (without associated values), or any `static` / `class` property named `none` .\n\nRewrite: Not auto-fixed; renaming requires understanding the call sites."
     },
+    "noClosureInputInView" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a stored property of function type in a `View` or `ViewModifier` type.\n\nSwiftUI compares the stored inputs of a view to decide whether to evaluate its `body` again. It cannot compare two closures, so a view that stores one looks changed on every update of its parent. Store the value the closure computes, or keep the action at the call site.\n\nBuilder content is not an input of this kind. A property with a result builder attribute such as `@ViewBuilder` or `@ContentBuilder` is exempt, and so is a closure whose result type is a generic parameter of the view, such as `() -> Label` .\n\nLint: A stored property of a view type has a function type and no result builder attribute.",
+      "unevaluatedProperties" : false
+    },
+    "noCollectionWorkReachableFromBody" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag collection work in a computed property or method that a view's `body` reads.\n\nA computed property is not stored. It runs again on every `body` evaluation, and so does every method `body` calls. A `.filter` , `.sorted` , `.map` or loop there walks the whole collection on each update, even when the collection did not change. Store the derived value and update it when its inputs change.\n\nThe rule follows `body` into same-type computed properties and methods, and from those into further members. Closures that run later, such as a `Button` action or a `.task` body, are not followed.\n\nLint: A same-type member that `body` reaches calls `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` , `while` or `repeat` loop.",
+      "unevaluatedProperties" : false
+    },
     "noDocCommentsInFunctionBodies" : {
       "allOf" : [
         {
@@ -3042,6 +3123,15 @@
       "description" : "Lint nested `<receiver>.withLock { ... <receiver>.withLock { ... } ... }` on the same receiver. Re-entering a non-recursive lock (e.g. `Mutex` ) is a guaranteed deadlock.",
       "unevaluatedProperties" : false
     },
+    "noOnChangeDerivedStateWrite" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an `.onChange(of:)` whose source is a `@State` of the view and whose action assigns another stored property of the same view.\n\nThe write lands one update after the change it follows. SwiftUI evaluates `body` once with the new source and the old derived value, then again after the action runs. When the view owns both values, it can derive the second one in the same mutation, for example in a `didSet` of a model value, or compute it where it is read.\n\nThe rule only reports a source that the view owns as `@State` . An environment value or a `Binding` from a parent changes outside the view, so `onChange` is the correct reaction to it.\n\nLint: An `.onChange(of:)` of a `@State` property assigns a different stored property of the same view type.",
+      "unevaluatedProperties" : false
+    },
     "noOptionalBool" : {
       "allOf" : [
         {
@@ -3118,7 +3208,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Lint inline `.sorted` / `.filter` / `.map` / `.compactMap` / `.reversed` chains in the data argument of `ForEach` . The expression is recomputed on every render — hoist into a `@State` / `@Observable` value or a computed property.",
+      "description" : "Lint inline `.sorted` / `.filter` / `.map` / `.compactMap` / `.reversed` chains in the data argument of `ForEach` . The expression is recomputed on every render. A computed property does not help, because it also runs on every render. Store the result in `@State` or an `@Observable` model and update it when its inputs change.",
       "unevaluatedProperties" : false
     },
     "noSwapThenRemoveAll" : {
@@ -3163,6 +3253,15 @@
       "description" : "A computed-property or subscript setter that never reads its parameter ( `newValue` by default, or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying storage uses some other expression, leaving the actual incoming value silently dropped.\n\nException: empty setters, e.g. `set {}` , are intentional no-ops — an `override` suppressing the parent class's setter, or a protocol-extension default that must supply a settable requirement for conformers to override. Nothing is assigned, so there is nothing to get wrong.\n\nLint: When a `set` accessor's body never references its parameter name, a warning is raised.",
       "unevaluatedProperties" : false
     },
+    "noViewFactoryMembers" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a member of a `View` type, other than `body` , that returns `some View` or `AnyView` .\n\nA factory member runs as part of the caller's `body` . SwiftUI cannot compare its inputs or skip it, so every change the caller sees rebuilds the factory's views too. A separate `View` type gets its own stored inputs, and SwiftUI skips it when they do not change.\n\nA member that returns a concrete leaf type such as `Text` , `Image` , `Color` , a shape, a gradient or `EmptyView` is not a factory. Neither are the protocol entry points `body` , `body(content:)` and `makeBody(configuration:)` , nor a fluent method in `extension View` that transforms `self` .\n\nLint: A member of a `View` or `ViewModifier` type returns `some View` , `any View` or `AnyView` .",
+      "unevaluatedProperties" : false
+    },
     "noVoidTernary" : {
       "allOf" : [
         {
@@ -3170,6 +3269,15 @@
         }
       ],
       "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper `if` / `else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call expressions.\n\nRewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule."
+    },
+    "noWorkInViewInitializer" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a statement in an explicit `View` initializer that does more than store an input.\n\nA parent creates its child views again each time it evaluates its own `body` . Work in the child's initializer repeats on each of those evaluations, even when SwiftUI then skips the child's `body` because its inputs did not change. Store the inputs as they arrive, and do the work in `body` , where SwiftUI can skip it, or in a model that owns the result.\n\nThese statements are not work:\n\n- an assignment of a name, a literal, a member access or `nil` to a property\n- a property wrapper setup such as `_selection = selection` or\n`_count = State(initialValue: start)`\n- an assignment of the result of a `@ViewBuilder` or `@ContentBuilder` parameter call, such as\n`self.popover = popover()`\n- a delegation to `self.init(...)` or `super.init(...)`\n\nLint: An explicit initializer of a view type holds a statement other than those above.",
+      "unevaluatedProperties" : false
     },
     "noWrappedAppendBuffer" : {
       "allOf" : [
@@ -3698,6 +3806,15 @@
       "description" : "A protocol name should carry the suffix the guidelines give its kind.\n\nThe API Design Guidelines name a capability with `able` or `ible` , and an ongoing action with `ing` . Which one a protocol wants is a judgment about intent, and the syntax tree does not carry intent. The rule therefore works from a table of stems whose conventional Swift spelling is settled, and it reports only a name that ends in the wrong half of a pair.\n\n`Hashing` becomes `Hashable` , because the conformer *can be* hashed. `ProgressReportable` becomes `ProgressReporting` , because the conformer *does* report progress. A name outside the table raises nothing, and neither does a `struct` , a `class` or an `enum` .\n\nShips off by default. The table encodes a convention, and a codebase may hold a name that reads correctly against its own domain.\n\nLint: A protocol whose name ends in a tail the table lists raises a warning that names the conventional spelling.",
       "unevaluatedProperties" : false
     },
+    "requireRepeatSafeOnAppear" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a write inside `.onAppear` that gives a different result each time it runs.\n\nA view can appear many times: on each navigation back to it, each tab switch, and each time a lazy container scrolls it into view again. A compound assignment such as `count += 1` , an `append` , or `x = x + 1` accumulates across those appearances. Guard the write so that it runs once, or move it to the owner of the state.\n\nAn assignment of a fixed value, such as `isFocused = true` , is repeat-safe and is not reported. `UseTaskModifierNotOnAppear` covers a `Task` that starts from `.onAppear` .\n\nLint: An `.onAppear` closure holds a compound assignment, a self-referential arithmetic assignment, or a call to a mutating collection method such as `append` .",
+      "unevaluatedProperties" : false
+    },
     "requireRetainOfNotificationObserver" : {
       "allOf" : [
         {
@@ -3756,6 +3873,15 @@
         }
       ],
       "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\n`addTask` and `addTaskUnlessCancelled` fire only when the call has the shape of the task-group method: the work arrives as a trailing closure or a final `operation:` argument, and every other argument carries a label the task-group method accepts. An unrelated method with the same base name stays quiet.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
+      "unevaluatedProperties" : false
+    },
+    "requireTaskPriority" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Pass an explicit `priority:` when starting an unstructured task.\n\n`Task { }` inherits the priority of its caller, and `Task.detached { }` runs at the default priority. Neither default states how urgent the work is. An explicit priority lets the scheduler run user-facing work first and background work last.\n\n`Task { }` and `Task.immediate { }` stay silent in a main-actor UI context, because that work correctly inherits the priority of the UI event that started it. The rule treats these as a main-actor UI context:\n\n- a closure that declares `@MainActor`,\n- a declaration that carries `@MainActor`, and everything inside it,\n- a SwiftUI type (`View`, `ViewModifier`, `App`, `Scene`) or an AppKit or UIKit representable.\n\n`Task.detached { }` and `Task.immediateDetached { }` always fire. A detached task inherits no priority, so the exemption does not apply.\n\nLint: An unstructured task with no `priority:` argument outside a main-actor UI context raises a warning.",
       "unevaluatedProperties" : false
     },
     "requireTestFnPrefixOrAttribute" : {
@@ -3979,6 +4105,15 @@
       "additionalProperties" : false,
       "description" : "swiftui rule group.",
       "properties" : {
+        "constantForEachRowCount" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `ForEach` row closure whose number of top-level views can change.\n\nSwiftUI gives each element of a `ForEach` a fixed number of views. When one row builds a different number, SwiftUI cannot map elements to views directly and falls back to a slower path. An `if` without `else` , a nested `ForEach` , or several top-level views each break the one-view-per-element shape. Wrap the row in one container or extract a row `View` .\n\nLint: A `ForEach` content closure holds an `if` without a final `else` , a `ForEach` at its top level, or more than one top-level view.",
+          "unevaluatedProperties" : false
+        },
         "dropRedundantMainActorOnView" : {
           "allOf" : [
             {
@@ -3986,6 +4121,15 @@
             }
           ],
           "description" : "Remove `@MainActor` from SwiftUI `View` , `App` , and `Scene` conformers.\n\nSwiftUI implies `@MainActor` isolation on these protocols, so writing the attribute explicitly is redundant.\n\nDetection is conservative: an unqualified inheritance name `View` , `App` , or `Scene` matches. A custom protocol of the same name will be falsely flagged — match the philosophy of the rule library: prefer false positives over missed issues. Disable per-rule if needed.\n\nLint: A redundant `@MainActor` raises a warning.\n\nRewrite: The `@MainActor` attribute is removed."
+        },
+        "flagDeepViewComposition" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a view `body` that nests three or more structural containers inside each other.\n\nSwiftUI evaluates the whole `body` of a view as one unit. A body that nests stacks, scroll views, lists and `ForEach` several levels deep rebuilds every level when any value it reads changes. An inner level extracted into its own `View` type gets its own inputs, and SwiftUI skips it when they do not change.\n\nA container counts toward the depth only when it sits inside the content of another container. Containers in sibling modifiers such as `.overlay { }` and `.background { }` do not add up.\n\nLint: The `body` of a `View` , or `body(content:)` of a `ViewModifier` , nests three or more structural containers.",
+          "unevaluatedProperties" : false
         },
         "flagForEachIDSelfInView" : {
           "allOf" : [
@@ -4014,6 +4158,15 @@
           "description" : "Flag the `PreviewProvider` family, deprecated in the OS 27 SDK.\n\nThe SDK marks `PreviewProvider` , `previewDevice(_:)` , `previewLayout(_:)` , `previewDisplayName(_:)` and `previewInterfaceOrientation(_:)` as deprecated at 27.0, yet the compiler stays silent about a conformance. Nothing catches these except a lint pass.\n\n- `PreviewProvider` conformance → the `#Preview` macro\n- `previewDisplayName(_:)` → the `#Preview(\"Name\")` label\n- `previewLayout(_:)` → `#Preview(traits: .sizeThatFitsLayout)` or `.fixedLayout(width:height:)`\n- `previewInterfaceOrientation(_:)` → `#Preview(traits: .landscapeLeft)`\n- `previewDevice(_:)` → the device picker in Xcode's canvas\n\nLint: A `PreviewProvider` conformance or a deprecated preview modifier raises a warning.",
           "unevaluatedProperties" : false
         },
+        "flagReferenceViewInput" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a view input whose type is an `@Observable` class declared in the same file.\n\nSwiftUI compares a class input by reference. The parent passes the same reference on each of its updates, so the comparison does not tell SwiftUI whether the values the view reads changed. Observation then tracks every property the view reads through the reference, which ties the view to the model's whole lifetime. Pass the values the view reads, or read the model from the environment, so that the view's inputs describe what it shows.\n\nA property the view owns, such as `@State` or `@Environment` , is not an input. The rule is syntax-only, so a class declared in another file is unknown to it, and a type that names a generic parameter of the view is never matched.\n\nLint: A stored input of a view type has the type of a same-file `@Observable` class.",
+          "unevaluatedProperties" : false
+        },
         "flagSupersededSwiftUI" : {
           "allOf" : [
             {
@@ -4021,6 +4174,24 @@
             }
           ],
           "description" : "Flag superseded SwiftUI / Combine-era APIs that have modern `@Observable` / navigation replacements:\n\n- `@StateObject` → `@State` with an `@Observable` type\n- `@ObservedObject` → pass `@Observable` values directly (or `@Bindable` for two-way bindings)\n- `@EnvironmentObject` → `@Environment(MyType.self)` with an `@Observable` type\n- `@Published` → unnecessary on `@Observable` types\n- `ObservableObject` conformance → `@Observable` macro\n- `NavigationView` → `NavigationStack` / `NavigationSplitView`\n\nFlag-only — fixes are contextual (the consumer must move the type to `@Observable`, choose `NavigationStack` vs `NavigationSplitView`, etc.).",
+          "unevaluatedProperties" : false
+        },
+        "flagWholeValueModelViewInput" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a view input whose type is a large struct declared in the same file.\n\nSwiftUI compares a value input as a whole. When a view stores a model with many properties and reads only a few of them, a change to any other property still makes the input look changed, and SwiftUI evaluates the view's `body` again. Pass only the properties the view reads.\n\nA struct counts as large when it and its same-file extensions declare at least five stored instance properties. A `View` type is not a model, and neither is a type that names a generic parameter of the view. A property the view owns, such as `@State` , is not an input.\n\nLint: A stored input of a view type has the type of a same-file struct with five or more stored instance properties.",
+          "unevaluatedProperties" : false
+        },
+        "forEachRowReadsOnlyElement" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `ForEach` or `List` row closure that reads a member of the enclosing view.\n\nA row that reads only its element depends only on that element. When the closure also reads a property or calls a method of the enclosing view, every row depends on that value, and a change to it re-evaluates every row. Pass what the row needs into a row `View` as a stored input.\n\nThese reads are allowed:\n\n- A `private let` or `static` member, because neither can change while the view lives.\n- A method or computed property that itself reads only allowed members. It is a pure helper.\n- A projected binding such as `$selection` . Forwarding it to a row `View` does not read the\nvalue, and the row that writes the selection needs it.\n- A read inside a derived argument of the custom row `View` the closure builds, such as\n`TagRow(tag: tag, isSelected: selection == tag)` . The row gets a small value and SwiftUI skips it when the value does not change. A bare `citations: citations` still counts, because the row then depends on the whole value.\n\nLint: A row closure reads a same-type member outside those cases.",
           "unevaluatedProperties" : false
         },
         "noAnyViewInForEach" : {
@@ -4032,6 +4203,24 @@
           "description" : "Flag `AnyView(...)` constructed inside a `ForEach` body. Type-erasing each row defeats SwiftUI's structural identity, forces extra invalidation, and almost always indicates a missing `@ViewBuilder` helper or a `Group { ... }` with branches. Move the branching into a `@ViewBuilder` function or use `if / switch` directly inside the closure.",
           "unevaluatedProperties" : false
         },
+        "noClosureInputInView" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a stored property of function type in a `View` or `ViewModifier` type.\n\nSwiftUI compares the stored inputs of a view to decide whether to evaluate its `body` again. It cannot compare two closures, so a view that stores one looks changed on every update of its parent. Store the value the closure computes, or keep the action at the call site.\n\nBuilder content is not an input of this kind. A property with a result builder attribute such as `@ViewBuilder` or `@ContentBuilder` is exempt, and so is a closure whose result type is a generic parameter of the view, such as `() -> Label` .\n\nLint: A stored property of a view type has a function type and no result builder attribute.",
+          "unevaluatedProperties" : false
+        },
+        "noCollectionWorkReachableFromBody" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag collection work in a computed property or method that a view's `body` reads.\n\nA computed property is not stored. It runs again on every `body` evaluation, and so does every method `body` calls. A `.filter` , `.sorted` , `.map` or loop there walks the whole collection on each update, even when the collection did not change. Store the derived value and update it when its inputs change.\n\nThe rule follows `body` into same-type computed properties and methods, and from those into further members. Closures that run later, such as a `Button` action or a `.task` body, are not followed.\n\nLint: A same-type member that `body` reaches calls `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` , `while` or `repeat` loop.",
+          "unevaluatedProperties" : false
+        },
         "noFormatterInViewBody" : {
           "allOf" : [
             {
@@ -4039,6 +4228,42 @@
             }
           ],
           "description" : "Lint formatter initializers ( `NumberFormatter` , `DateFormatter` , `MeasurementFormatter` ) constructed inside a SwiftUI `body` accessor.\n\nSwiftUI re-evaluates `body` whenever its dependencies invalidate. Building a formatter inline allocates and configures a new instance on every render and discards it. Hoist to a `static let` or a parent-scoped property.",
+          "unevaluatedProperties" : false
+        },
+        "noOnChangeDerivedStateWrite" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an `.onChange(of:)` whose source is a `@State` of the view and whose action assigns another stored property of the same view.\n\nThe write lands one update after the change it follows. SwiftUI evaluates `body` once with the new source and the old derived value, then again after the action runs. When the view owns both values, it can derive the second one in the same mutation, for example in a `didSet` of a model value, or compute it where it is read.\n\nThe rule only reports a source that the view owns as `@State` . An environment value or a `Binding` from a parent changes outside the view, so `onChange` is the correct reaction to it.\n\nLint: An `.onChange(of:)` of a `@State` property assigns a different stored property of the same view type.",
+          "unevaluatedProperties" : false
+        },
+        "noViewFactoryMembers" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a member of a `View` type, other than `body` , that returns `some View` or `AnyView` .\n\nA factory member runs as part of the caller's `body` . SwiftUI cannot compare its inputs or skip it, so every change the caller sees rebuilds the factory's views too. A separate `View` type gets its own stored inputs, and SwiftUI skips it when they do not change.\n\nA member that returns a concrete leaf type such as `Text` , `Image` , `Color` , a shape, a gradient or `EmptyView` is not a factory. Neither are the protocol entry points `body` , `body(content:)` and `makeBody(configuration:)` , nor a fluent method in `extension View` that transforms `self` .\n\nLint: A member of a `View` or `ViewModifier` type returns `some View` , `any View` or `AnyView` .",
+          "unevaluatedProperties" : false
+        },
+        "noWorkInViewInitializer" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a statement in an explicit `View` initializer that does more than store an input.\n\nA parent creates its child views again each time it evaluates its own `body` . Work in the child's initializer repeats on each of those evaluations, even when SwiftUI then skips the child's `body` because its inputs did not change. Store the inputs as they arrive, and do the work in `body` , where SwiftUI can skip it, or in a model that owns the result.\n\nThese statements are not work:\n\n- an assignment of a name, a literal, a member access or `nil` to a property\n- a property wrapper setup such as `_selection = selection` or\n`_count = State(initialValue: start)`\n- an assignment of the result of a `@ViewBuilder` or `@ContentBuilder` parameter call, such as\n`self.popover = popover()`\n- a delegation to `self.init(...)` or `super.init(...)`\n\nLint: An explicit initializer of a view type holds a statement other than those above.",
+          "unevaluatedProperties" : false
+        },
+        "requireRepeatSafeOnAppear" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a write inside `.onAppear` that gives a different result each time it runs.\n\nA view can appear many times: on each navigation back to it, each tab switch, and each time a lazy container scrolls it into view again. A compound assignment such as `count += 1` , an `append` , or `x = x + 1` accumulates across those appearances. Guard the write so that it runs once, or move it to the owner of the state.\n\nAn assignment of a fixed value, such as `isFocused = true` , is repeat-safe and is not reported. `UseTaskModifierNotOnAppear` covers a `Task` that starts from `.onAppear` .\n\nLint: An `.onAppear` closure holds a compound assignment, a self-referential arithmetic assignment, or a call to a mutating collection method such as `append` .",
           "unevaluatedProperties" : false
         },
         "useAtEntryNotEnvironmentKey" : {
@@ -4166,7 +4391,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Normalize Swift Testing `@Test` function names according to the configured `style`.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming convention, so the conventional `test` prefix is redundant. Two styles are offered:\n\n- `.standardIdentifier` (default) — strip the `test` prefix, producing an idiomatic camelCase\nidentifier (`testFooBar` → `fooBar`). The rename is skipped when the remainder would be empty, start with a digit, be a Swift keyword, or collide with an existing identifier in scope.\n- `.rawIdentifier` — convert the camelCase name into a backtick-wrapped raw identifier whose\nwords are space-separated and lowercased (`testFooBar` → `` `foo bar` ``). A leading `test` word is dropped. Already-backticked names are left untouched, and so is a function whose `@Test` names the test explicitly (`@Test(\"foo bar\")`). Swift Testing derives an implicit display name from a raw identifier, and it rejects a test that declares both names.\n\nLint: A warning is raised for `@Test` functions whose name does not match the configured style.\n\nRewrite: The function name is rewritten to the configured style.",
+          "description" : "Normalize Swift Testing `@Test` function names according to the configured `style`.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming convention, so the conventional `test` prefix is redundant. Two styles are offered:\n\n- `.standardIdentifier` (default) — strip the `test` prefix, producing an idiomatic camelCase\nidentifier (`testFooBar` → `fooBar`). A backticked name keeps its backticks only when it carries a space (`` `test foo bar` `` → `` `foo bar` ``); otherwise it becomes a plain identifier (`` `testFooBar` `` → `fooBar`). The rename is skipped when the remainder would be empty, start with a digit, be a Swift keyword, or collide with an existing identifier in scope.\n- `.rawIdentifier` — convert the camelCase name into a backtick-wrapped raw identifier whose\nwords are space-separated and lowercased (`testFooBar` → `` `foo bar` ``). A leading `test` word is dropped. A backticked name is rewritten too when it carries spaces or single underscores (`` `test_foo_bar` `` → `` `foo bar` ``), and it loses its backticks when one word remains. A backticked camelCase name and a name with a double underscore are left untouched, and so is a function whose `@Test` names the test explicitly (`@Test(\"foo bar\")`). Swift Testing derives an implicit display name from a raw identifier, and it rejects a test that declares both names.\n\nLint: A warning is raised for `@Test` functions whose name does not match the configured style.\n\nRewrite: The function name is rewritten to the configured style.",
           "properties" : {
             "style" : {
               "default" : "standardIdentifier",
@@ -4488,6 +4713,15 @@
           "description" : "Require a `name:` argument when starting a `Task` or adding work to a `TaskGroup`. Swift 6.2 (Xcode 26 / macOS 26 / iOS 26) added `name:` overloads to `Task.init`, `Task.detached`, `Task.immediate`, `Task.immediateDetached`, `TaskGroup.addTask`, and `TaskGroup.addTaskUnlessCancelled`. The name shows up in Instruments' Swift Concurrency instrument, in the Xcode debugger's task list, and in custom `Task.currentName` reads — unnamed tasks are anonymous and indistinguishable from one another there.\n\n`addTask` and `addTaskUnlessCancelled` fire only when the call has the shape of the task-group method: the work arrives as a trailing closure or a final `operation:` argument, and every other argument carries a label the task-group method accepts. An unrelated method with the same base name stays quiet.\n\nFlag-only — the fix requires picking a meaningful name.\n\nSee https://artemnovichkov.com/blog/task-names-in-swift-concurrency.",
           "unevaluatedProperties" : false
         },
+        "requireTaskPriority" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Pass an explicit `priority:` when starting an unstructured task.\n\n`Task { }` inherits the priority of its caller, and `Task.detached { }` runs at the default priority. Neither default states how urgent the work is. An explicit priority lets the scheduler run user-facing work first and background work last.\n\n`Task { }` and `Task.immediate { }` stay silent in a main-actor UI context, because that work correctly inherits the priority of the UI event that started it. The rule treats these as a main-actor UI context:\n\n- a closure that declares `@MainActor`,\n- a declaration that carries `@MainActor`, and everything inside it,\n- a SwiftUI type (`View`, `ViewModifier`, `App`, `Scene`) or an AppKit or UIKit representable.\n\n`Task.detached { }` and `Task.immediateDetached { }` always fire. A detached task inherits no priority, so the exemption does not apply.\n\nLint: An unstructured task with no `priority:` argument outside a main-actor UI context raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "useActorNotLock" : {
           "allOf" : [
             {
@@ -4744,6 +4978,15 @@
       "description" : "Flag a `_read` or `_modify` accessor that only exposes stored storage.\n\nSE-0507 adds the `borrow` and `mutate` accessors in Swift 6.4. Both expose stored storage without copying it, and neither runs as a coroutine, so neither pays the allocation and the extra calls that `_read` and `_modify` pay. `borrow` also lets the exposed value outlive the call, which a coroutine accessor cannot allow.\n\n`borrow` and `mutate` replace `get` and `set` rather than joining them, and the compiler refuses a property that declares both pairs. A property that also declares `get` or `set` has no one-line conversion, so the rule leaves it alone.\n\nThe rule fires only when the body is a single `yield` over stored storage. A body that builds a temporary, or that runs code after the `yield` , must stay on the coroutine form. Storage reached through a property wrapper, a subscript, a computed property or a class member has no address to expose, so it must stay on the coroutine form too. The same holds for the `read` and `modify` spellings.\n\nFlag-only. The rewrite needs the accessor kind and the `&` on a `mutate` return, so it is left to the author.\n\nLint: A `_read` or `_modify` accessor whose body is one `yield` over stored storage raises a warning.",
       "unevaluatedProperties" : false
     },
+    "useCanImportNotOSCheck" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Check for a framework with `#if canImport(...)`, not with `#if os(...)`.\n\nAn `#if os(...)` block that holds only an `import` uses the platform as a stand-in for the framework. `canImport` states the real question. It also keeps working when the framework comes to a new platform, such as UIKit on visionOS or Mac Catalyst.\n\nThe rule fires only on a block with a single `#if` clause, a condition made only of `os(...)` checks, and a body made only of `import` declarations. An `#else` or `#elseif` branch marks a platform split, such as AppKit on macOS and UIKit elsewhere. There the file depends on platform types, not only on one framework, so the rule stays silent.\n\nLint: An `#if os(...)` block that guards only framework imports raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "useClosureNotificationObserver" : {
       "allOf" : [
         {
@@ -4870,6 +5113,15 @@
         }
       ],
       "description" : "When checking an optional value for `nil` -ness, prefer writing an explicit `nil` check rather than binding and immediately discarding the value.\n\nFor example, `if let _ = someValue { ... }` is forbidden. Use `if someValue != nil { ... }` instead.\n\nNote: If the conditional binding carries an explicit type annotation (e.g. `if let _: S? = expr` ), we skip the transformation. Such annotations can be necessary to drive generic type inference when a function mentions a type only in its return position.\n\nLint: `let _ = expr` inside a condition list will yield a lint error.\n\nRewrite: `let _ = expr` inside a condition list will be replaced by `expr != nil` ."
+    },
+    "useExtensionInitToKeepMemberwise" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Declare a custom `struct` initializer in an extension so the synthesized memberwise initializer stays available.\n\nAn initializer in the main body of a `struct` suppresses the memberwise initializer. The same initializer in an extension keeps it. The rule flags an initializer that only copies its parameters into stored properties under labels that differ from the memberwise labels. Such an initializer adds a second spelling and removes the first one for no reason.\n\nThe rule stays silent in these cases:\n\n- The labels match the memberwise labels in order. `UseSynthesizedInit` owns that case.\n- The initializer validates or normalizes its input. Any statement other than\n`self.property = parameter` counts as validation or normalization.\n- The initializer is failable or throws.\n- The type is `public`, `package` or `open` and a stored property is less visible than the\ntype. The synthesized initializer cannot reach the type's access level, so the explicit initializer must stay.\n\nLint: A plain relabeling initializer in the main body of a `struct` raises a warning.",
+      "unevaluatedProperties" : false
     },
     "useFailableStringInit" : {
       "allOf" : [
@@ -5005,7 +5257,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` , `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.\n\n`Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no `.lazy` either, so the suggested fix does not compile there. The tree carries no type information, so the rule reads the receiver type from two syntactic signals. A chain that uses a method `Optional` does not have is a `Sequence` chain. A chain of `.map` and `.flatMap` alone is ambiguous, so the rule skips it when the surrounding code proves the value is an `Optional` . See ``isInOptionalContext(_:)`` for the four proofs.",
+      "description" : "Lint chains of 3+ collection transforms ( `.map` , `.filter` , `.compactMap` , `.flatMap` , `.prefix` , `.dropFirst` ). Each step allocates an intermediate `Array` . Inserting `.lazy` at the head of the chain forwards lazily and avoids the allocations.\n\nA shorter chain allocates too when a single-pass operation consumes it. `xs.map { … }.min()` builds an array that `min()` walks once and throws away, so the rule also lints a one-link or two-link chain that feeds `min` , `max` , `reduce` , `joined(separator:)` , `contains` , `allSatisfy` , or `first(where:)` .\n\n`Optional` also has `.map` and `.flatMap` , and neither one allocates. `Optional` has no `.lazy` either, so the suggested fix does not compile there. The tree carries no type information, so the rule reads the receiver type from two syntactic signals. A chain that uses a method `Optional` does not have is a `Sequence` chain. A chain of `.map` and `.flatMap` alone is ambiguous, so the rule skips it when the surrounding code proves the value is an `Optional` . See ``isInOptionalContext(_:)`` for the four proofs.",
       "unevaluatedProperties" : false
     },
     "useLifetimeNotExtendedLifetime" : {
@@ -5169,7 +5421,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Normalize Swift Testing `@Test` function names according to the configured `style`.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming convention, so the conventional `test` prefix is redundant. Two styles are offered:\n\n- `.standardIdentifier` (default) — strip the `test` prefix, producing an idiomatic camelCase\nidentifier (`testFooBar` → `fooBar`). The rename is skipped when the remainder would be empty, start with a digit, be a Swift keyword, or collide with an existing identifier in scope.\n- `.rawIdentifier` — convert the camelCase name into a backtick-wrapped raw identifier whose\nwords are space-separated and lowercased (`testFooBar` → `` `foo bar` ``). A leading `test` word is dropped. Already-backticked names are left untouched, and so is a function whose `@Test` names the test explicitly (`@Test(\"foo bar\")`). Swift Testing derives an implicit display name from a raw identifier, and it rejects a test that declares both names.\n\nLint: A warning is raised for `@Test` functions whose name does not match the configured style.\n\nRewrite: The function name is rewritten to the configured style.",
+      "description" : "Normalize Swift Testing `@Test` function names according to the configured `style`.\n\nIn Swift Testing, test methods are identified by the `@Test` attribute, not by a naming convention, so the conventional `test` prefix is redundant. Two styles are offered:\n\n- `.standardIdentifier` (default) — strip the `test` prefix, producing an idiomatic camelCase\nidentifier (`testFooBar` → `fooBar`). A backticked name keeps its backticks only when it carries a space (`` `test foo bar` `` → `` `foo bar` ``); otherwise it becomes a plain identifier (`` `testFooBar` `` → `fooBar`). The rename is skipped when the remainder would be empty, start with a digit, be a Swift keyword, or collide with an existing identifier in scope.\n- `.rawIdentifier` — convert the camelCase name into a backtick-wrapped raw identifier whose\nwords are space-separated and lowercased (`testFooBar` → `` `foo bar` ``). A leading `test` word is dropped. A backticked name is rewritten too when it carries spaces or single underscores (`` `test_foo_bar` `` → `` `foo bar` ``), and it loses its backticks when one word remains. A backticked camelCase name and a name with a double underscore are left untouched, and so is a function whose `@Test` names the test explicitly (`@Test(\"foo bar\")`). Swift Testing derives an implicit display name from a raw identifier, and it rejects a test that declares both names.\n\nLint: A warning is raised for `@Test` functions whose name does not match the configured style.\n\nRewrite: The function name is rewritten to the configured style.",
       "properties" : {
         "style" : {
           "default" : "standardIdentifier",

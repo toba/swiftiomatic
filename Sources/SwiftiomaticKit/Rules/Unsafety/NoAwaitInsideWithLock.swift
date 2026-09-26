@@ -9,6 +9,7 @@ import SwiftSyntax
 /// doesn't hold the lock).
 final class NoAwaitInsideWithLock: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
+    override class var guidance: GuidanceLevel { .must }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let member = node.calledExpression.as(MemberAccessExprSyntax.self),

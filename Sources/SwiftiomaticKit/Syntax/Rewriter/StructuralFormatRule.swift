@@ -30,6 +30,7 @@ class StructuralFormatRule<V: SyntaxRuleValue>: SyntaxRewriter, InstanceSyntaxRu
         return configurationKey(forTypeName: name)
     }
     class var group: ConfigurationGroup? { nil }
+    class var guidance: GuidanceLevel { group?.defaultGuidance ?? .should }
     class var defaultValue: V { .init() }
 
     /// Creates a new StructuralFormatRule in the given context.

@@ -62,10 +62,14 @@ package struct Finding: Sendable {
         /// The optional location of the note, if different from the location of the finding.
         package var location: Location?
 
-        /// Creates a new note with the given message and location.
-        package init(message: Message, location: Location? = nil) {
+        /// What the note's location matched.
+        package var role: EvidenceRole
+
+        /// Creates a new note with the given message, location and role.
+        package init(message: Message, location: Location? = nil, role: EvidenceRole = .related) {
             self.message = message
             self.location = location
+            self.role = role
         }
     }
 
@@ -83,6 +87,15 @@ package struct Finding: Sendable {
 
     /// Notes that provide additional detail about the finding.
     package let notes: [Note]
+
+    /// The configuration key of the rule that emitted the finding, or `nil` when no rule emitted
+    /// it, such as for a finding from the pretty printer.
+    package var ruleID: String? { (category as? SyntaxFindingCategory)?.ruleType.key }
+
+    /// The guidance level of the rule that emitted the finding, or `nil` when no rule emitted it.
+    package var guidance: GuidanceLevel? {
+        (category as? SyntaxFindingCategory)?.ruleType.guidance
+    }
 
     /// Creates a new finding with the given category, message, optional location, and notes.
     init(

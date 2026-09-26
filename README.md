@@ -54,6 +54,8 @@ On a multi-line statement, a trailing directive attaches on the opening line or 
 sm format Sources/             # auto-fix in place
 sm lint Sources/               # report findings without modifying files
 sm dump-configuration          # print the resolved configuration
+sm explain                     # list every rule with its guidance level
+sm explain noForceUnwrap       # print one rule's documentation
 sm doctor                      # diagnose installation/configuration issues
 sm link                        # install the toolchain symlink in every installed Xcode
 sm update                      # update the configuration to the current schema version
@@ -68,8 +70,23 @@ sm update                      # update the configuration to the current schema 
 | `text` | Human-readable diagnostics on stderr (default) |
 | `json` | A JSON array of findings on stdout |
 | `sarif` | A [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) log on stdout |
+| `agent` | Compact JSON on stdout, with one entry per rule per file, for an LLM agent to triage |
 
-In a SARIF log, each result has the rule name as its `ruleId`. A parser diagnostic has the `ruleId` `parser`. A tool diagnostic, such as a file that cannot be read, has the `ruleId` `tool`. A file inside the working directory gets a URI relative to `%SRCROOT%`.
+In a SARIF log, each result has the rule name as its `ruleId`. A parser diagnostic has the `ruleId` `parser`. A tool diagnostic, such as a file that cannot be read, has the `ruleId` `tool`. A file inside the working directory gets a URI relative to `%SRCROOT%`. The notes of a finding are its `relatedLocations`. Each rule descriptor carries its applicability as `shortDescription` and its guidance level in `properties`.
+
+The `agent` report has two keys. `rules` gives the guidance level and applicability of each rule that fired, once. `findings` has one entry per rule per file, with an `evidence` array. Each evidence item names its `role` (`finding`, `related`, `owner`, `member`, `input`, `closure`, `branch` or `work`) and its location. File paths are relative to the working directory.
+
+```json
+{ "rules": { "noForceUnwrap": { "guidance": "SHOULD", "applicability": "Force-unwraps are strongly discouraged and must be documented." } },
+  "findings": [ { "file": "A.swift", "rule": "noForceUnwrap", "severity": "warning", "guidance": "SHOULD",
+                  "message": "do not force unwrap 'x'", "status": "introduced",
+                  "evidence": [ { "role": "finding", "line": 4, "column": 13, "status": "existing" },
+                                { "role": "finding", "line": 5, "column": 13, "status": "introduced" } ] } ] }
+```
+
+The guidance level says how strong the advice of a rule is. It is separate from the severity that the `lint` value sets. `MUST` means the code can deadlock, hang, leak or crash. `SHOULD` means the change improves the code in almost every case. `CONSIDER` means a judgment call, such as a `metrics` threshold. `sm explain <rule>` prints the full documentation of a rule.
+
+`sm lint --changed-lines start:end` labels each finding `introduced` when its line is in a changed range and `existing` otherwise. Repeat the option for more ranges. It is valid for a single file. The `text` reporter appends the label to each diagnostic, the `agent` reporter sets `status`, and the `sarif` reporter sets `baselineState` to `new` or `unchanged`.
 
 `sm format` accepts `text` and `json` only.
 

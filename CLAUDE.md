@@ -69,6 +69,7 @@ Three invocation paths all work through this:
 sm lint Sources/                       # lint only
 sm format Sources/                     # auto-fix in place
 sm dump-configuration                  # print the resolved configuration
+sm explain <rule>                      # print a rule's guidance level and documentation
 sm doctor                              # diagnose installation/configuration
 sm link                                # install the Xcode toolchain symlink
 sm update                              # migrate config to the current schema version

@@ -38,6 +38,10 @@ final class DiagnosticsEngine: Sendable {
     /// Whether to upgrade all warnings to errors.
     private let treatWarningsAsErrors: Bool
 
+    /// The changed 1-based line ranges. When not empty, each diagnostic with a location, other than
+    /// a rule note, gets an `introduced` or `existing` change status.
+    private let changedLines: [ClosedRange<Int>]
+
     /// Creates a new diagnostics engine with the given diagnostic handlers.
     ///
     /// - Parameter diagnosticsHandlers: An array of functions, each of which takes a `Diagnostic`
@@ -45,10 +49,12 @@ final class DiagnosticsEngine: Sendable {
     ///   is received by the engine.
     init(
         diagnosticsHandlers: [@Sendable (Diagnostic) -> Void],
-        treatWarningsAsErrors: Bool = false
+        treatWarningsAsErrors: Bool = false,
+        changedLines: [ClosedRange<Int>] = []
     ) {
         handlers = diagnosticsHandlers
         self.treatWarningsAsErrors = treatWarningsAsErrors
+        self.changedLines = changedLines
     }
 
     /// Emits the diagnostic by passing it to the registered handlers, and tracks whether it was an
@@ -56,6 +62,10 @@ final class DiagnosticsEngine: Sendable {
     private func emit(_ diagnostic: Diagnostic) {
         var diagnostic = diagnostic
         if treatWarningsAsErrors, diagnostic.severity == .warning { diagnostic.severity = .error }
+
+        if !changedLines.isEmpty, !diagnostic.isRuleNote, let line = diagnostic.location?.line {
+            diagnostic.changeStatus = ChangeStatus(line: line, changedLines: changedLines)
+        }
 
         switch diagnostic.severity {
             case .error: state.withLock { $0.hasErrors = true }
@@ -100,17 +110,16 @@ final class DiagnosticsEngine: Sendable {
     ///
     /// - Parameter finding: The finding that should be emitted.
     func consumeFinding(_ finding: Finding) {
-        emit(diagnosticMessage(for: finding))
-
-        for note in finding.notes {
-            emit(
-                Diagnostic(
-                    severity: .note,
-                    location: note.location.map(Diagnostic.Location.init),
-                    message: "\(note.message)",
-                    origin: .ruleNote("\(finding.category)")
-                ))
+        let notes = finding.notes.map { note in
+            Diagnostic(
+                severity: .note,
+                location: note.location.map(Diagnostic.Location.init),
+                message: "\(note.message)",
+                origin: .ruleNote("\(finding.category)"),
+                role: note.role
+            )
         }
+        emit(diagnosticMessage(for: finding), notes: notes)
     }
 
     /// Replays a previously cached finding (and its notes) through the same emit path
@@ -122,23 +131,33 @@ final class DiagnosticsEngine: Sendable {
                 case .error: .error
                 case .warn, .no: .warning
             }
+        let notes = cached.notes.map { note in
+            Diagnostic(
+                severity: .note,
+                location: note.location.map { Diagnostic.Location($0.asFindingLocation) },
+                message: note.message,
+                origin: .ruleNote(cached.category),
+                role: note.role ?? .related
+            )
+        }
         emit(
             Diagnostic(
                 severity: severity,
                 location: cached.location.map { Diagnostic.Location($0.asFindingLocation) },
                 category: cached.category,
                 message: cached.message
-            ))
+            ),
+            notes: notes
+        )
+    }
 
-        for note in cached.notes {
-            emit(
-                Diagnostic(
-                    severity: .note,
-                    location: note.location.map { Diagnostic.Location($0.asFindingLocation) },
-                    message: note.message,
-                    origin: .ruleNote(cached.category)
-                ))
-        }
+    /// Emits a finding with its notes attached, then emits each note on its own for the handlers
+    /// that print notes as separate lines.
+    private func emit(_ finding: Diagnostic, notes: [Diagnostic]) {
+        var finding = finding
+        finding.notes = notes
+        emit(finding)
+        for note in notes { emit(note) }
     }
 
     /// Emits a diagnostic from the syntax parser and any of its associated notes.

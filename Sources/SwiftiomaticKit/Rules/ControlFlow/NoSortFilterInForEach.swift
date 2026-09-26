@@ -1,8 +1,9 @@
 import SwiftSyntax
 
 /// Lint inline `.sorted` / `.filter` / `.map` / `.compactMap` / `.reversed` chains in the data
-/// argument of `ForEach` . The expression is recomputed on every render — hoist into a `@State` /
-/// `@Observable` value or a computed property.
+/// argument of `ForEach` . The expression is recomputed on every render. A computed property does
+/// not help, because it also runs on every render. Store the result in `@State` or an `@Observable`
+/// model and update it when its inputs change.
 final class NoSortFilterInForEach: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .controlFlow }
 
@@ -33,6 +34,6 @@ final class NoSortFilterInForEach: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
 
 fileprivate extension Finding.Message {
     static func recomputingForEachData(_ method: String) -> Finding.Message {
-        "'.\(method)' in 'ForEach' data is recomputed on every render — hoist into a stored or computed property"
+        "'.\(method)' in 'ForEach' data is recomputed on every render. Store the result as state and update it when its inputs change"
     }
 }

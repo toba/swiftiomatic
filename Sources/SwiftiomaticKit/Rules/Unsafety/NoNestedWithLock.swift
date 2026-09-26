@@ -4,6 +4,7 @@ import SwiftSyntax
 /// Re-entering a non-recursive lock (e.g. `Mutex` ) is a guaranteed deadlock.
 final class NoNestedWithLock: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
+    override class var guidance: GuidanceLevel { .must }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let outerReceiver = Self.withLockReceiver(of: node),

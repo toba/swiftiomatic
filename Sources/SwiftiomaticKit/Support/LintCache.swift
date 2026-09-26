@@ -39,9 +39,14 @@ package final class LintCache: Sendable {
         package var message: String
         package var location: Location?
 
-        package init(message: String, location: Location?) {
+        /// What the note's location matched. Optional so that records written before the field
+        /// existed still decode.
+        package var role: EvidenceRole?
+
+        package init(message: String, location: Location?, role: EvidenceRole? = nil) {
             self.message = message
             self.location = location
+            self.role = role
         }
     }
 

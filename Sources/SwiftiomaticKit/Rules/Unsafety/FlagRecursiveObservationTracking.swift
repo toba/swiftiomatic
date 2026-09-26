@@ -10,6 +10,7 @@ import SwiftSyntax
 /// count synchronously. The pattern is deliberate there.
 final class FlagRecursiveObservationTracking: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
+    override class var guidance: GuidanceLevel { .must }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard !context.fileURL.isTestFile else { return .visitChildren }

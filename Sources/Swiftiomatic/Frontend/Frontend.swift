@@ -263,7 +263,8 @@ class Frontend: @unchecked Sendable {
         lintFormatOptions: LintFormatOptions,
         treatWarningsAsErrors: Bool = false,
         additionalDiagnosticHandlers: [@Sendable (Diagnostic) -> Void] = [],
-        suppressDefaultDiagnosticPrinter: Bool = false
+        suppressDefaultDiagnosticPrinter: Bool = false,
+        changedLines: [ClosedRange<Int>] = []
     ) {
         self.configurationOptions = configurationOptions
         self.lintFormatOptions = lintFormatOptions
@@ -276,7 +277,8 @@ class Frontend: @unchecked Sendable {
         handlers.append(contentsOf: additionalDiagnosticHandlers)
         diagnosticsEngine = DiagnosticsEngine(
             diagnosticsHandlers: handlers,
-            treatWarningsAsErrors: treatWarningsAsErrors
+            treatWarningsAsErrors: treatWarningsAsErrors,
+            changedLines: changedLines
         )
         configurationProvider = ConfigurationProvider(diagnosticsEngine: diagnosticsEngine)
     }

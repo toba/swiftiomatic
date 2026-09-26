@@ -1,0 +1,120 @@
+@testable import SwiftiomaticKit
+import SwiftiomaticTestSupport
+import Testing
+
+@Suite
+struct FlagDeepViewCompositionTests: RuleTesting {
+  private static func message(_ path: String, _ count: Int) -> String {
+    "'body' nests \(count) structural containers (\(path)). Extract an inner level into a 'View' type so SwiftUI can skip it"
+  }
+
+  @Test func guidanceIsConsider() {
+    #expect(FlagDeepViewComposition.guidance == .consider)
+  }
+
+  @Test func fontMenuBodyFlagged() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct FontMenu: View {
+        var body: some View {
+          1️⃣VStack {
+            TextField("Filter by name", text: $filter)
+            ScrollView(.vertical) {
+              LazyVStack(alignment: .leading, spacing: 1) {
+                ForEach(visibleRows) { FontPreview(row: $0) }
+              }
+              .padding(2)
+            }
+          }
+          .task { await load() }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message("VStack > ScrollView > LazyVStack > ForEach", 4))
+      ]
+    )
+  }
+
+  @Test func threeLevelsFlaggedOnce() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct FontList: View {
+        var body: some View {
+          1️⃣ScrollView {
+            LazyVStack {
+              ForEach(rows) { Text($0.name) }
+            }
+            HStack {
+              ForEach(tags) { Text($0) }
+            }
+          }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("ScrollView > LazyVStack > ForEach", 3))]
+    )
+  }
+
+  @Test func viewModifierBodyFlagged() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct Framed: ViewModifier {
+        func body(content: Content) -> some View {
+          1️⃣HStack { VStack { Group { content } } }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("HStack > VStack > Group", 3))]
+    )
+  }
+
+  @Test func twoLevelsNotFlagged() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct PopoverPicker: View {
+        var body: some View {
+          LabeledContent(label) {
+            Button { toggle() } label: {
+              HStack {
+                Text(description)
+                Image(systemName: "chevron.up.chevron.down")
+              }
+            }
+          }
+        }
+      }
+      """
+    )
+  }
+
+  @Test func siblingContainersDoNotAddUp() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct Card: View {
+        var body: some View {
+          VStack { Text("a") }
+            .overlay { HStack { Text("b") } }
+            .background { ZStack { Color.red } }
+        }
+      }
+      """
+    )
+  }
+
+  @Test func nonViewBodyNotFlagged() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct Response {
+        var body: some Sequence { VStack { HStack { ZStack { } } } }
+      }
+      """
+    )
+  }
+}

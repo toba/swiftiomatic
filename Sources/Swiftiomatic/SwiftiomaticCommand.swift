@@ -22,6 +22,7 @@ struct SwiftiomaticCommand: ParsableCommand {
         subcommands: [
             Doctor.self,
             DumpConfiguration.self,
+            Explain.self,
             Format.self,
             Lint.self,
             Link.self,

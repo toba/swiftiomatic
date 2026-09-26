@@ -57,7 +57,9 @@ final class StderrDiagnosticPrinter: Sendable {
         if let category = diagnostic.category {
             message += "\(ansiSGR(.boldMagenta))[\(category)] "
         }
-        message += "\(ansiSGR(.reset))\(ansiSGR(.bold))\(diagnostic.message)\(ansiSGR(.reset))\n"
+        message += "\(ansiSGR(.reset))\(ansiSGR(.bold))\(diagnostic.message)\(ansiSGR(.reset))"
+        if let status = diagnostic.changeStatus { message += " (\(status.rawValue))" }
+        message += "\n"
 
         printLock.withLock { _ in
             let stderr = FileHandleTextOutputStream(FileHandle.standardError)

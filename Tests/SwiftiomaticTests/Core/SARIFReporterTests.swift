@@ -188,4 +188,71 @@ struct SARIFLintReporterTests {
         #expect(result["ruleId"] as? String == "tool")
         #expect((result["locations"] as? [Any])?.isEmpty ?? true)
     }
+
+    @Test func evidenceMapsToRelatedLocationsWithRole() throws {
+        let reporter = makeReporter()
+        reporter.record(
+            SARIFLintReporter.Entry(
+                file: "/work/project/A.swift", line: 5, column: 1,
+                level: .warning, ruleID: "noNestedWithLock", message: "m",
+                evidence: [
+                    LintEvidence(
+                        role: .owner, file: "/work/project/A.swift", line: 2, column: 3,
+                        message: "outer lock"
+                    )
+                ]
+            )
+        )
+
+        let result = try #require(
+            (try onlyRun(try render(reporter))["results"] as? [[String: Any]])?.first
+        )
+        let related = try #require(result["relatedLocations"] as? [[String: Any]])
+        #expect(related.count == 1)
+        #expect(related[0]["id"] as? Int == 0)
+        #expect((related[0]["message"] as? [String: Any])?["text"] as? String == "outer lock")
+        #expect((related[0]["properties"] as? [String: Any])?["role"] as? String == "owner")
+        let region = (related[0]["physicalLocation"] as? [String: Any])?["region"] as? [String: Any]
+        #expect(region?["startLine"] as? Int == 2)
+    }
+
+    @Test func changeStatusMapsToBaselineState() throws {
+        let reporter = makeReporter()
+        for (line, status) in [(1, ChangeStatus.introduced), (2, .existing)] {
+            reporter.record(
+                SARIFLintReporter.Entry(
+                    file: "/work/project/A.swift", line: line, column: 1,
+                    level: .warning, ruleID: "r", message: "m", status: status
+                )
+            )
+        }
+        reporter.record(
+            SARIFLintReporter.Entry(
+                file: "/work/project/A.swift", line: 3, column: 1,
+                level: .warning, ruleID: "r", message: "m"
+            )
+        )
+
+        let results = try #require(try onlyRun(try render(reporter))["results"] as? [[String: Any]])
+        #expect(results.map { $0["baselineState"] as? String } == ["new", "unchanged", nil])
+    }
+
+    @Test func knownRuleDescriptorCarriesApplicabilityAndGuidance() throws {
+        let reporter = makeReporter()
+        reporter.record(
+            SARIFLintReporter.Entry(
+                file: "/work/project/A.swift", line: 1, column: 1,
+                level: .warning, ruleID: "noNestedWithLock", message: "m"
+            )
+        )
+
+        let driver = try #require(
+            (try onlyRun(try render(reporter))["tool"] as? [String: Any])?["driver"]
+                as? [String: Any]
+        )
+        let rule = try #require((driver["rules"] as? [[String: Any]])?.first)
+        let short = try #require(rule["shortDescription"] as? [String: Any])
+        #expect((short["text"] as? String)?.hasPrefix("Lint nested") == true)
+        #expect((rule["properties"] as? [String: Any])?["guidance"] as? String == "MUST")
+    }
 }

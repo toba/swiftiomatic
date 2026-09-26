@@ -13,7 +13,7 @@ struct NoSortFilterInForEachTests: RuleTesting {
       }
       """,
       findings: [
-        FindingSpec("1️⃣", message: "'.sorted' in 'ForEach' data is recomputed on every render — hoist into a stored or computed property"),
+        FindingSpec("1️⃣", message: "'.sorted' in 'ForEach' data is recomputed on every render. Store the result as state and update it when its inputs change"),
       ]
     )
   }
@@ -27,7 +27,7 @@ struct NoSortFilterInForEachTests: RuleTesting {
       }
       """,
       findings: [
-        FindingSpec("1️⃣", message: "'.filter' in 'ForEach' data is recomputed on every render — hoist into a stored or computed property"),
+        FindingSpec("1️⃣", message: "'.filter' in 'ForEach' data is recomputed on every render. Store the result as state and update it when its inputs change"),
       ]
     )
   }
@@ -41,7 +41,7 @@ struct NoSortFilterInForEachTests: RuleTesting {
       }
       """,
       findings: [
-        FindingSpec("1️⃣", message: "'.map' in 'ForEach' data is recomputed on every render — hoist into a stored or computed property"),
+        FindingSpec("1️⃣", message: "'.map' in 'ForEach' data is recomputed on every render. Store the result as state and update it when its inputs change"),
       ]
     )
   }

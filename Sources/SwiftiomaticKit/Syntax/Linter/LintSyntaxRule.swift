@@ -20,6 +20,7 @@ class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, InstanceSyntaxRule, @un
         return configurationKey(forTypeName: name)
     }
     class var group: ConfigurationGroup? { nil }
+    class var guidance: GuidanceLevel { group?.defaultGuidance ?? .should }
     class var defaultValue: V {
         var config = V()
         config.rewrite = false
