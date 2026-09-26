@@ -727,6 +727,15 @@
           ],
           "description" : "Single-return `if` statements followed by a final `return` should be expressed as an `if/else` expression.\n\nWhen one or more `if` statements each contain only a `return` and are followed by a trailing `return` , the sequence is converted into a single `if/else if/.../else` expression.\n\n```swift // Before if case .spaces = $0 { return true } if case .tabs = $0 { return true } return false\n\n// After if case .spaces = $0 { true } else if case .tabs = $0 { true } else { false } ```\n\nLint: A chain of early-return `if` statements raises a warning.\n\nRewrite: The chain is replaced with an `if/else` expression."
         },
+        "useOptionalMap" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Use `map` or `flatMap` on an optional instead of an optional binding that only returns a transform of the value or `nil`.\n\nAn `if let` or `guard let` whose one job is to return `f(value)` or `nil` restates what `Optional.map` does. The binding adds a name, a branch and a second `return`. The expression `optional.map { f($0) }` states the intent in one line. Use `flatMap` when `f` itself returns an optional.\n\nThe rule matches three shapes:\n\n- `if let x = y { return f(x) }` followed directly by `return nil`\n- `if let x = y { return f(x) } else { return nil }`\n- `guard let x = y else { return nil }` followed by `return f(x)` as the last statement\n\nThe shape must be the whole body of a function, initializer, accessor or closure. A binding that shares its body with other statements stays as it is. Examples are the last step of a cascade of `if let` casts and a `switch` case body.\n\nThe rule stays silent when the binding has more than one condition, uses `var`, binds `_`, or when the returned expression does not use the bound name, returns `nil`, or contains `await`. A `map` closure cannot suspend.\n\nLint: An optional binding that only returns a transform of the value or `nil` raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "useTernary" : {
           "allOf" : [
             {
@@ -759,6 +768,15 @@
       "additionalProperties" : false,
       "description" : "controlFlow rule group.",
       "properties" : {
+        "noDroppedCaughtError" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Keep the caught error when a `catch` clause throws a different error.\n\nA `catch` that throws a new error without the one it caught removes the original cause. A caller then sees only the new error and cannot find out which operation failed or why. Store the caught error in the new error, for example as an associated value, or log it before the throw.\n\nThe rule applies only when the `catch` has a value to keep: the implicit `error` constant, or a name that a catch pattern binds. A `catch` that matches a specific case or uses `is` binds no value, so the rule stays silent there. A `throw` inside a closure, a nested function or a nested `do` statement belongs to that inner scope, so the rule does not report it.\n\nLint: A `throw` in a `catch` body that never reads the caught error raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "noSortFilterInForEach" : {
           "allOf" : [
             {
@@ -840,6 +858,15 @@
             }
           ],
           "description" : "Convert types hosting only static members into enums.\n\nAn empty enum is the canonical way to create a namespace in Swift because it cannot be instantiated. Structs and classes that contain only static members serve the same purpose but can be accidentally instantiated.\n\nThis rule skips types with inheritance clauses, attributes, generic parameters, initializers, or any instance members.\n\nLint: A struct or final class containing only static members raises a warning.\n\nRewrite: The `struct` or `final class` keyword is replaced with `enum` ."
+        },
+        "flagObserverSkippedInInit" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an initializer assignment to a property whose `willSet` or `didSet` observer then does not run.\n\nSwift does not call a property's observers when the type's own initializer assigns the property. An observer that resets a cache, posts a notification or validates the value is therefore skipped for the first value. That is often correct, because the rest of the state is not ready yet. When the observer must run, assign the value from a `defer` block in the initializer, or from a method that the initializer calls.\n\nThe rule stays silent for a property that a `defer` block in the same initializer assigns, or that a method the initializer calls assigns. An assignment inside a closure or a nested function does not count, because it does not run as part of the initializer.\n\nLint: An initializer assignment to an observed stored property raises a warning.",
+          "unevaluatedProperties" : false
         },
         "markInitCoderUnavailable" : {
           "allOf" : [
@@ -1510,6 +1537,15 @@
         }
       ],
       "description" : "Lint mutation of the loop subject inside a `for-in` loop. Mutating the iterated collection while the iterator is live is undefined behavior in Swift's `Sequence` model and a frequent source of crashes for `Array` .\n\nDetection: the loop subject must be either a `DeclReferenceExprSyntax` (e.g. `for x in items` ) or a `MemberAccessExprSyntax` (e.g. `for x in self.items` ). Inside the body, any call of the form `<subject>.<mutator>(...)` where `<mutator>` is a known Array/Dictionary/ Set mutating method is flagged.",
+      "unevaluatedProperties" : false
+    },
+    "flagObserverSkippedInInit" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an initializer assignment to a property whose `willSet` or `didSet` observer then does not run.\n\nSwift does not call a property's observers when the type's own initializer assigns the property. An observer that resets a cache, posts a notification or validates the value is therefore skipped for the first value. That is often correct, because the rest of the state is not ready yet. When the observer must run, assign the value from a `defer` block in the initializer, or from a method that the initializer calls.\n\nThe rule stays silent for a property that a `defer` block in the same initializer assigns, or that a method the initializer calls assigns. An assignment inside a closure or a nested function does not count, because it does not run as part of the initializer.\n\nLint: An initializer assignment to an observed stored property raises a warning.",
       "unevaluatedProperties" : false
     },
     "flagPreviewProvider" : {
@@ -3045,6 +3081,15 @@
         }
       ],
       "description" : "Flag `dropFirst` on a `Data` value.\n\n`Data` is a value type over a copy-on-write buffer, and `dropFirst` hands back a new `Data` . A parse loop that drops one byte per pass therefore copies the rest of the buffer on every pass, which makes the loop quadratic in the input size. Advance an index instead, or take one slice and read through it.\n\nThe rule reads the type from the source alone. It collects the names the file declares as `Data` , through a type annotation, a `Data(...)` initializer or a parameter type, and it reports a `dropFirst` whose receiver is one of them. A receiver it cannot resolve stays quiet, so `dropFirst` on a `String` or an `Array` raises nothing.\n\nLint: A `dropFirst` call on a value the file declares as `Data` raises a warning.",
+      "unevaluatedProperties" : false
+    },
+    "noDroppedCaughtError" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Keep the caught error when a `catch` clause throws a different error.\n\nA `catch` that throws a new error without the one it caught removes the original cause. A caller then sees only the new error and cannot find out which operation failed or why. Store the caught error in the new error, for example as an associated value, or log it before the throw.\n\nThe rule applies only when the `catch` has a value to keep: the implicit `error` constant, or a name that a catch pattern binds. A `catch` that matches a specific case or uses `is` binds no value, so the rule stays silent there. A `throw` inside a closure, a nested function or a nested `do` statement belongs to that inner scope, so the rule does not report it.\n\nLint: A `throw` in a `catch` body that never reads the caught error raises a warning.",
       "unevaluatedProperties" : false
     },
     "noDuplicateConditions" : {
@@ -5741,6 +5786,15 @@
         }
       ],
       "description" : "Flag an `.onAppear` and an `.onChange(of:)` in one modifier chain that run the same action.\n\nThe pair runs the action once when the view appears and again each time the value changes. `.onChange(of: value, initial: true)` does the same with one modifier, and the reader sees at once that the action tracks the value. Two copies of the action can also drift apart when one of them is edited.\n\nThe actions match when their source text is the same after whitespace is removed. An `.onChange` action that names its old or new value does not match, because `.onAppear` has no such values. An `.onChange` that already passes `initial:` is not reported.\n\nLint: An `.onAppear` and an `.onChange(of:)` without `initial:` in the same modifier chain run the same closure or function.",
+      "unevaluatedProperties" : false
+    },
+    "useOptionalMap" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Use `map` or `flatMap` on an optional instead of an optional binding that only returns a transform of the value or `nil`.\n\nAn `if let` or `guard let` whose one job is to return `f(value)` or `nil` restates what `Optional.map` does. The binding adds a name, a branch and a second `return`. The expression `optional.map { f($0) }` states the intent in one line. Use `flatMap` when `f` itself returns an optional.\n\nThe rule matches three shapes:\n\n- `if let x = y { return f(x) }` followed directly by `return nil`\n- `if let x = y { return f(x) } else { return nil }`\n- `guard let x = y else { return nil }` followed by `return f(x)` as the last statement\n\nThe shape must be the whole body of a function, initializer, accessor or closure. A binding that shares its body with other statements stays as it is. Examples are the last step of a cascade of `if let` casts and a `switch` case body.\n\nThe rule stays silent when the binding has more than one condition, uses `var`, binds `_`, or when the returned expression does not use the bound name, returns `nil`, or contains `await`. A `map` closure cannot suspend.\n\nLint: An optional binding that only returns a transform of the value or `nil` raises a warning.",
       "unevaluatedProperties" : false
     },
     "useOrderedSetForUniqueAppend" : {
