@@ -59,13 +59,37 @@ struct TypeMemberIndex {
 
     /// The simple name of the innermost type or extension whose member block holds `node`
     static func enclosingTypeName(of node: some SyntaxProtocol) -> String? {
+        owningDeclaration(of: node).flatMap(typeName(of:))
+    }
+
+    /// The innermost type, extension or protocol declaration whose member block holds `node`
+    static func owningDeclaration(of node: some SyntaxProtocol) -> Syntax? {
         var current = node.parent
 
         while let cur = current {
-            if cur.is(MemberBlockSyntax.self), let owner = cur.parent { return typeName(of: owner) }
+            if cur.is(MemberBlockSyntax.self) { return cur.parent }
             current = cur.parent
         }
         return nil
+    }
+
+    /// The declaration that directly holds `member` , and every top-level declaration or extension
+    /// of the type named `typeName` in the same file
+    static func declarationRegions(
+        ofMember member: some SyntaxProtocol,
+        typeName: String
+    ) -> [any DeclGroupSyntax] {
+        var regions = member.root.as(SourceFileSyntax.self)?.statements.compactMap {
+            item -> any DeclGroupSyntax? in
+            guard let group = item.item.asProtocol(DeclGroupSyntax.self),
+                  Self.typeName(of: Syntax(group)) == typeName else { return nil }
+            return group
+        } ?? []
+
+        // A nested type is not a top-level statement, so add its own declaration
+        if let owner = owningDeclaration(of: member)?.asProtocol(DeclGroupSyntax.self),
+           !regions.contains(where: { $0.id == owner.id }) { regions.append(owner) }
+        return regions
     }
 
     /// The simple name a type declaration or an extension declares or extends

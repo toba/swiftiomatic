@@ -187,25 +187,30 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
     )
   }
 
-  @Test func bareForwardingToCustomRowFlagged() {
+  @Test func bareArgumentOfCustomRowNotFlagged() {
     assertLint(
       ForEachRowReadsOnlyElement.self,
       """
       struct CitationGroupForm: View {
         let citations: [Citation]
         let drag: (Node) -> Void
+        let canWrite: Bool
+        @State private var page = 0
 
         var body: some View {
           ForEach(citations.indices, id: \\.self) { index in
-            CitationForm(index: index, citations: 1️⃣citations, drag: self.2️⃣drag)
+            CitationForm(index: index, citations: citations, drag: self.drag)
           }
+          ForEach(items) { item in
+            ProjectItemRow(item: item, canWrite: canWrite)
+          }
+          ForEach(rowKeys) { keyed in IssueListItem(keyed: keyed, reachedEnd: showMore) }
         }
+
+        private func showMore() { page += 1 }
       }
       """,
-      findings: [
-        FindingSpec("1️⃣", message: Self.message("citations")),
-        FindingSpec("2️⃣", message: Self.message("drag")),
-      ]
+      findings: []
     )
   }
 

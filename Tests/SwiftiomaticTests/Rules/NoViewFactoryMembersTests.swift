@@ -131,12 +131,80 @@ struct NoViewFactoryMembersTests: RuleTesting {
     )
   }
 
-  @Test func nonViewTypeNotFlagged() {
+  @Test func nonViewTypeFlagged() {
     assertLint(
       NoViewFactoryMembers.self,
       """
       struct Factory {
-        func makeRow() -> some View { Text("x") }
+        1️⃣func makeRow() -> some View { Text("x") }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("makeRow"))]
+    )
+  }
+
+  @Test func protocolExtensionFactoryFlagged() {
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      protocol SymbolView: RawRepresentable<String> {
+        var tint: Color { get }
+        var symbol: Symbol { get }
+      }
+
+      extension SymbolView {
+        var label: String { rawValue.capitalized }
+        1️⃣func view(tinted: Bool = true) -> some View { Image(symbol).tinted(tint, when: tinted) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("view"))]
+    )
+  }
+
+  @Test func modelTypeExtensionFactoryFlagged() {
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      extension IssueTask {
+        1️⃣var badge: some View { IdentityBadge(id: id) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("badge"))]
+    )
+  }
+
+  @Test func fluentConcreteViewExtensionNotFlagged() {
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      extension Text {
+        func wrappingSubject() -> some View {
+          lineLimit(nil).fixedSize(horizontal: false, vertical: true)
+        }
+      }
+
+      extension Shape {
+        func outlined() -> some View { stroke(.red) }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func styleEntryPointsAndPreviewsNotFlagged() {
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      struct Pill: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View { configuration.label }
+      }
+
+      struct Card_Previews: PreviewProvider {
+        static var previews: some View { Card() }
+      }
+
+      protocol Erasing {
+        var erased: AnyView { get }
       }
       """,
       findings: []

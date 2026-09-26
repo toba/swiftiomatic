@@ -8,6 +8,10 @@ struct FlagWholeValueModelViewInputTests: RuleTesting {
     "'\(name)' stores the whole value model '\(type)' (\(count) stored properties) as an input. A change to any property updates this view. Pass only the properties the view reads"
   }
 
+  private static func partialMessage(_ name: String, _ type: String, _ read: String) -> String {
+    "'\(name)' stores the whole value '\(type)' as an input but reads only \(read). A change to any other property still updates this view. Pass only the properties the view reads"
+  }
+
   @Test func guidanceIsConsider() {
     #expect(FlagWholeValueModelViewInput.guidance == .consider)
   }
@@ -120,6 +124,53 @@ struct FlagWholeValueModelViewInputTests: RuleTesting {
       struct Page: View {
         let header: Header
         var body: some View { header }
+      }
+      """
+    )
+  }
+
+  @Test func outOfFileModelReadByPropertiesFlagged() {
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      private struct TagSummary: View {
+        1️⃣let tag: TagJSON
+
+        var body: some View {
+          VStack {
+            Text(tag.name)
+            if !tag.detail.isEmpty { Text(tag.detail) }
+            Text("\\(tag.issueCount) issues")
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣", message: Self.partialMessage("tag", "TagJSON", "'detail', 'issueCount', 'name'"))
+      ]
+    )
+  }
+
+  @Test func outOfFileInputUsedWholeNotFlagged() {
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct Row: View {
+        let tag: TagJSON
+        let other: TagJSON
+        let date: Date
+        let symbol: StatusSymbol
+
+        var body: some View {
+          VStack {
+            Text(tag.name); Text(tag.detail); Text(tag.owner)
+            TagEditor(tag: tag)
+            Text(other.name); Text(other.detail)
+            Text(date.year); Text(date.month); Text(date.day)
+            Text(symbol.a); symbol.b.c; symbol.d(); Text(symbol.e)
+          }
+        }
       }
       """
     )

@@ -12,6 +12,103 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     "'\(keyword)' loop in '\(member)' runs on every 'body' evaluation. Store the derived value and update it when its inputs change"
   }
 
+  private static func opaqueCall(_ function: String, _ collection: String) -> String {
+    "'\(function)' takes the collection '\(collection)' and runs on every 'body' evaluation. Store the derived value and update it when its inputs change"
+  }
+
+  @Test func sameFileStaticFunctionOnOtherTypeFollowed() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      enum SidebarRow {
+        case project(Project)
+
+        static func rows(projects: [Project]) -> [SidebarRow] {
+          projects.1️⃣map { SidebarRow.project($0) }
+        }
+      }
+
+      struct ProjectList: View {
+        let projects: [Project]
+
+        var body: some View {
+          List(sidebarRows) { row in Text("x") }
+        }
+
+        private var sidebarRows: [SidebarRow] {
+          SidebarRow.rows(projects: projects)
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.call("map", "SidebarRow.rows"))]
+    )
+  }
+
+  @Test func staticCallInsideFollowedStaticFunctionFollowed() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      enum Grouping {
+        static func sorted(_ projects: [Project]) -> [Project] {
+          projects.1️⃣sorted { $0.name < $1.name }
+        }
+      }
+
+      enum SidebarRow {
+        case project(Project)
+
+        static func rows(projects: [Project]) -> [SidebarRow] {
+          Self.loose(Grouping.sorted(projects))
+        }
+
+        static func loose(_ projects: [Project]) -> [SidebarRow] {
+          projects.2️⃣map { SidebarRow.project($0) }
+        }
+      }
+
+      struct ProjectList: View {
+        let projects: [Project]
+
+        var body: some View {
+          List(sidebarRows) { row in Text("x") }
+        }
+
+        private var sidebarRows: [SidebarRow] {
+          SidebarRow.rows(projects: projects)
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("sorted", "Grouping.sorted")),
+        FindingSpec("2️⃣", message: Self.call("map", "SidebarRow.loose")),
+      ]
+    )
+  }
+
+  @Test func outOfFileStaticFunctionTakingCollectionFlagged() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct ProjectList: View {
+        @FetchAll(ProjectFolder.all) private var folders: [ProjectFolder]
+        var projects: [Project]
+        let count: Int
+
+        var body: some View {
+          List(sidebarRows) { row in Text("x") }
+            .font(Font.system(size: CGFloat(count)))
+          Text(Formatter.format(count))
+        }
+
+        private var sidebarRows: [SidebarRow] {
+          SidebarRow.1️⃣rows(projects: projects, folders: folders)
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.opaqueCall("SidebarRow.rows", "projects"))]
+    )
+  }
+
   @Test func gutterVisibleMarkersFilterFlagged() {
     assertLint(
       NoCollectionWorkReachableFromBody.self,

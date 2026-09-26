@@ -12,6 +12,76 @@ struct ConstantForEachRowCountTests: RuleTesting {
     "'ForEach' row builds \(count) top-level views. Wrap them in one container or a row 'View' so each element makes one view"
   }
 
+  private static func variableHelper(_ name: String) -> String {
+    "'\(name)' builds a variable number of views, so this 'ForEach' row changes its view count. Give the helper one root view or extract a row 'View'"
+  }
+
+  @Test func helperInSwitchCaseFollowed() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      struct ProjectList: View {
+        var body: some View {
+          List {
+            ForEach(sidebarRows) { row in
+              switch row {
+                case let .folder(folder, held): 1️⃣folderRow(folder, holding: held)
+                case let .project(project): projectRow(project)
+              }
+            }
+          }
+        }
+
+        @ViewBuilder
+        private func folderRow(_ folder: Folder, holding held: [Project]) -> some View {
+          let isOpen = expansion(of: folder)
+          Button("x") { isOpen.wrappedValue.toggle() }
+          if isOpen.wrappedValue { ForEach(held) { projectRow($0) } }
+        }
+
+        private func projectRow(_ project: Project) -> some View {
+          Text(project.name)
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.variableHelper("folderRow"))]
+    )
+  }
+
+  @Test func helperAtTopLevelAndNestedHelperFollowed() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      struct Rows: View {
+        var body: some View {
+          ForEach(items) { item in 1️⃣row(item) }
+          ForEach(items) { item in self.2️⃣outer }
+          ForEach(items) { item in plain(item) }
+        }
+
+        @ViewBuilder private func row(_ item: Item) -> some View {
+          if item.isVisible { Text(item.name) }
+        }
+
+        @ViewBuilder private var outer: some View { inner }
+
+        @ViewBuilder private var inner: some View {
+          Text("a")
+          Text("b")
+        }
+
+        @ViewBuilder private func plain(_ item: Item) -> some View {
+          if item.isOn { Text("on") } else { Text("off") }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.variableHelper("row")),
+        FindingSpec("2️⃣", message: Self.variableHelper("outer")),
+      ]
+    )
+  }
+
   @Test func breadcrumbSeparatorFlagged() {
     assertLint(
       ConstantForEachRowCount.self,

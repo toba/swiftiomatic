@@ -12,7 +12,9 @@ import SwiftSyntax
 ///
 /// - a closure that declares `@MainActor`,
 /// - a declaration that carries `@MainActor`, and everything inside it,
-/// - a SwiftUI type (`View`, `ViewModifier`, `App`, `Scene`) or an AppKit or UIKit representable.
+/// - a SwiftUI type (`View`, `ViewModifier`, `App`, `Scene`, `ToolbarContent`, `Commands`) or an
+///   AppKit or UIKit representable,
+/// - an extension of `View`, whose methods are view modifiers.
 ///
 /// `Task.detached { }` and `Task.immediateDetached { }` always fire. A detached task inherits no
 /// priority, so the exemption does not apply.
@@ -25,7 +27,7 @@ final class RequireTaskPriority: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
 
     /// The types whose members run on the main actor to service UI events.
     private static let uiTypes: Set<String> = [
-        "View", "ViewModifier", "App", "Scene",
+        "View", "ViewModifier", "App", "Scene", "ToolbarContent", "Commands",
         "NSViewRepresentable", "UIViewRepresentable",
         "NSViewControllerRepresentable", "UIViewControllerRepresentable",
     ]
@@ -65,6 +67,11 @@ final class RequireTaskPriority: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
             if let group = syntax.asProtocol(DeclGroupSyntax.self),
                let inheritance = group.inheritanceClause,
                Self.uiTypes.contains(where: inheritance.contains(named:)) { return true }
+
+            if let ext = syntax.as(ExtensionDeclSyntax.self),
+               ["View", "SwiftUI.View"].contains(ext.extendedType.trimmedDescription) {
+                return true
+            }
             current = syntax.parent
         }
         return false

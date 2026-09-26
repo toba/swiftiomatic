@@ -12,25 +12,15 @@ import SwiftSyntax
 /// - A method or computed property that itself reads only allowed members. It is a pure helper.
 /// - A projected binding such as `$selection` . Forwarding it to a row `View` does not read the
 ///   value, and the row that writes the selection needs it.
-/// - A read inside a derived argument of the custom row `View` the closure builds, such as
-///   `TagRow(tag: tag, isSelected: selection == tag)` . The row gets a small value and SwiftUI
-///   skips it when the value does not change. A bare `citations: citations` still counts, because
-///   the row then depends on the whole value.
+/// - A read inside an argument of the custom row `View` the closure builds, such as
+///   `TagRow(tag: tag, isSelected: selection == tag)` or `ItemRow(item: item, canWrite: canWrite)`
+///   . The row stores the value as an input, and SwiftUI skips it when the value does not change.
+///   This is the fix the finding recommends. Whether the input is too large a value is the concern
+///   of `flagWholeValueModelViewInput` .
 ///
 /// Lint: A row closure reads a same-type member outside those cases.
 final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
-
-    /// SwiftUI views that a row closure builds inline, as opposed to a custom row `View`
-    private static let builtInViews: Set<String> = [
-        "Button", "Canvas", "Capsule", "Circle", "Color", "ColorPicker", "ControlGroup",
-        "DatePicker", "DisclosureGroup", "Divider", "EmptyView", "ForEach", "Gauge",
-        "GeometryReader", "Grid", "GridRow", "Group", "HStack", "Image", "Label", "LabeledContent",
-        "LazyHGrid", "LazyHStack", "LazyVGrid", "LazyVStack", "Link", "List", "Menu",
-        "NavigationLink", "OutlineGroup", "Picker", "ProgressView", "Rectangle", "RoundedRectangle",
-        "ScrollView", "Section", "SecureField", "ShareLink", "Slider", "Spacer", "Stepper", "Text",
-        "TextEditor", "TextField", "TimelineView", "Toggle", "VStack", "ViewThatFits", "ZStack",
-    ]
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let closure = node.rowContentClosure(includingList: true),
@@ -47,7 +37,7 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
         for reference in references {
             if reference.spelling.hasPrefix("$") { continue }
             if stability.isStable(reference.members) { continue }
-            if Self.isDerivedRowArgument(reference.node, in: closure) { continue }
+            if Self.isRowArgument(reference.node, in: closure) { continue }
             guard reported.insert(reference.name).inserted else { continue }
             diagnose(.readsOutsideElement(reference.name), on: reference.node)
         }
@@ -97,24 +87,19 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
         }
     }
 
-    /// Whether `node` sits inside a derived argument of the custom row `View` that `closure` builds
-    private static func isDerivedRowArgument(
+    /// Whether `node` sits inside an argument of the custom row `View` that `closure` builds
+    private static func isRowArgument(
         _ node: DeclReferenceExprSyntax,
         in closure: ClosureExprSyntax
     ) -> Bool {
-        // `self.name` reads as the whole member access
-        var read = Syntax(node)
-
-        if let access = node.parent?.as(MemberAccessExprSyntax.self), access.declName.id == node.id
-        { read = Syntax(access) }
-        var current = read
+        var current = Syntax(node)
 
         while let parent = current.parent {
             if parent.is(ClosureExprSyntax.self) { return false }
 
             if let argument = parent.as(LabeledExprSyntax.self),
                let call = argument.parent?.parent?.as(FunctionCallExprSyntax.self),
-               isCustomRow(call, in: closure) { return argument.expression.id != read.id }
+               isCustomRow(call, in: closure) { return true }
             current = parent
         }
         return false
@@ -127,7 +112,7 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
     ) -> Bool {
         guard let name = call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text,
               name.first?.isUppercase == true,
-              !builtInViews.contains(name) else { return false }
+              !SwiftUIBuiltInViews.names.contains(name) else { return false }
         var expression = Syntax(call)
 
         while let parent = expression.parent {

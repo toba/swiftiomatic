@@ -139,6 +139,38 @@ struct RequireTaskPriorityTests: RuleTesting {
         )
     }
 
+    @Test func toolbarContentBodyNotFlagged() {
+        assertLint(
+            RequireTaskPriority.self,
+            """
+            struct IssueListToolbar: ToolbarContent {
+              var body: some ToolbarContent {
+                ToolbarItem {
+                  Button("Refresh") { Task { await refresh() } }
+                }
+              }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func viewExtensionModifierNotFlagged() {
+        assertLint(
+            RequireTaskPriority.self,
+            """
+            extension View {
+              func attachments(_ urls: [URL]) -> some View {
+                onChange(of: urls) { _, new in
+                  Task { for url in new { await load(url) } }
+                }
+              }
+            }
+            """,
+            findings: []
+        )
+    }
+
     @Test func otherTaskMembersNotFlagged() {
         assertLint(
             RequireTaskPriority.self,

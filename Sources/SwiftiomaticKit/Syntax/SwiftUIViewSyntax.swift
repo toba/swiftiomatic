@@ -98,6 +98,23 @@ extension TypeSyntax {
         return self
     }
 
+    /// The closure type under optional, attribute and single-element parenthesis layers, if any
+    ///
+    /// `(@escaping () -> Void)?` gives `() -> Void` .
+    var functionType: FunctionTypeSyntax? {
+        if let function = self.as(FunctionTypeSyntax.self) { return function }
+        if let attributed = self.as(AttributedTypeSyntax.self) { return attributed.baseType.functionType }
+        if let optional = self.as(OptionalTypeSyntax.self) { return optional.wrappedType.functionType }
+        if let unwrapped = self.as(ImplicitlyUnwrappedOptionalTypeSyntax.self) {
+            return unwrapped.wrappedType.functionType
+        }
+        if let tuple = self.as(TupleTypeSyntax.self), tuple.elements.count == 1,
+           let element = tuple.elements.first, element.firstName == nil {
+            return element.type.functionType
+        }
+        return nil
+    }
+
     /// The simple name of an identifier type, after optional layers, or `nil` for any other type
     var simpleTypeName: String? {
         unwrappingOptional.as(IdentifierTypeSyntax.self)?.name.text
@@ -148,6 +165,28 @@ extension ExprSyntax {
         let root = assignmentRoot
         if let reference = root.as(DeclReferenceExprSyntax.self) { return reference.baseName.text }
         return root.as(MemberAccessExprSyntax.self)?.declName.baseName.text
+    }
+
+    /// The reference that a bare `name` or `self.name` spells, or `nil` for any other shape
+    var selfMemberReference: DeclReferenceExprSyntax? {
+        if let bare = self.as(DeclReferenceExprSyntax.self) { return bare }
+        guard let access = self.as(MemberAccessExprSyntax.self),
+              access.base?.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind == .keyword(.self)
+        else { return nil }
+        return access.declName
+    }
+}
+
+extension DeclReferenceExprSyntax {
+    /// The `self.name` access when this reference is its member, or this reference otherwise
+    ///
+    /// A rule that inspects how a member is used starts from this node, so `self.name` and `name`
+    /// read the same.
+    var selfQualifiedUse: Syntax {
+        if let access = parent?.as(MemberAccessExprSyntax.self), access.declName.id == id {
+            return Syntax(access)
+        }
+        return Syntax(self)
     }
 }
 
@@ -200,4 +239,22 @@ extension VariableDeclSyntax {
             return (name, type)
         }
     }
+}
+
+/// The SwiftUI views, shapes and controls that ship with the framework
+///
+/// A rule uses the list to tell a custom `View` , which stores its inputs and can be skipped, from a
+/// built-in view that renders or lays out what it receives.
+enum SwiftUIBuiltInViews {
+    static let names: Set<String> = [
+        "AsyncImage", "Button", "Canvas", "Capsule", "Chart", "Circle", "Color", "ColorPicker",
+        "ContentUnavailableView", "ControlGroup", "DatePicker", "DisclosureGroup", "Divider",
+        "EmptyView", "ForEach", "Form", "Gauge", "GeometryReader", "Grid", "GridRow", "Group",
+        "GroupBox", "HStack", "Image", "Label", "LabeledContent", "LazyHGrid", "LazyHStack",
+        "LazyVGrid", "LazyVStack", "Link", "List", "Map", "Menu", "NavigationLink",
+        "NavigationSplitView", "NavigationStack", "OutlineGroup", "Picker", "ProgressView",
+        "Rectangle", "RoundedRectangle", "ScrollView", "Section", "SecureField", "ShareLink",
+        "Slider", "Spacer", "Stepper", "Tab", "TabView", "Table", "Text", "TextEditor", "TextField",
+        "TimelineView", "Toggle", "VStack", "VideoPlayer", "ViewThatFits", "ZStack",
+    ]
 }
