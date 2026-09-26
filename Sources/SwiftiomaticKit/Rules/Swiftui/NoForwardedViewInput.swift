@@ -6,12 +6,14 @@ import SwiftSyntax
 /// makes SwiftUI evaluate the parent's `body` as well as the child's. Build the child in the view
 /// that owns the value and pass it in as content, or let the child read the value from its source.
 ///
-/// A binding and a closure are exempt, because a child needs them to write back or to act. So is an
-/// input that the view reads, adapts or passes to two different children. A built-in SwiftUI view
+/// A binding and a closure are exempt, because a child needs them to write back or to act. A
+/// binding is an `@Binding` property or a stored `Binding<Value>` . An input that the view reads,
+/// adapts or passes to two different children is exempt too. A built-in SwiftUI view
 /// such as `Text` or `Image` renders the value, so passing it there counts as a read. A callee
 /// that the file declares as a type that is not a `View` or a `ViewModifier` takes no content, so
 /// passing the value there counts as a read. An input whose value an initializer also passes to a
-/// property wrapper's storage, as in `_items = Fetch(..., since: start)` , is exempt.
+/// property wrapper's storage, as in `_items = Fetch(..., since: start)` , is exempt. The target
+/// must be `_name` or `self._name` , and the value must read the input as `name` or `self.name` .
 ///
 /// Lint: Every use of a stored value input of a view type, outside its initializers, is an argument
 /// of one call to an uppercase callee, passed as `name` or `self.name` .
@@ -26,7 +28,8 @@ final class NoForwardedViewInput: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         let regions = TypeMemberIndex.declarationRegions(ofMember: node, typeName: viewName)
         let types = context.typeMembers(around: node).types
 
-        for input in node.viewInputs where input.type.functionType == nil {
+        for input in node.viewInputs
+        where input.type.functionType == nil && !Self.isBinding(input.type) {
             guard !Self.feedsWrapperStorage(input.name, regions: regions) else { continue }
 
             if let child = Self.forwardingChild(of: input.name, entry: entry, regions: regions),
@@ -59,40 +62,56 @@ final class NoForwardedViewInput: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         return child
     }
 
-    /// Whether an initializer assigns wrapper storage, such as `_items` , from a value that reads
-    /// `name`
+    /// Whether `type` is `Binding<Value>` or `SwiftUI.Binding<Value>` , optional or not
+    private static func isBinding(_ type: TypeSyntax) -> Bool {
+        let type = type.unwrappingOptional
+        if let identifier = type.as(IdentifierTypeSyntax.self) {
+            return identifier.name.text == "Binding"
+        }
+        return type.as(MemberTypeSyntax.self)?.name.text == "Binding"
+    }
+
+    /// Whether an initializer assigns wrapper storage, such as `_items` or `self._items` , from a
+    /// value that reads `name`
     private static func feedsWrapperStorage(_ name: String, regions: [any DeclGroupSyntax]) -> Bool {
         for region in regions {
             for item in region.memberBlock.members {
                 guard let initializer = item.decl.as(InitializerDeclSyntax.self),
                       let body = initializer.body else { continue }
+                let writes = InfixOperatorExprSyntax.assignments(
+                    in: body, compound: false, enteringClosures: true)
 
-                for assignment in body.tokens(viewMode: .sourceAccurate)
-                where assignment.tokenKind == .binaryOperator("=") || assignment.tokenKind == .equal {
-                    guard let infix = assignment.parent?.parent?.as(InfixOperatorExprSyntax.self)
-                            ?? assignment.parent?.as(InfixOperatorExprSyntax.self),
-                          let target = infix.leftOperand.as(DeclReferenceExprSyntax.self)
-                            ?? infix.leftOperand.as(MemberAccessExprSyntax.self).map({ $0.declName }),
-                          target.baseName.text.hasPrefix("_") else { continue }
-
-                    if infix.rightOperand.tokens(viewMode: .sourceAccurate).contains(where: {
-                        $0.tokenKind == .identifier(name)
-                    }) { return true }
-                }
+                if writes.contains(where: { write in
+                    write.leftOperand.selfMemberReference?.baseName.text.hasPrefix("_") == true
+                        && reads(name, in: write.rightOperand)
+                }) { return true }
             }
         }
         return false
     }
 
-    /// The callee name when `reference` is a whole argument of a call to an uppercase callee
+    /// Whether `expression` reads `name` as a bare name or as `self.name`
+    ///
+    /// An argument label such as `filter:` is not a read, and neither is a member of another base,
+    /// such as `other.name` or `$0.name` .
+    private static func reads(_ name: String, in expression: ExprSyntax) -> Bool {
+        expression.tokens(viewMode: .sourceAccurate).contains { token in
+            guard token.tokenKind == .identifier(name),
+                  let reference = token.parent?.as(DeclReferenceExprSyntax.self),
+                  reference.baseName.id == token.id else { return false }
+            guard let access = reference.parent?.as(MemberAccessExprSyntax.self),
+                  access.declName.id == reference.id else { return true }
+            return access.base?.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind
+                == .keyword(.self)
+        }
+    }
+
+    /// The callee name when `reference` is a whole argument of a call to a custom view type
     private static func forwardedCallee(_ reference: DeclReferenceExprSyntax) -> String? {
         guard let labeled = reference.selfQualifiedUse.parent?.as(LabeledExprSyntax.self),
               let call = labeled.parent?.parent?.as(FunctionCallExprSyntax.self),
-              let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text
-                ?? call.calledExpression.as(GenericSpecializationExprSyntax.self)?.expression
-                .as(DeclReferenceExprSyntax.self)?.baseName.text,
-              callee.first?.isUppercase == true,
-              !SwiftUIBuiltInViews.names.contains(callee) else { return nil }
+              let callee = call.constructedTypeName,
+              SwiftUIBuiltInViews.isCustomViewName(callee) else { return nil }
         return callee
     }
 }

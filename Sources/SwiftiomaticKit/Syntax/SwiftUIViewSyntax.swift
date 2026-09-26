@@ -177,6 +177,52 @@ extension ExprSyntax {
     }
 }
 
+extension InfixOperatorExprSyntax {
+    /// The assignments inside `node` , in source order
+    ///
+    /// - Parameters:
+    ///   - compound: Whether a compound assignment such as `+=` also counts. When it is `false` ,
+    ///     only a plain `=` counts.
+    ///   - enteringClosures: Whether the search enters closures inside `node` . When `node` is a
+    ///     closure itself, the search always enters it.
+    static func assignments(
+        in node: some SyntaxProtocol,
+        compound: Bool,
+        enteringClosures: Bool
+    ) -> [InfixOperatorExprSyntax] {
+        let finder = AssignmentFinder(
+            root: node.id, compound: compound, enteringClosures: enteringClosures)
+        finder.walk(node)
+        return finder.assignments
+    }
+
+    private final class AssignmentFinder: SyntaxVisitor {
+        let root: SyntaxIdentifier
+        let compound: Bool
+        let enteringClosures: Bool
+        var assignments: [InfixOperatorExprSyntax] = []
+
+        init(root: SyntaxIdentifier, compound: Bool, enteringClosures: Bool) {
+            self.root = root
+            self.compound = compound
+            self.enteringClosures = enteringClosures
+            super.init(viewMode: .sourceAccurate)
+        }
+
+        override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
+            let matches = compound
+                ? node.operator.isAssignmentOperator
+                : node.operator.is(AssignmentExprSyntax.self)
+            if matches { assignments.append(node) }
+            return .visitChildren
+        }
+
+        override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+            enteringClosures || node.id == root ? .visitChildren : .skipChildren
+        }
+    }
+}
+
 extension DeclReferenceExprSyntax {
     /// The `self.name` access when this reference is its member, or this reference otherwise
     ///
@@ -213,10 +259,37 @@ extension FunctionCallExprSyntax {
 
 extension VariableDeclSyntax {
     /// Property wrappers whose value the view owns or reads from SwiftUI, not from its parent
-    private static let ownedWrappers: Set<String> = [
+    static let ownedWrappers: Set<String> = [
         "State", "StateObject", "Environment", "EnvironmentObject", "FocusState", "FocusedValue",
         "FocusedObject", "AppStorage", "SceneStorage", "Namespace", "Query", "GestureState",
         "ScaledMetric", "AccessibilityFocusState",
+    ]
+
+    /// Property wrappers that project state a parent or a focused view owns
+    ///
+    /// A write through one of these changes the state of its owner.
+    static let bindingWrappers: Set<String> = ["Binding", "FocusedBinding"]
+
+    /// Property wrappers whose storage SwiftUI installs after the initializer returns
+    ///
+    /// The set is `ownedWrappers` plus `bindingWrappers` .
+    static let dynamicPropertyWrappers: Set<String> =
+        Self.ownedWrappers.union(Self.bindingWrappers)
+
+    /// The owned wrappers whose storage SwiftUI installs for the view itself
+    ///
+    /// A value that a parent passes through the memberwise initializer only seeds this storage
+    /// once. The set is a subset of `ownedWrappers` .
+    static let installedStorageWrappers: Set<String> = [
+        "State", "StateObject", "AppStorage", "SceneStorage", "FocusState", "GestureState",
+    ]
+
+    /// The owned wrappers that keep state for one view identity across updates
+    ///
+    /// When the identity of the view moves to a different element, this state moves with it. The
+    /// set is a subset of `ownedWrappers` .
+    static let identityStateWrappers: Set<String> = [
+        "State", "FocusState", "StateObject", "AccessibilityFocusState",
     ]
 
     /// The stored instance properties of a view declaration that a parent passes in
@@ -241,11 +314,104 @@ extension VariableDeclSyntax {
     }
 }
 
+extension ExprSyntax {
+    /// The expression that a chain of modifier calls starts from
+    ///
+    /// For `Row(tag: tag).padding().onTapGesture { }` the root is the call `Row(tag: tag)` . A call
+    /// whose callee is a member access with a base counts as a modifier, so the walk steps to that
+    /// base. An expression that is not such a call is its own root.
+    var modifierChainRoot: ExprSyntax {
+        var current = self
+
+        while let call = current.as(FunctionCallExprSyntax.self),
+              let base = call.calledExpression.as(MemberAccessExprSyntax.self)?.base {
+            current = base
+        }
+        return current
+    }
+}
+
+extension FunctionCallExprSyntax {
+    /// The name of the type that this call constructs, or `nil` when the callee does not name an
+    /// uppercase type
+    ///
+    /// The name is the last component of the callee after `.init` and generic arguments are
+    /// removed. `Binding(get:set:)` , `Binding<Int>(get:set:)` , `Binding.init(get:set:)` and
+    /// `SwiftUI.Binding(get:set:)` all give `Binding` .
+    var constructedTypeName: String? {
+        var callee = calledExpression
+
+        if let member = callee.as(MemberAccessExprSyntax.self),
+           member.declName.baseName.tokenKind == .keyword(.`init`),
+           let base = member.base { callee = base }
+
+        if let generic = callee.as(GenericSpecializationExprSyntax.self) {
+            callee = generic.expression
+        }
+        let name: String? =
+            if let reference = callee.as(DeclReferenceExprSyntax.self) {
+                reference.baseName.text
+            } else if let member = callee.as(MemberAccessExprSyntax.self), member.base != nil {
+                member.declName.baseName.text
+            } else {
+                nil
+            }
+        guard let name, name.first?.isUppercase == true else { return nil }
+        return name
+    }
+}
+
+extension ClosureExprSyntax {
+    /// Calls whose closures run in response to an event rather than during `body`
+    ///
+    /// A modifier whose name is `on` followed by an uppercase letter, such as `onTapGesture` ,
+    /// also counts. `runsAfterBody` checks that shape separately.
+    private static let deferredCalls: Set<String> = [
+        "Task", "immediate", "detached", "immediateDetached", "task", "refreshable",
+        "dropDestination", "draggable", "withAnimation",
+    ]
+
+    /// Argument labels that pass a closure to run later
+    private static let deferredLabels: Set<String> = ["action", "perform", "set"]
+
+    /// Whether this closure runs after the `body` evaluation that builds it
+    ///
+    /// A closure runs later when it is the action of an event modifier such as `.onTapGesture` or
+    /// `.task` , the operation of a `Task` , or an argument labeled `action` , `perform` or `set` .
+    /// A call whose name ends in `Button` runs its trailing closure later, unless the call also
+    /// has an `action:` argument. `Button(action:label:)` takes its label as the trailing
+    /// closure or as `label:` , and the label runs during `body` .
+    var runsAfterBody: Bool {
+        guard let call = owningCall else { return false }
+        let label = parent?.as(LabeledExprSyntax.self)?.label?.text
+        if let label, Self.deferredLabels.contains(label) { return true }
+
+        if let task = call.taskCall,
+           task.factory.map({ FunctionCallExprSyntax.taskFactories.contains($0) }) ?? true {
+            return true
+        }
+        guard let name = call.calleeBaseName else { return false }
+
+        if name.hasSuffix("Button") {
+            guard label == nil else { return false }
+            return !call.arguments.contains { $0.label?.text == "action" }
+        }
+        if name.hasPrefix("on"), name.dropFirst(2).first?.isUppercase == true { return true }
+        return Self.deferredCalls.contains(name)
+    }
+}
+
 /// The SwiftUI views, shapes and controls that ship with the framework
 ///
 /// A rule uses the list to tell a custom `View` , which stores its inputs and can be skipped, from a
 /// built-in view that renders or lays out what it receives.
 enum SwiftUIBuiltInViews {
+    /// Whether `name` can name a custom `View` : it starts with an uppercase letter and is not a
+    /// built-in view
+    static func isCustomViewName(_ name: String) -> Bool {
+        name.first?.isUppercase == true && !names.contains(name)
+    }
+
     static let names: Set<String> = [
         "AsyncImage", "Button", "Canvas", "Capsule", "Chart", "Circle", "Color", "ColorPicker",
         "ContentUnavailableView", "ControlGroup", "DatePicker", "DisclosureGroup", "Divider",

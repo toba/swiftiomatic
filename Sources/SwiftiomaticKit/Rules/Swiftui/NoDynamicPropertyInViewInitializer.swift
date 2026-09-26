@@ -7,6 +7,11 @@ import SwiftSyntax
 /// `citations.update(...)` on a `@State` model goes to a copy that SwiftUI then discards. Store the
 /// inputs in the initializer, and do the work in `body` , in `task(id:)` , or in the parent.
 ///
+/// A `@Binding` or `@FocusedBinding` is different. After `_value = value` , a read gives the current
+/// state of its owner, so the rule does not report a read. A write goes to the state of the parent
+/// while the parent evaluates its `body` , so the rule reports each assignment through the binding
+/// and each `&name` argument.
+///
 /// The rule applies to any struct whose stored properties carry a dynamic property wrapper, so it
 /// also covers a view that conforms to `View` through a protocol declared in another file. These
 /// uses are not flagged:
@@ -16,18 +21,12 @@ import SwiftSyntax
 ///   `@State private var size: Double`
 /// - a parameter or local that shadows the property name
 ///
-/// Lint: An initializer uses a property that carries `@State` , `@Binding` , `@Environment` ,
-/// `@FocusState` , `@AppStorage` or another dynamic property wrapper.
+/// Lint: An initializer uses a property that carries `@State` , `@Environment` , `@FocusState` ,
+/// `@AppStorage` or another dynamic property wrapper, or writes through a `@Binding` or
+/// `@FocusedBinding` property.
 final class NoDynamicPropertyInViewInitializer: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
     override class var guidance: GuidanceLevel { .should }
-
-    /// Wrappers whose storage SwiftUI installs after the initializer returns
-    private static let dynamicWrappers: Set<String> = [
-        "State", "Binding", "Environment", "EnvironmentObject", "StateObject", "FocusState",
-        "AccessibilityFocusState", "FocusedValue", "FocusedBinding", "FocusedObject", "AppStorage",
-        "SceneStorage", "GestureState", "Namespace", "ScaledMetric", "Query",
-    ]
 
     /// Wrappers with a zero-argument initializer, so an assignment in `init` is always a change
     private static let defaultedWrappers: Set<String> = [
@@ -74,6 +73,14 @@ final class NoDynamicPropertyInViewInitializer: LintSyntaxRule<LintOnlyValue>, @
                     == .keyword(.self)
                 else { continue }
             } else if !projected, shadowed.contains(name) { continue }
+
+            // A binding reads the state of its owner, so only a write through it is a problem
+            if VariableDeclSyntax.bindingWrappers.contains(property.wrapper) {
+                if Self.isWrite(use) {
+                    diagnose(.parentStateWriteInInitializer(name, property.wrapper), on: use)
+                }
+                continue
+            }
             if !projected, property.assignmentInitializes, Self.isAssignmentTarget(use) { continue }
 
             diagnose(.dynamicPropertyInInitializer(name, property.wrapper), on: use)
@@ -91,7 +98,7 @@ final class NoDynamicPropertyInViewInitializer: LintSyntaxRule<LintOnlyValue>, @
             for member in overloads where member.kind == .storedProperty && !member.isStatic {
                 guard let variable = member.declaration.as(VariableDeclSyntax.self),
                     let wrapper = variable.attributes.firstAttributeName,
-                    dynamicWrappers.contains(wrapper) else { continue }
+                    VariableDeclSyntax.dynamicPropertyWrappers.contains(wrapper) else { continue }
                 let binding = variable.bindings.first {
                     $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == name
                 }
@@ -122,6 +129,29 @@ final class NoDynamicPropertyInViewInitializer: LintSyntaxRule<LintOnlyValue>, @
         return names
     }
 
+    /// Whether `use` is the root of an assignment target, as in `name = value` ,
+    /// `name.field += 1` or `$name.wrappedValue = value` , or is passed `inout` as `&name`
+    private static func isWrite(_ use: Syntax) -> Bool {
+        var target = use
+
+        while let parent = target.parent {
+            if let access = parent.as(MemberAccessExprSyntax.self), access.base?.id == target.id {
+                target = parent
+            } else if let subscriptCall = parent.as(SubscriptCallExprSyntax.self),
+                      subscriptCall.calledExpression.id == target.id {
+                target = parent
+            } else if parent.is(OptionalChainingExprSyntax.self)
+                        || parent.is(ForceUnwrapExprSyntax.self) {
+                target = parent
+            } else {
+                break
+            }
+        }
+        if target.parent?.is(InOutExprSyntax.self) == true { return true }
+        guard let infix = target.parent?.as(InfixOperatorExprSyntax.self) else { return false }
+        return infix.leftOperand.id == target.id && infix.operator.isAssignmentOperator
+    }
+
     /// Whether `use` is the whole target of a plain `=` assignment
     private static func isAssignmentTarget(_ use: Syntax) -> Bool {
         guard let infix = use.parent?.as(InfixOperatorExprSyntax.self) else { return false }
@@ -130,6 +160,12 @@ final class NoDynamicPropertyInViewInitializer: LintSyntaxRule<LintOnlyValue>, @
 }
 
 fileprivate extension Finding.Message {
+    static func parentStateWriteInInitializer(_ name: String, _ wrapper: String)
+        -> Finding.Message
+    {
+        "'\(name)' is a '@\(wrapper)' property. The initializer writes through it to the state of the parent while the parent builds this view. Move the write to the parent, or to an action or 'task(id:)'"
+    }
+
     static func dynamicPropertyInInitializer(_ name: String, _ wrapper: String) -> Finding.Message {
         "'\(name)' is a '@\(wrapper)' property. The initializer uses it before SwiftUI installs its storage, so it sees a default value and loses any change. Move the work to 'body', 'task(id:)' or the parent"
     }

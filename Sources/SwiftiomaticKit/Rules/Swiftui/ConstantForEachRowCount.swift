@@ -69,18 +69,10 @@ final class ConstantForEachRowCount: LintSyntaxRule<LintOnlyValue>, @unchecked S
 
     /// The name of the custom `View` that `view` builds, with or without modifiers applied to it
     private static func customViewName(_ view: ExprSyntax) -> String? {
-        var current: ExprSyntax? = view
-
-        while let call = current?.as(FunctionCallExprSyntax.self) {
-            if let reference = call.calledExpression.as(DeclReferenceExprSyntax.self) {
-                let name = reference.baseName.text
-                guard name.first?.isUppercase == true,
-                      !SwiftUIBuiltInViews.names.contains(name) else { return nil }
-                return name
-            }
-            current = call.calledExpression.as(MemberAccessExprSyntax.self)?.base
-        }
-        return nil
+        guard let name = view.modifierChainRoot.as(FunctionCallExprSyntax.self)?
+            .calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text,
+              SwiftUIBuiltInViews.isCustomViewName(name) else { return nil }
+        return name
     }
 
     /// The statements of the `body` property of a `View` type

@@ -35,6 +35,25 @@ struct UseViewExtensionForCustomModifierTests: RuleTesting {
     )
   }
 
+  @Test func explicitInitializerFlagged() {
+    assertLint(
+      UseViewExtensionForCustomModifier.self,
+      """
+      struct Row: View {
+        var body: some View {
+          Text("x")
+            .1️⃣modifier(DraggableRow.init(height: 4))
+            .2️⃣modifier(CloudSharingSheet<Project>.init(isPresented: $sharing))
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message("DraggableRow")),
+        FindingSpec("2️⃣", message: Self.message("CloudSharingSheet")),
+      ]
+    )
+  }
+
   @Test func viewExtensionWrapperNotFlagged() {
     assertLint(
       UseViewExtensionForCustomModifier.self,

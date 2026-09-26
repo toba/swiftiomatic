@@ -131,17 +131,6 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         }
     }
 
-    /// Calls whose closures run in response to an event rather than during `body`
-    private static let deferredClosureCalls: Set<String> = [
-        "Task", "immediate", "detached", "onTapGesture", "onLongPressGesture", "onAppear",
-        "onDisappear", "task", "onChange", "onSubmit", "onReceive", "refreshable", "onHover",
-        "onEnded", "onChanged", "onDelete", "onMove", "onInsert", "onDrop", "onKeyPress",
-        "onOpenURL", "onCommand", "dropDestination", "onPreferenceChange", "withAnimation",
-    ]
-
-    /// Argument labels that pass a closure to run later
-    private static let deferredClosureLabels: Set<String> = ["action", "perform"]
-
     /// Whether a use of the whole value leaves the view's `body` reading only properties
     ///
     /// A use inside a closure that runs later, such as a `Button` action, does not make `body`
@@ -162,26 +151,12 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         var current = use.parent
 
         while let cur = current, !cur.is(MemberBlockItemSyntax.self) {
-            if let closure = cur.as(ClosureExprSyntax.self), Self.isDeferred(closure) {
+            if let closure = cur.as(ClosureExprSyntax.self), closure.runsAfterBody {
                 return true
             }
             current = cur.parent
         }
         return false
-    }
-
-    /// Whether a closure runs later than the `body` evaluation that builds it
-    private static func isDeferred(_ closure: ClosureExprSyntax) -> Bool {
-        guard let call = closure.owningCall, let name = call.calleeBaseName else { return false }
-        let defers = name.hasSuffix("Button") || deferredClosureCalls.contains(name)
-
-        if let label = closure.parent?.as(LabeledExprSyntax.self)?.label?.text {
-            return deferredClosureLabels.contains(label) || defers
-        }
-        // `Button(action:label:)` takes its label as the trailing closure
-        if name.hasSuffix("Button"), call.arguments.contains(where: { $0.label?.text == "action" })
-        { return false }
-        return defers
     }
 
     /// The property name when `reference` is the base of a plain property read such as

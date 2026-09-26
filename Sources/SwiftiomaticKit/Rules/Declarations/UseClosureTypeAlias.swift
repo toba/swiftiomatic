@@ -14,7 +14,9 @@ import SwiftSyntax
 /// or in function and initializer parameters. Two spellings match when they differ only in
 /// parameter labels, attributes such as `@escaping` , or an outer optional. Two closure types with
 /// the same list of two or more parameters also match, so `(ID, Edge, ID) -> Bool` and
-/// `(ID, Edge, ID) -> Void` both report. `() -> Void` never counts as a repeat.
+/// `(ID, Edge, ID) -> Void` both report. `() -> Void` never counts as a repeat. An initializer
+/// parameter that sets a stored property of the same name and closure type does not count, and
+/// does not report, because the language requires that second spelling.
 ///
 /// Two closure types of two or more parameters that differ in exactly one parameter type share a
 /// shape, as in `(Item, Importable) -> Void` and `(Item, Exportable) -> Void` . A generic
@@ -79,7 +81,8 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
     }
 
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
-        guard let function = node.type.functionType else { return .skipChildren }
+        guard let function = node.type.functionType,
+              !Self.setsStoredProperty(node, function) else { return .skipChildren }
         let name = (node.secondName ?? node.firstName).text
 
         if Self.isHeavilyDecorated(node.type, function) {
@@ -90,6 +93,36 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
             diagnose(.sharedClosureShape(name, shape), on: node)
         }
         return .skipChildren
+    }
+
+    /// Whether `parameter` , with closure type `function` , is an initializer parameter whose
+    /// internal name and normalized closure type match a stored property of the enclosing type
+    ///
+    /// `init(onSelect: @escaping (Item) -> Void)` sets `let onSelect: (Item) -> Void` .
+    private static func setsStoredProperty(
+        _ parameter: FunctionParameterSyntax,
+        _ function: FunctionTypeSyntax
+    ) -> Bool {
+        guard let initializer = parameter.ancestorOrSelf(mapping: {
+                  $0.as(InitializerDeclSyntax.self)
+              }),
+              initializer.signature.parameterClause.parameters.contains(where: {
+                  $0.id == parameter.id
+              }),
+              let members = initializer.parent?.as(MemberBlockItemSyntax.self)?.parent?
+                  .as(MemberBlockItemListSyntax.self)
+        else { return false }
+        let name = (parameter.secondName ?? parameter.firstName).text
+        let type = normalized(function).type
+
+        return members.contains { member in
+            guard let variable = member.decl.as(VariableDeclSyntax.self) else { return false }
+            return variable.bindings.contains { binding in
+                binding.accessorBlock == nil
+                    && binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == name
+                    && binding.typeAnnotation?.type.functionType.map { normalized($0).type } == type
+            }
+        }
     }
 
     /// The normalized spelling of `function` when the file repeats it, or `nil`
@@ -195,7 +228,10 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
         }
 
         override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
-            if let function = node.type.functionType { functions.append(function) }
+            if let function = node.type.functionType,
+               !UseClosureTypeAlias.setsStoredProperty(node, function) {
+                functions.append(function)
+            }
             return .skipChildren
         }
     }

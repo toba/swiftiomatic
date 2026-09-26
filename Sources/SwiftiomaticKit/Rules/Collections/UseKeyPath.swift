@@ -212,7 +212,8 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 
             let method = callNode.calleeBaseName.map { "\($0)(\(label):)" } ?? "\(label):"
             let anchor = originalArguments.indices.contains(index)
-                ? originalArguments[index].expression : ExprSyntax(closure)
+                ? originalArguments[index].expression
+                : ExprSyntax(closure)
             Self.diagnose(.useKeyPath(method: method), on: anchor, context: context)
             changed = true
             return argument.with(

@@ -10,8 +10,12 @@ import SwiftSyntax
 /// hold only `import` declarations. An `#else` or `#elseif` branch marks a platform split, such as
 /// AppKit on macOS and UIKit elsewhere. When the file names an `NS` or `UI` type outside any `#if`
 /// block, the file depends on a type both frameworks spell, so the split stays and the rule is
-/// silent. When every such type sits inside its own `#if` , `#if canImport(AppKit)` with
-/// `#elseif canImport(UIKit)` states the need.
+/// silent. When every such type sits inside its own `#if` , `#if canImport(UIKit)` with
+/// `#elseif canImport(AppKit)` states the need.
+///
+/// Put the UIKit check first. `canImport(AppKit)` is true on Mac Catalyst, so an AppKit-first
+/// split picks AppKit there, but a Catalyst app uses UIKit. To test for AppKit first, write
+/// `#if canImport(AppKit) && !targetEnvironment(macCatalyst)` .
 ///
 /// Lint: An `#if os(...)` block that guards only framework imports raises a warning.
 final class UseCanImportNotOSCheck: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -86,5 +90,5 @@ final class UseCanImportNotOSCheck: LintSyntaxRule<LintOnlyValue>, @unchecked Se
 
 fileprivate extension Finding.Message {
     static let useCanImport: Finding.Message =
-        "this '#if os(...)' guards only an import; use '#if canImport(...)' to check for the framework"
+        "this '#if os(...)' guards only an import; use '#if canImport(...)' to check for the framework, with 'canImport(UIKit)' first or 'canImport(AppKit) && !targetEnvironment(macCatalyst)' so Mac Catalyst picks UIKit"
 }

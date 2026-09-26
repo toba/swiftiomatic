@@ -223,6 +223,29 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     )
   }
 
+  @Test func buttonLabelArgumentFollowedAndDeferredClosuresSkipped() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct Toolbar: View {
+        let items: [Item]
+
+        var body: some View {
+          Button(action: { save(items.filter(\\.isDirty)) }, label: {
+            Text(items.1️⃣filter(\\.isDirty).first?.name ?? "")
+          })
+          Toggle("Dirty", isOn: Binding(get: { true }, set: { _ in save(items.sorted()) }))
+          Text("Drag")
+            .draggable(items) { Text(items.map(\\.name).joined()) }
+            .onGeometryChange(for: Int.self) { _ in items.map(\\.id).count } action: { _ in }
+          Color.clear.task { Task.immediateDetached { save(items.sorted()) } }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.call("filter", "body"))]
+    )
+  }
+
   @Test func inlineWorkInBodyFlagged() {
     assertLint(
       NoCollectionWorkReachableFromBody.self,

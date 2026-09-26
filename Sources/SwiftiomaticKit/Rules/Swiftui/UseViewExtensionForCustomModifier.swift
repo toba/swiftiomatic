@@ -23,29 +23,10 @@ final class UseViewExtensionForCustomModifier: LintSyntaxRule<LintOnlyValue>, @u
             let argument = node.arguments.firstAndOnly,
             argument.label == nil,
             let construction = argument.expression.as(FunctionCallExprSyntax.self),
-            let typeName = Self.constructedTypeName(construction),
+            let typeName = construction.constructedTypeName,
             !Self.isInsideViewExtension(node) else { return .visitChildren }
         diagnose(.useViewExtension(typeName), on: member.declName)
         return .visitChildren
-    }
-
-    /// The name of the type that `call` initializes, when the callee is an upper-case name
-    private static func constructedTypeName(_ call: FunctionCallExprSyntax) -> String? {
-        var callee = call.calledExpression
-
-        if let generic = callee.as(GenericSpecializationExprSyntax.self) {
-            callee = generic.expression
-        }
-        let name: String? =
-            if let reference = callee.as(DeclReferenceExprSyntax.self) {
-                reference.baseName.text
-            } else if let member = callee.as(MemberAccessExprSyntax.self), member.base != nil {
-                member.declName.baseName.text
-            } else {
-                nil
-            }
-        guard let name, name.first?.isUppercase == true else { return nil }
-        return name
     }
 
     /// Whether `node` is inside a member of `extension View`

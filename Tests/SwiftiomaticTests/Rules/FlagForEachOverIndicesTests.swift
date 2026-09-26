@@ -126,4 +126,23 @@ struct FlagForEachOverIndicesTests: RuleTesting {
       findings: []
     )
   }
+
+  @Test func statefulRowsFlaggedWhenStatefulRuleDisabled() {
+    // The default test configuration disables `flagStatefulForEachOverIndices`
+    assertLint(
+      FlagForEachOverIndices.self,
+      """
+      struct CitationGroupForm: View {
+        @FocusState private var focusedIndex: Int?
+
+        var body: some View {
+          ForEach(1️⃣citations.indices, id: \\.self) { index in
+            CitationForm(index: index).focused($focusedIndex, equals: index)
+          }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
 }

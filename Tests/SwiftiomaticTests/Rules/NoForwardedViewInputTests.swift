@@ -76,6 +76,53 @@ struct NoForwardedViewInputTests: RuleTesting {
       """
     )
   }
+  @Test func argumentLabelOrOtherMemberDoesNotFeedWrapperStorage() {
+    assertLint(
+      NoForwardedViewInput.self,
+      """
+      struct DoneList: View {
+        @Query private var items: [Item]
+        @Query private var tags: [Tag]
+        1️⃣let filter: Filter
+        2️⃣let scope: Scope
+
+        init(filter: Filter, scope: Scope, other: Options) {
+          self.filter = filter
+          self.scope = scope
+          _items = Query(filter: #Predicate { $0.done })
+          self._tags = Query(sort: other.scope)
+        }
+
+        var body: some View {
+          FilterBar(filter: filter)
+          ScopeBar(scope: scope)
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message("filter", "FilterBar")),
+        FindingSpec("2️⃣", message: Self.message("scope", "ScopeBar")),
+      ]
+    )
+  }
+
+  @Test func storedBindingInputNotFlagged() {
+    assertLint(
+      NoForwardedViewInput.self,
+      """
+      struct Sidebar: View {
+        let selection: Binding<Item?>
+        let focus: SwiftUI.Binding<Bool>?
+
+        var body: some View {
+          ItemList(selection: selection)
+          SearchField(focus: focus)
+        }
+      }
+      """
+    )
+  }
+
   @Test func inputPassedToNonViewOrFeedingDynamicPropertyNotFlagged() {
     // From Thesis `WritingActivityHeatMap.swift`
     assertLint(

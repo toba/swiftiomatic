@@ -408,6 +408,40 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
     )
   }
 
+  @Test func bodyTimeModifierClosureOfCustomRowFlagged() {
+    assertLint(
+      ForEachRowReadsOnlyElement.self,
+      """
+      struct TagList: View {
+        @State private var selection: Tag?
+        @State private var hovered: Tag?
+
+        var body: some View {
+          0️⃣ForEach(tags) { tag in
+            TagRow(tag: tag)
+              .background {
+                if 1️⃣selection == tag { Color.accentColor }
+              }
+              .overlay { Text(2️⃣hovered?.name ?? "") }
+              .onTapGesture { selection = tag }
+              .contextMenu {
+                Button("Select") { selection = tag }
+              }
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.message("ForEach", "selection", "hovered"),
+          notes: [
+            NoteSpec("1️⃣", message: Self.read("selection")),
+            NoteSpec("2️⃣", message: Self.read("hovered")),
+          ]),
+      ]
+    )
+  }
+
   @Test func nonViewTypeNotFlagged() {
     assertLint(
       ForEachRowReadsOnlyElement.self,

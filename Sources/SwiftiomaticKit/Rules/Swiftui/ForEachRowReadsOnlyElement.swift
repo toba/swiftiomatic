@@ -17,9 +17,11 @@ import SwiftSyntax
 ///   . The row stores the value as an input, and SwiftUI skips it when the value does not change.
 ///   This is the fix the finding recommends. Whether the input is too large a value is the concern
 ///   of `flagWholeValueModelViewInput` .
-/// - A read inside a closure passed to the custom row `View` or to one of its modifiers, such as
-///   `copy: { library.copy(theme) }` or `.onTapGesture { selection = tag }` . The closure runs
-///   later, and the row is already one named `View` .
+/// - A read inside a closure passed to the custom row `View` , such as
+///   `copy: { library.copy(theme) }` , or inside a closure that runs after `body` on one of its
+///   modifiers, such as `.onTapGesture { selection = tag }` . The closure runs later, and the row
+///   is already one named `View` . The content of `.background { }` or `.overlay { }` runs during
+///   `body` , so a read there still counts.
 ///
 /// The rule reports each row once, at the `ForEach` or `List` call, and adds a note at each read.
 ///
@@ -105,31 +107,37 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
 
     /// Whether `node` sits inside an input of the custom row `View` that `closure` builds
     ///
-    /// An input is an argument of the row `View` , a closure among those arguments included, or a
-    /// closure passed to a modifier of the row, such as `.onTapGesture { selection = row }` . A
-    /// closure runs later, and the named row is already the update boundary the finding asks for.
+    /// An input is an argument of the row `View` , a closure among those arguments included. A
+    /// closure passed to a modifier of the row, such as `.onTapGesture { selection = row }` , also
+    /// counts when the read sits in a closure that runs after `body` . That closure runs later, and
+    /// the named row is already the update boundary the finding asks for. A closure that runs
+    /// during `body` , such as the content of `.background { }` or `.overlay { }` , does not count.
     private static func isRowArgument(
         _ node: DeclReferenceExprSyntax,
         in closure: ClosureExprSyntax
     ) -> Bool {
         var current = Syntax(node)
         var crossedClosure = false
+        var crossedDeferredClosure = false
 
         while let parent = current.parent, parent.id != closure.id {
-            if parent.is(ClosureExprSyntax.self) { crossedClosure = true }
+            if let crossed = parent.as(ClosureExprSyntax.self) {
+                crossedClosure = true
+                if crossed.runsAfterBody { crossedDeferredClosure = true }
+            }
 
             if let argument = parent.as(LabeledExprSyntax.self),
                let call = argument.parent?.parent?.as(FunctionCallExprSyntax.self)
             {
                 if isCustomRow(call, in: closure) { return true }
-                if crossedClosure, isModifier(call, ofRowIn: closure) { return true }
+                if crossedDeferredClosure, isModifier(call, ofRowIn: closure) { return true }
             }
             // a trailing closure of the row or of one of its modifiers
             if crossedClosure, let call = parent.as(FunctionCallExprSyntax.self),
-               call.calledExpression.id != current.id,
-               isCustomRow(call, in: closure) || isModifier(call, ofRowIn: closure)
+               call.calledExpression.id != current.id
             {
-                return true
+                if isCustomRow(call, in: closure) { return true }
+                if crossedDeferredClosure, isModifier(call, ofRowIn: closure) { return true }
             }
             current = parent
         }
@@ -141,13 +149,9 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
         _ call: FunctionCallExprSyntax,
         ofRowIn closure: ClosureExprSyntax
     ) -> Bool {
-        var base = call.calledExpression.as(MemberAccessExprSyntax.self)?.base
-
-        while let inner = base?.as(FunctionCallExprSyntax.self) {
-            if isCustomRow(inner, in: closure) { return true }
-            base = inner.calledExpression.as(MemberAccessExprSyntax.self)?.base
-        }
-        return false
+        guard let root = ExprSyntax(call).modifierChainRoot.as(FunctionCallExprSyntax.self),
+              root.id != call.id else { return false }
+        return isCustomRow(root, in: closure)
     }
 
     /// Whether `call` builds a custom `View` as a top-level row of `closure` , modifiers included
@@ -156,8 +160,7 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
         in closure: ClosureExprSyntax
     ) -> Bool {
         guard let name = call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text,
-              name.first?.isUppercase == true,
-              !SwiftUIBuiltInViews.names.contains(name) else { return false }
+              SwiftUIBuiltInViews.isCustomViewName(name) else { return false }
         var expression = Syntax(call)
 
         while let parent = expression.parent {

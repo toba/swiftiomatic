@@ -52,8 +52,8 @@ final class IsolateTextInputState: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
     /// The first `@Environment` property that `body` reads, directly or through the same-type
     /// members it reaches, in a member whose source does not name `state`
     ///
-    /// Closures that run later, such as a `Button` action or an `.onSubmit` body, are not
-    /// followed, because they do not run during `body` .
+    /// Closures that run later, such as a `Button` action, an `.onSubmit` body or a
+    /// `Task.detached` operation, are not followed, because they do not run during `body` .
     private static func unrelatedEnvironmentRead(
         in entry: TypeMemberIndex.TypeEntry,
         state: String
@@ -76,7 +76,7 @@ final class IsolateTextInputState: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
             guard let region = member.body, visited.insert(member.declaration.id).inserted
             else { continue }
             let references = TypeMemberIndex.references(
-                in: region, of: entry, skipping: runsLater)
+                in: region, of: entry, skipping: { $0.runsAfterBody })
 
             if !names(state, in: Syntax(region)),
                let read = references.first(where: { environment.contains($0.name) }) {
@@ -86,16 +86,6 @@ final class IsolateTextInputState: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
                 .flatMap { $0.members.filter { $0.kind != .storedProperty } }
         }
         return nil
-    }
-
-    /// Whether a closure runs in response to an event rather than during `body`
-    private static func runsLater(_ closure: ClosureExprSyntax) -> Bool {
-        guard let call = closure.owningCall, let name = call.calleeBaseName else { return false }
-        if let label = closure.parent?.as(LabeledExprSyntax.self)?.label?.text,
-           ["action", "perform", "set"].contains(label) { return true }
-        if name.hasSuffix("Button"),
-           !call.arguments.contains(where: { $0.label?.text == "action" }) { return true }
-        return name.hasPrefix("on") || name == "task" || name == "Task" || name == "refreshable"
     }
 
     /// The type member declaration that holds `node` : `body` , or a property or method that

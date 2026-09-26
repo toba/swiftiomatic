@@ -12,15 +12,20 @@ import SwiftSyntax
 ///
 /// When the rows hold `@State` or `@FocusState` , `FlagStatefulForEachOverIndices` reports the
 /// `ForEach` instead of this rule, so a `// sm:ignore` directive for this rule does not hide it.
+/// This rule defers only when the configuration enables `FlagStatefulForEachOverIndices` for lint.
+/// When that rule is off, this rule reports the stateful case too.
 final class FlagForEachOverIndices: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        guard let receiver = Self.integerIndexedReceiver(of: node) else { return .visitChildren }
+
         // `FlagStatefulForEachOverIndices` owns the case where the rows hold state
-        if let receiver = Self.integerIndexedReceiver(of: node),
-           FlagStatefulForEachOverIndices.rowState(of: node, context: context) == nil {
-            diagnose(.indicesReceiver, on: receiver)
+        if context.severity(of: FlagStatefulForEachOverIndices.self).isActive,
+           FlagStatefulForEachOverIndices.rowState(of: node, context: context) != nil {
+            return .visitChildren
         }
+        diagnose(.indicesReceiver, on: receiver)
         return .visitChildren
     }
 

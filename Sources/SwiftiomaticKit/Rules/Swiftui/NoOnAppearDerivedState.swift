@@ -23,10 +23,10 @@ final class NoOnAppearDerivedState: LintSyntaxRule<LintOnlyValue>, @unchecked Se
               let action = node.actionClosure(labels: ["perform"]),
               let entry = context.typeMembers(around: node).enclosingType(of: node),
               entry.isView else { return .visitChildren }
-        let finder = AssignmentFinder(viewMode: .sourceAccurate)
-        finder.walk(action.statements)
+        let writes = InfixOperatorExprSyntax.assignments(
+            in: action, compound: false, enteringClosures: false)
 
-        for write in finder.assignments {
+        for write in writes {
             let root = write.leftOperand.assignmentRoot
             guard root.id == write.leftOperand.id,
                   let target = root.assignmentRootName,
@@ -38,18 +38,6 @@ final class NoOnAppearDerivedState: LintSyntaxRule<LintOnlyValue>, @unchecked Se
             diagnose(.staleDerivedState(target: target, source: source.name), on: write)
         }
         return .visitChildren
-    }
-
-    /// The plain `=` assignments of a closure, outside nested closures
-    private final class AssignmentFinder: SyntaxVisitor {
-        var assignments: [InfixOperatorExprSyntax] = []
-
-        override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
-            if node.operator.is(AssignmentExprSyntax.self) { assignments.append(node) }
-            return .visitChildren
-        }
-
-        override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
     }
 }
 

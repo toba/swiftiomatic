@@ -387,7 +387,10 @@ private extension ConditionElementListSyntax {
     }
 }
 
-private extension ClosureSignatureSyntax {
+extension ClosureSignatureSyntax {
+    /// The names the closure binds for its parameters, in order
+    ///
+    /// A parameter spelled `label name` binds `name` .
     var parameterNames: [String] {
         switch parameterClause {
             case let .simpleInput(list): list.map(\.name.text)

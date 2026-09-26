@@ -18,6 +18,8 @@ import SwiftSyntax
 /// `body(content:)` , `makeBody(configuration:)` and `previews` , nor a fluent method in an
 /// extension of `View` or a SwiftUI view type such as `Text` that transforms `self` .
 ///
+/// A stored property, such as `let content: AnyView` , is an input to the view and is not a factory.
+///
 /// Lint: A type member returns `some View` , `any View` , `AnyView` or a concrete custom view type.
 final class NoViewFactoryMembers: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
@@ -66,10 +68,11 @@ final class NoViewFactoryMembers: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         guard isFactoryOwnerMember(node) else { return .visitChildren }
         let isStatic = node.modifiers.contains { $0.name.tokenKind == .keyword(.static) }
 
-        for binding in node.bindings {
+        // A stored property is an input, not a factory, so only a computed property reports
+        for binding in node.bindings where binding.accessorBlock != nil {
             guard let type = binding.typeAnnotation?.type,
                   Self.factoryReturnTypes.contains(type.trimmedDescription)
-                      || binding.accessorBlock != nil && isConcreteViewType(type, around: node),
+                      || isConcreteViewType(type, around: node),
                   let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text,
                   name != "body", !(isStatic && name == "previews") else { continue }
             diagnose(.viewFactory(name), on: node.bindingSpecifier)

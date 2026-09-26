@@ -8,6 +8,10 @@ struct NoDynamicPropertyInViewInitializerTests: RuleTesting {
         "'\(name)' is a '@\(wrapper)' property. The initializer uses it before SwiftUI installs its storage, so it sees a default value and loses any change. Move the work to 'body', 'task(id:)' or the parent"
     }
 
+    private static func bindingWrite(_ name: String, _ wrapper: String) -> String {
+        "'\(name)' is a '@\(wrapper)' property. The initializer writes through it to the state of the parent while the parent builds this view. Move the write to the parent, or to an action or 'task(id:)'"
+    }
+
     @Test func guidanceIsShould() {
         #expect(NoDynamicPropertyInViewInitializer.guidance == .should)
     }
@@ -67,7 +71,7 @@ struct NoDynamicPropertyInViewInitializerTests: RuleTesting {
               init(isOn: Binding<Bool>) {
                 _isOn = isOn
                 tint = 1️⃣theme.accent
-                label = 2️⃣self.isOn ? "On" : "Off"
+                label = self.isOn ? "On" : "Off"
                 3️⃣focused = true
                 4️⃣count += 1
                 6️⃣count = 2
@@ -80,11 +84,45 @@ struct NoDynamicPropertyInViewInitializerTests: RuleTesting {
             """,
             findings: [
                 FindingSpec("1️⃣", message: Self.message("theme", "Environment")),
-                FindingSpec("2️⃣", message: Self.message("isOn", "Binding")),
                 FindingSpec("3️⃣", message: Self.message("focused", "FocusState")),
                 FindingSpec("4️⃣", message: Self.message("count", "State")),
                 FindingSpec("6️⃣", message: Self.message("count", "State")),
                 FindingSpec("5️⃣", message: Self.message("count", "State")),
+            ]
+        )
+    }
+
+    @Test func writeThroughBindingFlaggedAndReadNotFlagged() {
+        assertLint(
+            NoDynamicPropertyInViewInitializer.self,
+            """
+            struct Picker: View {
+              @Binding var selection: Int?
+              @Binding var items: [Int]
+              @FocusedBinding(\\.draft) var draft: String?
+              private let initial: Int?
+
+              init(selection binding: Binding<Int?>, items list: Binding<[Int]>) {
+                _selection = binding
+                _items = list
+                initial = binding.wrappedValue ?? self.selection
+                print($selection, items.count)
+                1️⃣selection = 0
+                2️⃣self.items[0] += 1
+                3️⃣$selection.wrappedValue = nil
+                4️⃣draft = ""
+                reset(&5️⃣items)
+              }
+
+              var body: some View { Text("x") }
+            }
+            """,
+            findings: [
+                FindingSpec("1️⃣", message: Self.bindingWrite("selection", "Binding")),
+                FindingSpec("2️⃣", message: Self.bindingWrite("items", "Binding")),
+                FindingSpec("3️⃣", message: Self.bindingWrite("selection", "Binding")),
+                FindingSpec("4️⃣", message: Self.bindingWrite("draft", "FocusedBinding")),
+                FindingSpec("5️⃣", message: Self.bindingWrite("items", "Binding")),
             ]
         )
     }

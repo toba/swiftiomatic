@@ -20,32 +20,13 @@ final class NoBindingConstructionInView: LintSyntaxRule<LintOnlyValue>, @uncheck
     override class var guidance: GuidanceLevel { .should }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        guard Self.isBindingInitializer(node),
+        guard node.constructedTypeName == "Binding",
               node.arguments.contains(where: { $0.label?.text == "get" }),
               node.arguments.contains(where: { $0.label?.text == "set" }),
               context.typeMembers(around: node).enclosingType(of: node)?.isView == true
         else { return .visitChildren }
         diagnose(.bindingInView, on: node)
         return .visitChildren
-    }
-
-    /// Whether `node` calls `Binding` , `Binding<T>` , `SwiftUI.Binding` or `Binding.init`
-    private static func isBindingInitializer(_ node: FunctionCallExprSyntax) -> Bool {
-        var callee = node.calledExpression
-
-        if let member = callee.as(MemberAccessExprSyntax.self),
-           member.declName.baseName.tokenKind == .keyword(.`init`),
-           let base = member.base { callee = base }
-
-        if let generic = callee.as(GenericSpecializationExprSyntax.self) {
-            callee = generic.expression
-        }
-
-        if let member = callee.as(MemberAccessExprSyntax.self),
-           member.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "SwiftUI" {
-            return member.declName.baseName.text == "Binding"
-        }
-        return callee.as(DeclReferenceExprSyntax.self)?.baseName.text == "Binding"
     }
 }
 

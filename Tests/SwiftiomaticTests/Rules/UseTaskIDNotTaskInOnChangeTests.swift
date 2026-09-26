@@ -54,6 +54,24 @@ struct UseTaskIDNotTaskInOnChangeTests: RuleTesting {
     )
   }
 
+  @Test func immediateDetachedFlaggedAndYieldNotFlagged() {
+    assertLint(
+      UseTaskIDNotTaskInOnChange.self,
+      """
+      Text("x")
+        .onChange(of: query) {
+          1️⃣Task.immediateDetached { await search(query) }
+          2️⃣Task.detached(priority: .low) { await log(query) }
+          Task.yield()
+        }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message),
+        FindingSpec("2️⃣", message: Self.message),
+      ]
+    )
+  }
+
   @Test func taskInNestedClosureOrOtherModifierNotFlagged() {
     assertLint(
       UseTaskIDNotTaskInOnChange.self,

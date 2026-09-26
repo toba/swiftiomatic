@@ -8,10 +8,13 @@ import SwiftSyntax
 /// these properties `private` so that no caller can pass a value that has no effect.
 ///
 /// If no access control modifier is present, `private` is added. Existing access modifiers
-/// (including `private(set)` ) and `@Previewable` properties are left unchanged.
+/// (including `private(set)` ) and `@Previewable` properties are left unchanged. The rule applies
+/// only to a stored property of a type that conforms to `View` or `ViewModifier` in the same file.
+/// Another type, such as an `@Observable` class with an `@AppStorage` property, is left unchanged,
+/// because code outside the type reads the property.
 ///
 /// Lint: A `@State` , `@StateObject` , `@AppStorage` , `@SceneStorage` , `@FocusState` or
-/// `@GestureState` property without access control raises a warning.
+/// `@GestureState` property of a view type without access control raises a warning.
 ///
 /// Rewrite: The `private` modifier is added before the binding keyword.
 final class MakeStateVarsPrivate: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
@@ -21,19 +24,17 @@ final class MakeStateVarsPrivate: StaticFormatRule<BasicRuleValue>, @unchecked S
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
     override class var guidance: GuidanceLevel { .must }
 
-    /// Attribute names that trigger the rule.
-    private static let stateAttributes: Set<String> = [
-        "State", "StateObject", "AppStorage", "SceneStorage", "FocusState", "GestureState",
-    ]
-
     static func transform(
         _ node: VariableDeclSyntax,
         original: VariableDeclSyntax,
         parent _: Syntax?,
         context: Context
     ) -> DeclSyntax {
-        // Must have a view-owned state attribute
-        guard let wrapper = stateAttribute(of: node) else { return DeclSyntax(node) }
+        // Must have a view-owned state attribute, on a member of a view type. Another type, such as
+        // an `@Observable` settings class with an `@AppStorage` property, reads the property from
+        // outside, so `private` would break the build.
+        guard let wrapper = stateAttribute(of: node),
+              context.viewEntry(forMember: original) != nil else { return DeclSyntax(node) }
 
         // Skip if already has access control
         guard node.modifiers.accessLevelModifier == nil else { return DeclSyntax(node) }
@@ -64,7 +65,7 @@ final class MakeStateVarsPrivate: StaticFormatRule<BasicRuleValue>, @unchecked S
         node.attributes.lazy.compactMap { element -> String? in
             guard let attr = element.as(AttributeSyntax.self),
                   let name = attr.attributeName.as(IdentifierTypeSyntax.self)?.name.text,
-                  Self.stateAttributes.contains(name) else { return nil }
+                  VariableDeclSyntax.installedStorageWrappers.contains(name) else { return nil }
             return name
         }.first
     }

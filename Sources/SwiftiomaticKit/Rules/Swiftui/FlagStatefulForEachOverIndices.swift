@@ -30,10 +30,6 @@ final class FlagStatefulForEachOverIndices: LintSyntaxRule<LintOnlyValue>, @unch
         let wrapper: String
     }
 
-    private static let stateWrappers: Set<String> = [
-        "State", "FocusState", "StateObject", "AccessibilityFocusState",
-    ]
-
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard let receiver = FlagForEachOverIndices.integerIndexedReceiver(of: node),
               let state = Self.rowState(of: node, context: context) else { return .visitChildren }
@@ -44,7 +40,7 @@ final class FlagStatefulForEachOverIndices: LintSyntaxRule<LintOnlyValue>, @unch
     /// The state the rows of `forEach` hold, or `nil` when the rule sees none
     static func rowState(of forEach: FunctionCallExprSyntax, context: Context) -> RowState? {
         guard let closure = forEach.rowContentClosure() else { return nil }
-        let parameter = Self.parameterName(of: closure)
+        let parameter = closure.signature?.parameterNames.first ?? "$0"
         let rowName = closure.statements.first.map { rowName(of: Syntax($0.item)) } ?? "the row"
         let types = context.typeMembers(around: forEach).types
         let finder = CallFinder(viewMode: .sourceAccurate)
@@ -73,37 +69,17 @@ final class FlagStatefulForEachOverIndices: LintSyntaxRule<LintOnlyValue>, @unch
             for member in overloads where member.kind == .storedProperty {
                 if let wrapper = member.declaration.as(VariableDeclSyntax.self)?.attributes
                     .firstAttributeName,
-                   stateWrappers.contains(wrapper) { return wrapper }
+                   VariableDeclSyntax.identityStateWrappers.contains(wrapper) { return wrapper }
             }
         }
         return nil
     }
 
-    /// The name of the first closure parameter, or `$0` when the closure declares none
-    private static func parameterName(of closure: ClosureExprSyntax) -> String {
-        switch closure.signature?.parameterClause {
-            case let .simpleInput(list): list.first?.name.text ?? "$0"
-            case let .parameterClause(clause):
-                clause.parameters.first.map { ($0.secondName ?? $0.firstName).text } ?? "$0"
-            case nil: "$0"
-        }
-    }
-
     /// The name that starts the modifier chain of a row statement
-    private static func rowName(of node: Syntax) -> String {
-        var current = node
-
-        while true {
-            if let call = current.as(FunctionCallExprSyntax.self) {
-                current = Syntax(call.calledExpression)
-            } else if let member = current.as(MemberAccessExprSyntax.self), let base = member.base {
-                current = Syntax(base)
-            } else if let reference = current.as(DeclReferenceExprSyntax.self) {
-                return reference.baseName.text
-            } else {
-                return "the row"
-            }
-        }
+    private static func rowName(of item: Syntax) -> String {
+        guard var root = item.as(ExprSyntax.self)?.modifierChainRoot else { return "the row" }
+        if let call = root.as(FunctionCallExprSyntax.self) { root = call.calledExpression }
+        return root.as(DeclReferenceExprSyntax.self)?.baseName.text ?? "the row"
     }
 
     private final class CallFinder: SyntaxVisitor {

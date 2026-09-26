@@ -5,7 +5,7 @@ import SwiftiomaticTestSupport
 @Suite
 struct UseCanImportNotOSCheckTests: RuleTesting {
     private static let message =
-        "this '#if os(...)' guards only an import; use '#if canImport(...)' to check for the framework"
+        "this '#if os(...)' guards only an import; use '#if canImport(...)' to check for the framework, with 'canImport(UIKit)' first or 'canImport(AppKit) && !targetEnvironment(macCatalyst)' so Mac Catalyst picks UIKit"
 
     @Test func importOnlyOSCheckFlagged() {
         assertLint(

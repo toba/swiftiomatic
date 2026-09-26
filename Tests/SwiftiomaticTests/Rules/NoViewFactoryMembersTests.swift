@@ -268,4 +268,21 @@ struct NoViewFactoryMembersTests: RuleTesting {
       findings: []
     )
   }
+
+  @Test func storedViewInputsNotFlagged() {
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      struct Card: View {
+        let content: AnyView
+        var accessory: AnyView = AnyView(EmptyView())
+        let row: RowView
+        1️⃣var footer: AnyView { AnyView(Text("Footer")) }
+
+        var body: some View { VStack { content; accessory; row; footer } }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("footer"))]
+    )
+  }
 }

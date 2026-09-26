@@ -9,9 +9,9 @@ import SwiftSyntax
 /// `.task(id:)` with the same value runs the work when the view appears and each time the value
 /// changes. It cancels the previous run first, and it cancels the last run with the view.
 ///
-/// The rule reports a `Task` , `Task.immediate` or `Task.detached` call in the action closure,
-/// including one inside an `if` or `switch` . A task inside a nested closure, such as a `Button`
-/// action, runs from that closure and is not reported.
+/// The rule reports a `Task` , `Task.immediate` , `Task.detached` or `Task.immediateDetached`
+/// call in the action closure, including one inside an `if` or `switch` . A task inside a nested
+/// closure, such as a `Button` action, runs from that closure and is not reported.
 ///
 /// Lint: An `.onChange(of:)` action closure starts a `Task` .
 final class UseTaskIDNotTaskInOnChange: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -31,32 +31,20 @@ final class UseTaskIDNotTaskInOnChange: LintSyntaxRule<LintOnlyValue>, @unchecke
 
     /// Finds the task calls of one closure body and does not enter nested closures
     private final class TaskFinder: SyntaxVisitor {
-        static let taskFactories: Set<String> = ["immediate", "detached"]
-
         var tasks: [FunctionCallExprSyntax] = []
 
+        /// Records `Task { }` , `Task<T, E> { }` and each factory in
+        /// `FunctionCallExprSyntax.taskFactories` , with or without arguments. Another member such
+        /// as `Task.yield()` does not start a task.
         override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-            guard Self.isTaskCall(node) else { return .visitChildren }
+            guard let task = node.taskCall,
+                  task.factory.map({ FunctionCallExprSyntax.taskFactories.contains($0) }) ?? true
+            else { return .visitChildren }
             tasks.append(node)
             return .skipChildren
         }
 
         override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
-
-        /// Whether `node` is `Task { }` , `Task<T, E> { }` , `Task.immediate { }` or
-        /// `Task.detached { }` , with or without arguments
-        private static func isTaskCall(_ node: FunctionCallExprSyntax) -> Bool {
-            var callee = node.calledExpression
-
-            if let member = callee.as(MemberAccessExprSyntax.self), let base = member.base {
-                guard taskFactories.contains(member.declName.baseName.text) else { return false }
-                callee = base
-            }
-            if let generic = callee.as(GenericSpecializationExprSyntax.self) {
-                callee = generic.expression
-            }
-            return callee.as(DeclReferenceExprSyntax.self)?.baseName.text == "Task"
-        }
     }
 }
 

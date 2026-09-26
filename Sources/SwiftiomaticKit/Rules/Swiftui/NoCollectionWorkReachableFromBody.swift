@@ -28,25 +28,6 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
         "filter", "sorted", "map", "compactMap", "flatMap", "reduce",
     ]
 
-    /// Calls whose closures run in response to an event rather than during `body`
-    private static let deferredClosureCalls: Set<String> = [
-        "Task", "immediate", "detached", "immediateDetached", "onTapGesture", "onLongPressGesture",
-        "onAppear", "onDisappear", "task",
-        "onChange", "onSubmit", "onReceive", "refreshable", "onHover", "onContinuousHover",
-        "onEnded", "onChanged", "onDelete", "onMove", "onInsert", "onDrop", "onKeyPress",
-        "onOpenURL", "onCommand", "onExitCommand", "onScrollGeometryChange", "onGeometryChange",
-        "dropDestination", "draggable", "onPreferenceChange",
-    ]
-
-    /// Whether a call named `name` runs its closures later. Any call whose name ends in `Button`
-    /// counts, so a custom button type is covered too.
-    private static func defersClosures(_ name: String) -> Bool {
-        name.hasSuffix("Button") || deferredClosureCalls.contains(name)
-    }
-
-    /// Argument labels that pass a closure to run later
-    private static let deferredClosureLabels: Set<String> = ["action", "perform", "set"]
-
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         guard node.parent?.is(MemberBlockItemSyntax.self) == true,
               let binding = node.bindings.first,
@@ -81,7 +62,7 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
 
     /// Reports the collection work in `body` and returns the static calls on other types it makes
     private func reportWork(in body: Syntax, member: String) -> [WorkFinder.StaticCall] {
-        let finder = WorkFinder(methods: Self.collectionMethods, skipping: Self.isDeferred)
+        let finder = WorkFinder(methods: Self.collectionMethods, skipping: { $0.runsAfterBody })
         finder.walk(body)
 
         for (message, anchor) in finder.matches {
@@ -157,7 +138,7 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
         from region: some SyntaxProtocol,
         entry: TypeMemberIndex.TypeEntry
     ) -> [(String, TypeMemberIndex.Member)] {
-        TypeMemberIndex.references(in: region, of: entry, skipping: isDeferred)
+        TypeMemberIndex.references(in: region, of: entry, skipping: { $0.runsAfterBody })
             .filter { !$0.spelling.hasPrefix("$") }
             .flatMap { reference in
                 // follow every overload, because a syntax-only rule cannot pick the one called.
@@ -179,19 +160,6 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
             callee = Syntax(access)
         }
         return callee.parent?.as(FunctionCallExprSyntax.self)?.calledExpression.id == callee.id
-    }
-
-    /// Whether a closure runs later than the `body` evaluation that builds it
-    private static func isDeferred(_ closure: ClosureExprSyntax) -> Bool {
-        guard let call = closure.owningCall, let name = call.calleeBaseName else { return false }
-
-        if let label = closure.parent?.as(LabeledExprSyntax.self)?.label?.text {
-            return deferredClosureLabels.contains(label) || defersClosures(name)
-        }
-        // `Button(action:label:)` takes its label as the trailing closure
-        if name.hasSuffix("Button"), call.arguments.contains(where: { $0.label?.text == "action" })
-        { return false }
-        return defersClosures(name)
     }
 
     private final class WorkFinder: SyntaxVisitor {

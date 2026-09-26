@@ -87,6 +87,8 @@ struct FlagStatefulForEachOverIndicesTests: RuleTesting {
   }
 
   @Test func flagForEachOverIndicesLeavesStatefulRowsToThisRule() {
+    var config = Configuration.forTesting(enabledRule: "flagForEachOverIndices")
+    config.enableRule(named: "flagStatefulForEachOverIndices")
     assertLint(
       FlagForEachOverIndices.self,
       """
@@ -94,12 +96,14 @@ struct FlagStatefulForEachOverIndicesTests: RuleTesting {
         @FocusState private var focusedIndex: Int?
 
         var body: some View {
-          ForEach(citations.indices, id: \\.self) { index in
+          ForEach(1️⃣citations.indices, id: \\.self) { index in
             CitationForm(index: index).focused($focusedIndex, equals: index)
           }
         }
       }
-      """
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("CitationForm", "@FocusState"))],
+      configuration: config
     )
   }
 }

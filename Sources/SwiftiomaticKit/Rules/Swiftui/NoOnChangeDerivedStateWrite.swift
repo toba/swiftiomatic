@@ -28,7 +28,10 @@ final class NoOnChangeDerivedStateWrite: LintSyntaxRule<LintOnlyValue>, @uncheck
               !TypeMemberIndex.references(in: source, of: entry).isEmpty,
               let action = node.actionClosure(labels: ["action"]) else { return .visitChildren }
 
-        for write in Self.assignments(in: action) {
+        let writes = InfixOperatorExprSyntax.assignments(
+            in: action, compound: true, enteringClosures: true)
+
+        for write in writes {
             let root = write.leftOperand.assignmentRoot
             guard let target = root.assignmentRootName,
                   target != sourceName,
@@ -37,21 +40,6 @@ final class NoOnChangeDerivedStateWrite: LintSyntaxRule<LintOnlyValue>, @uncheck
             diagnose(.derivedWrite(source: sourceName, target: target), on: write)
         }
         return .visitChildren
-    }
-
-    private static func assignments(in closure: ClosureExprSyntax) -> [InfixOperatorExprSyntax] {
-        let finder = AssignmentFinder(viewMode: .sourceAccurate)
-        finder.walk(closure.statements)
-        return finder.assignments
-    }
-
-    private final class AssignmentFinder: SyntaxVisitor {
-        var assignments: [InfixOperatorExprSyntax] = []
-
-        override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
-            if node.operator.isAssignmentOperator { assignments.append(node) }
-            return .visitChildren
-        }
     }
 }
 

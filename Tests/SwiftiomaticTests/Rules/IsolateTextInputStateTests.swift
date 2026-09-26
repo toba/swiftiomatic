@@ -137,4 +137,37 @@ struct IsolateTextInputStateTests: RuleTesting {
       """
     )
   }
+
+  @Test func environmentInTaskOrDragClosuresNotFlagged() {
+    assertLint(
+      IsolateTextInputState.self,
+      """
+      struct SearchPane: View {
+        @Environment(\\.dismiss) private var dismiss
+        @Environment(\\.editorTheme) private var theme
+        @State private var query = ""
+
+        var body: some View {
+          VStack {
+            TextField("Search", text: $query)
+            ResultsList(query: query)
+          }
+          .dropDestination(for: URL.self) { urls, _ in close() }
+          .draggable(query) { preview }
+          .background(startWatcher())
+        }
+
+        private func startWatcher() -> some View {
+          Task.detached { await close() }
+          Task.immediate { await close() }
+          return Color.clear
+        }
+
+        private var preview: some View { Text(theme.name) }
+
+        private func close() { dismiss() }
+      }
+      """
+    )
+  }
 }

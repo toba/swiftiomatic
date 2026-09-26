@@ -72,14 +72,14 @@ struct UseClosureTypeAliasTests: RuleTesting {
         private let onMove: MoveRowHandler?
         4️⃣private let onCanDrop: ((Data.Element.ID, OutlineDropEdge, Data.Element.ID) -> Bool)?
         5️⃣private let onPerformDrop: ((Data.Element.ID, OutlineDropEdge, Data.Element.ID) -> Void)?
-        8️⃣@ViewBuilder let rowContent: (Data.Element, Bool) -> RowContent
+        @ViewBuilder let rowContent: (Data.Element, Bool) -> RowContent
 
         init(
           _ data: Data,
           onMove: MoveRowHandler? = nil,
           6️⃣canDrop: ((Data.Element.ID, OutlineDropEdge, Data.Element.ID) -> Bool)? = nil,
           7️⃣onDrop: ((Data.Element.ID, OutlineDropEdge, Data.Element.ID) -> Void)? = nil,
-          9️⃣rowContent: @escaping (Data.Element, Bool) -> RowContent,
+          rowContent: @escaping (Data.Element, Bool) -> RowContent,
         ) {}
 
         var body: some View { Text("x") }
@@ -105,10 +105,6 @@ struct UseClosureTypeAliasTests: RuleTesting {
           "7️⃣",
           message: Self.repeatedMessage(
             "onDrop", "(Data.Element.ID, OutlineDropEdge, Data.Element.ID) -> Void")),
-        FindingSpec(
-          "8️⃣", message: Self.repeatedMessage("rowContent", "(Data.Element, Bool) -> RowContent")),
-        FindingSpec(
-          "9️⃣", message: Self.repeatedMessage("rowContent", "(Data.Element, Bool) -> RowContent")),
       ]
     )
   }
@@ -185,6 +181,44 @@ struct UseClosureTypeAliasTests: RuleTesting {
       """,
       findings: [
         FindingSpec("1️⃣", message: Self.message("insert")),
+      ]
+    )
+  }
+
+  @Test func initParameterSettingStoredClosureNotCounted() {
+    assertLint(
+      UseClosureTypeAlias.self,
+      """
+      struct ItemRow: View {
+        let onSelect: (Item) -> Void
+
+        init(onSelect: @escaping (Item) -> Void) {
+          self.onSelect = onSelect
+        }
+
+        var body: some View { Text("x") }
+      }
+      """
+    )
+  }
+
+  @Test func initParameterWithDifferentInternalNameStillCounted() {
+    assertLint(
+      UseClosureTypeAlias.self,
+      """
+      struct ItemRow: View {
+        1️⃣let onSelect: (Item) -> Void
+
+        init(2️⃣onSelect handler: @escaping (Item) -> Void) {
+          onSelect = handler
+        }
+
+        var body: some View { Text("x") }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.repeatedMessage("onSelect", "(Item) -> Void")),
+        FindingSpec("2️⃣", message: Self.repeatedMessage("handler", "(Item) -> Void")),
       ]
     )
   }

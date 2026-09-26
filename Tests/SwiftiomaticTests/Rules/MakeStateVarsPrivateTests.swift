@@ -11,10 +11,14 @@ struct MakeStateVarsPrivateTests: RuleTesting {
     assertFormatting(
       MakeStateVarsPrivate.self,
       input: """
-        @State 1️⃣var counter: Int
+        struct Counter: View {
+          @State 1️⃣var counter: Int
+        }
         """,
       expected: """
-        @State private var counter: Int
+        struct Counter: View {
+          @State private var counter: Int
+        }
         """,
       findings: [
         FindingSpec("1️⃣", message: "add 'private' to this @State property"),
@@ -26,10 +30,14 @@ struct MakeStateVarsPrivateTests: RuleTesting {
     assertFormatting(
       MakeStateVarsPrivate.self,
       input: """
-        @StateObject 1️⃣var counter: Int
+        struct Counter: View {
+          @StateObject 1️⃣var counter: Int
+        }
         """,
       expected: """
-        @StateObject private var counter: Int
+        struct Counter: View {
+          @StateObject private var counter: Int
+        }
         """,
       findings: [
         FindingSpec("1️⃣", message: "add 'private' to this @StateObject property"),
@@ -41,12 +49,16 @@ struct MakeStateVarsPrivateTests: RuleTesting {
     assertFormatting(
       MakeStateVarsPrivate.self,
       input: """
-        @State
-        1️⃣var counter: Int
+        struct Counter: View {
+          @State
+          1️⃣var counter: Int
+        }
         """,
       expected: """
-        @State
-        private var counter: Int
+        struct Counter: View {
+          @State
+          private var counter: Int
+        }
         """,
       findings: [
         FindingSpec("1️⃣", message: "add 'private' to this @State property"),
@@ -197,6 +209,35 @@ struct MakeStateVarsPrivateTests: RuleTesting {
       expected: """
         @Previewable
         @State var counter: Int
+        """,
+      findings: []
+    )
+  }
+
+  @Test func propertyOutsideViewTypeUnchanged() {
+    assertFormatting(
+      MakeStateVarsPrivate.self,
+      input: """
+        @Observable final class Settings {
+          @ObservationIgnored @AppStorage("k") var theme: String = "light"
+        }
+
+        struct Model {
+          @State var counter: Int
+        }
+
+        @State var topLevel: Int
+        """,
+      expected: """
+        @Observable final class Settings {
+          @ObservationIgnored @AppStorage("k") var theme: String = "light"
+        }
+
+        struct Model {
+          @State var counter: Int
+        }
+
+        @State var topLevel: Int
         """,
       findings: []
     )
