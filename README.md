@@ -88,6 +88,14 @@ The guidance level says how strong the advice of a rule is. It is separate from 
 
 `sm lint --changed-lines start:end` labels each finding `introduced` when its line is in a changed range and `existing` otherwise. Repeat the option for more ranges. It is valid for a single file. The `text` reporter appends the label to each diagnostic, the `agent` reporter sets `status`, and the `sarif` reporter sets `baselineState` to `new` or `unchanged`.
 
+`sm lint --changed-since <git-ref>` labels the findings of many files in one run. For each file, sm runs `git diff -U0 <git-ref>` in the repository of that file and reads the hunk headers. A finding on a line that changed since the reference is `introduced`. All other findings are `existing`. An untracked file counts as fully changed. A file with no diff has only `existing` findings. You cannot use `--changed-since` and `--changed-lines` together.
+
+`sm lint --only-changed` drops each `existing` finding and its notes. It requires `--changed-since` or `--changed-lines`.
+
+```sh
+sm lint --recursive --changed-since main --only-changed --reporter agent Sources
+```
+
 `sm format` accepts `text` and `json` only.
 
 GitHub code scanning shows SARIF results as annotations on the pull request diff:

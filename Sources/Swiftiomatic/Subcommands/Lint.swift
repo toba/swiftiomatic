@@ -71,9 +71,37 @@ extension SwiftiomaticCommand {
         )
         var changedLines: [ClosedRange<Int>] = []
 
+        @Option(
+            name: .long,
+            help: """
+                A git reference, such as `main` or `HEAD~1`. For each file, sm runs \
+                `git diff -U0 <ref>` in the repository of that file. Every finding is labeled \
+                `introduced` when its line changed since the reference and `existing` otherwise. \
+                An untracked file counts as fully changed. Not valid with `--changed-lines`.
+                """
+        )
+        var changedSince: String?
+
+        @Flag(
+            name: .long,
+            help: """
+                Drop each finding that is labeled `existing`. Requires `--changed-since` or \
+                `--changed-lines`.
+                """
+        )
+        var onlyChanged = false
+
         func validate() throws {
             if !changedLines.isEmpty, lintOptions.paths.count > 1 {
                 throw ValidationError("'--changed-lines' is only valid when linting a single file")
+            }
+            if !changedLines.isEmpty, changedSince != nil {
+                throw ValidationError(
+                    "'--changed-lines' and '--changed-since' are mutually exclusive")
+            }
+            if onlyChanged, changedLines.isEmpty, changedSince == nil {
+                throw ValidationError(
+                    "'--only-changed' requires '--changed-since' or '--changed-lines'")
             }
         }
 
@@ -137,7 +165,9 @@ extension SwiftiomaticCommand {
                 cache: cache,
                 additionalDiagnosticHandlers: extraHandlers,
                 suppressDefaultDiagnosticPrinter: reporter != .text,
-                changedLines: changedLines
+                changedLines: changedLines,
+                changedSince: changedSince.map { GitChangedLines(ref: $0) },
+                onlyChanged: onlyChanged
             )
             frontend.run()
             jsonReporter?.flush()

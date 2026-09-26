@@ -42,6 +42,13 @@ final class DiagnosticsEngine: Sendable {
     /// a rule note, gets an `introduced` or `existing` change status.
     private let changedLines: [ClosedRange<Int>]
 
+    /// The source of the changed lines of each file. When it is set, each diagnostic with a
+    /// location, other than a rule note, gets an `introduced` or `existing` change status.
+    private let changedSince: GitChangedLines?
+
+    /// Whether to drop each finding whose change status is `existing`, together with its notes.
+    private let onlyChanged: Bool
+
     /// Creates a new diagnostics engine with the given diagnostic handlers.
     ///
     /// - Parameter diagnosticsHandlers: An array of functions, each of which takes a `Diagnostic`
@@ -50,11 +57,44 @@ final class DiagnosticsEngine: Sendable {
     init(
         diagnosticsHandlers: [@Sendable (Diagnostic) -> Void],
         treatWarningsAsErrors: Bool = false,
-        changedLines: [ClosedRange<Int>] = []
+        changedLines: [ClosedRange<Int>] = [],
+        changedSince: GitChangedLines? = nil,
+        onlyChanged: Bool = false
     ) {
         handlers = diagnosticsHandlers
         self.treatWarningsAsErrors = treatWarningsAsErrors
         self.changedLines = changedLines
+        self.changedSince = changedSince
+        self.onlyChanged = onlyChanged
+    }
+
+    /// Returns the change status of a diagnostic, or nil when no changed lines apply to it.
+    ///
+    /// When git cannot find the changed lines of a file, the function emits one error for that
+    /// file. The findings of that file then get the `existing` status.
+    private func changeStatus(of diagnostic: Diagnostic) -> ChangeStatus? {
+        guard !diagnostic.isRuleNote, let location = diagnostic.location else { return nil }
+
+        if let changedSince {
+            let lines: [ClosedRange<Int>]
+            switch changedSince.changedLines(forFile: location.file) {
+                case .success(let ranges): lines = ranges
+                case .failure(let failure):
+                    reportOnce(failure)
+                    lines = []
+            }
+            return ChangeStatus(line: location.line, changedLines: lines)
+        }
+        guard !changedLines.isEmpty else { return nil }
+        return ChangeStatus(line: location.line, changedLines: changedLines)
+    }
+
+    /// The files whose git failure the engine already reported.
+    private let reportedFailures = Mutex<Set<String>>([])
+
+    private func reportOnce(_ failure: GitChangedLines.Failure) {
+        guard reportedFailures.withLock({ $0.insert(failure.file).inserted }) else { return }
+        emitError(failure.description)
     }
 
     /// Emits the diagnostic by passing it to the registered handlers, and tracks whether it was an
@@ -63,9 +103,8 @@ final class DiagnosticsEngine: Sendable {
         var diagnostic = diagnostic
         if treatWarningsAsErrors, diagnostic.severity == .warning { diagnostic.severity = .error }
 
-        if !changedLines.isEmpty, !diagnostic.isRuleNote, let line = diagnostic.location?.line {
-            diagnostic.changeStatus = ChangeStatus(line: line, changedLines: changedLines)
-        }
+        diagnostic.changeStatus = changeStatus(of: diagnostic)
+        if onlyChanged, diagnostic.changeStatus == .existing { return }
 
         switch diagnostic.severity {
             case .error: state.withLock { $0.hasErrors = true }
@@ -156,6 +195,8 @@ final class DiagnosticsEngine: Sendable {
     private func emit(_ finding: Diagnostic, notes: [Diagnostic]) {
         var finding = finding
         finding.notes = notes
+        // The notes of a dropped finding go with it.
+        if onlyChanged, changeStatus(of: finding) == .existing { return }
         emit(finding)
         for note in notes { emit(note) }
     }

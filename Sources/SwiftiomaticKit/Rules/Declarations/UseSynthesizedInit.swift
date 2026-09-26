@@ -36,7 +36,10 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
             let member = memberItem.decl
             // Collect all stored variables into a list
             if let varDecl = member.as(VariableDeclSyntax.self) {
-                guard !varDecl.modifiers.contains(anyOf: [.static]) else { continue }
+                guard !varDecl.modifiers.contains(anyOf: [.static]),
+                      !varDecl.isComputed,
+                      !varDecl.isSetUpByWrapperArguments
+                else { continue }
                 storedProperties.append(varDecl)
                 // Collect any possible redundant initializers into a list
             } else if let initDecl = member.as(InitializerDeclSyntax.self) {
@@ -61,21 +64,24 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
 
         // Collects all of the initializers that could be replaced by the synthesized memberwise
         // initializer(s).
-        var extraneousInitializers = [InitializerDeclSyntax]()
+        var extraneousInitializers: [(InitializerDeclSyntax, suggestions: [String])] = []
 
         for initializer in initializers {
             // Attributes signify intent that isn't automatically synthesized by the compiler.
             guard initializer.attributes.isEmpty,
-                  matchesPropertyList(
+                  let matches = matchesPropertyList(
                       parameters: initializer.signature.parameterClause.parameters,
                       properties: memberwiseProperties
                   ),
                   matchesAssignmentBody(
-                      variables: memberwiseProperties, initBody: initializer.body),
+                      variables: memberwiseProperties,
+                      matches: matches,
+                      initBody: initializer.body
+                  ),
                   matchesAccessLevel(modifiers: initializer.modifiers, synthesized: initLevel)
             else { continue }
 
-            extraneousInitializers.append(initializer)
+            extraneousInitializers.append((initializer, matches.compactMap(\.suggestion)))
         }
 
         // The synthesized memberwise initializer(s) are only created when there are no
@@ -86,8 +92,13 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
         })
 
         if extraneousInitializers.count == initializersCount {
-            for initializer in extraneousInitializers {
-                diagnose(.removeRedundantInitializer, on: initializer)
+            for (initializer, suggestions) in extraneousInitializers {
+                diagnose(
+                    suggestions.isEmpty
+                        ? .removeRedundantInitializer
+                        : .declareBuilderProperties(suggestions),
+                    on: initializer
+                )
             }
         }
 
@@ -118,19 +129,26 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
         }
     }
 
-    // Compares initializer parameters to stored properties of the struct
+    /// Compares initializer parameters to stored properties of the struct.
+    ///
+    /// - Returns: One match per parameter, in order, or `nil` when the parameters differ from the
+    ///   synthesized initializer's.
     private func matchesPropertyList(
         parameters: FunctionParameterListSyntax,
         properties: [VariableDeclSyntax]
-    ) -> Bool {
-        guard parameters.count == properties.count else { return false }
+    ) -> [ParameterMatch]? {
+        guard parameters.count == properties.count else { return nil }
+
+        var matches: [ParameterMatch] = []
 
         for (idx, parameter) in parameters.enumerated() {
-            guard parameter.secondName == nil else { return false }
+            guard parameter.secondName == nil else { return nil }
 
             let property = properties[idx]
             let propertyID = property.firstIdentifier
-            guard let propertyType = property.firstType else { return false }
+            guard let propertyType = property.firstType,
+                  propertyID.identifier.text == parameter.firstName.text
+            else { return nil }
 
             // Ensure that parameters that correspond to properties declared using 'var' have a
             // default argument that is identical to the property's default value. Otherwise, a
@@ -138,26 +156,85 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
             let isVarDecl = property.bindingSpecifier.tokenKind == .keyword(.var)
 
             if isVarDecl, let initializer = property.firstInitializer {
-                guard let defaultArg = parameter.defaultValue else { return false }
+                guard let defaultArg = parameter.defaultValue else { return nil }
                 guard initializer.value.description == defaultArg.value.description else {
-                    return false
+                    return nil
                 }
-            } else if parameter.defaultValue != nil { return false }
+            } else if parameter.defaultValue != nil { return nil }
 
-            if propertyID.identifier.text != parameter.firstName.text
-                || propertyType.description.trimmingCharacters(
-                    in: .whitespaces
-                ) != parameter.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
-            {
-                return false
-            }
+            guard let match = parameterMatch(parameter, property: property, type: propertyType)
+            else { return nil }
+            matches.append(match)
         }
-        return true
+        return matches
+    }
+
+    /// Matches one parameter against the stored property it initializes.
+    ///
+    /// The synthesized initializer marks a closure parameter `@escaping`, so that attribute is
+    /// ignored. A result-builder attribute on the parameter matches a builder property in two
+    /// shapes. A property of type `T` takes a builder closure `() -> T` and evaluates it during
+    /// init. A property of type `() -> T` stores the closure. Each shape keeps its own evaluation
+    /// timing.
+    private func parameterMatch(
+        _ parameter: FunctionParameterSyntax,
+        property: VariableDeclSyntax,
+        type propertyType: TypeSyntax
+    ) -> ParameterMatch? {
+        let propertyAttributes = property.attributes.compactMap { $0.as(AttributeSyntax.self) }
+        let propertyBuilder = propertyAttributes.first { $0.isResultBuilder }
+        let parameterType = parameter.type.withoutEscaping.trimmedDescription
+
+        guard !parameter.attributes.isEmpty else {
+            // A builder property's synthesized parameter carries the builder, so a plain
+            // parameter differs from it.
+            guard propertyBuilder == nil,
+                  parameterType == propertyType.trimmedDescription
+            else { return nil }
+            return .plain
+        }
+
+        guard parameter.attributes.count == 1,
+              let builder = parameter.attributes.first?.as(AttributeSyntax.self),
+              builder.arguments == nil
+        else { return nil }
+        let builderName = builder.attributeName.trimmedDescription
+
+        // A property already marked with the same builder needs no suggestion. Any other
+        // attribute, such as a property wrapper, changes the synthesized parameter.
+        let isMarked: Bool
+        switch propertyAttributes.count {
+            case 0: isMarked = false
+            case 1 where propertyBuilder?.attributeName.trimmedDescription == builderName:
+                isMarked = true
+            default: return nil
+        }
+        guard propertyAttributes.count == property.attributes.count else { return nil }
+
+        let evaluates: Bool
+        if let closure = parameter.type.withoutEscaping.as(FunctionTypeSyntax.self),
+           closure.parameters.isEmpty,
+           closure.returnClause.type.trimmedDescription == propertyType.trimmedDescription
+        {
+            evaluates = true
+        } else if propertyType.withoutEscaping.is(FunctionTypeSyntax.self),
+                  parameterType == propertyType.trimmedDescription
+        {
+            evaluates = false
+        } else {
+            return nil
+        }
+
+        let suggestion = isMarked
+            ? nil
+            : "@\(builderName) \(property.bindingSpecifier.text) \(parameter.firstName.text): \(propertyType.trimmedDescription)"
+        return .builder(evaluates: evaluates, suggestion: suggestion)
     }
 
     // Evaluates if all, and only, the stored properties are initialized in the body
     private func matchesAssignmentBody(
         variables: [VariableDeclSyntax],
+        matches: [ParameterMatch],
         initBody: CodeBlockSyntax?
     ) -> Bool {
         guard let initBody else { return false }
@@ -182,7 +259,21 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
                 return false
             }
 
-            if let identifierExpr = expr.rightOperand.as(DeclReferenceExprSyntax.self) {
+            // A builder-evaluating parameter is called once. Every other parameter is assigned
+            // as is.
+            guard let index = variables.firstIndex(where: {
+                $0.firstIdentifier.identifier.text == leftName
+            }) else { return false }
+
+            if matches[index].evaluates {
+                guard let call = expr.rightOperand.as(FunctionCallExprSyntax.self),
+                      call.arguments.isEmpty,
+                      call.trailingClosure == nil,
+                      call.additionalTrailingClosures.isEmpty,
+                      let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)
+                else { return false }
+                rightName = callee.baseName.text
+            } else if let identifierExpr = expr.rightOperand.as(DeclReferenceExprSyntax.self) {
                 rightName = identifierExpr.baseName.text
             } else {
                 return false
@@ -217,6 +308,29 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
 fileprivate extension Finding.Message {
     static let removeRedundantInitializer: Finding.Message =
         "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+
+    static func declareBuilderProperties(_ declarations: [String]) -> Finding.Message {
+        let list = declarations.map { "'\($0)'" }.joined(separator: " and ")
+        return "remove this explicit initializer and declare \(list); the synthesized initializer then takes the same builder closure"
+    }
+}
+
+/// How one initializer parameter maps to the stored property it initializes.
+private enum ParameterMatch {
+    /// The parameter has the property's type and is assigned as is.
+    case plain
+    /// The parameter carries a result builder. `evaluates` is true when the initializer calls the
+    /// builder closure and false when it stores the closure. `suggestion` is the property
+    /// declaration to write when the property lacks the builder.
+    case builder(evaluates: Bool, suggestion: String?)
+
+    var evaluates: Bool {
+        if case .builder(true, _) = self { true } else { false }
+    }
+
+    var suggestion: String? {
+        if case let .builder(_, suggestion) = self { suggestion } else { nil }
+    }
 }
 
 /// Defines the access levels which may be assigned to a synthesized memberwise initializer.
@@ -304,4 +418,47 @@ fileprivate extension VariableDeclSyntax {
 
     /// Returns the first initializer clause, if present.
     var firstInitializer: InitializerClauseSyntax? { bindings.first?.initializer }
+
+    /// Whether the property is computed. A property with only `willSet` or `didSet` observers
+    /// stays stored.
+    var isComputed: Bool {
+        bindings.contains { binding in
+            switch binding.accessorBlock?.accessors {
+                case .getter: true
+                case let .accessors(list):
+                    list.contains {
+                        ![.keyword(.willSet), .keyword(.didSet)].contains($0.accessorSpecifier.tokenKind)
+                    }
+                case nil: false
+            }
+        }
+    }
+
+    /// Whether a property wrapper's attribute arguments set the property up, as in
+    /// `@Environment(\.dismiss) var dismiss`. The memberwise initializer takes no parameter for it.
+    var isSetUpByWrapperArguments: Bool {
+        firstInitializer == nil
+            && attributes.contains { $0.as(AttributeSyntax.self)?.arguments != nil }
+    }
+}
+
+fileprivate extension AttributeSyntax {
+    /// Whether the attribute names a result builder, judged by the `Builder` suffix convention.
+    var isResultBuilder: Bool {
+        arguments == nil && attributeName.trimmedDescription.hasSuffix("Builder")
+    }
+}
+
+fileprivate extension TypeSyntax {
+    /// The type without an `@escaping` attribute.
+    var withoutEscaping: TypeSyntax {
+        guard let attributed = self.as(AttributedTypeSyntax.self) else { return self }
+        let kept = attributed.attributes.filter {
+            $0.as(AttributeSyntax.self)?.attributeName.trimmedDescription != "escaping"
+        }
+        guard kept.isEmpty, attributed.specifiers.isEmpty else {
+            return TypeSyntax(attributed.with(\.attributes, kept))
+        }
+        return attributed.baseType
+    }
 }

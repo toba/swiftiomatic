@@ -625,4 +625,218 @@ struct UseSynthesizedInitializerTests: RuleTesting {
       findings: []
     )
   }
+
+  // MARK: - Views: computed properties and result-builder properties
+
+  @Test func viewWithMemberwiseInitializerIsDiagnosed() {
+    // `body` is computed, so it takes no part in the memberwise initializer.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Plain: View {
+        let name: String
+        1️⃣init(name: String) { self.name = name }
+        var body: some View { Text(name) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func observedComputedAndWrappedPropertiesAreSkipped() {
+    // A `get` accessor makes a property computed. A `didSet` observer keeps it stored. An
+    // environment wrapper set up by its attribute arguments takes no initializer parameter.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Plain: View {
+        @Environment(\\.dismiss) private var dismiss
+        var name: String { didSet { print(name) } }
+        var upper: String { get { name.uppercased() } }
+        1️⃣init(name: String) { self.name = name }
+        var body: some View { Text(name) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func builderEvaluatingInitializerSuggestsBuilderValueProperty() {
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Built<Content: View>: View {
+        let content: Content
+        1️⃣init(@ViewBuilder content: () -> Content) { self.content = content() }
+        var body: some View { content }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "remove this explicit initializer and declare '@ViewBuilder let content: Content'; the synthesized initializer then takes the same builder closure"
+        )
+      ]
+    )
+  }
+
+  @Test func builderStoringInitializerSuggestsBuilderClosureProperty() {
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Deferred<Content: View>: View {
+        let content: () -> Content
+        1️⃣init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
+        var body: some View { content() }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "remove this explicit initializer and declare '@ViewBuilder let content: () -> Content'; the synthesized initializer then takes the same builder closure"
+        )
+      ]
+    )
+  }
+
+  @Test func builderPropertyWithMatchingInitializerIsDiagnosed() {
+    // The property already carries the builder, so the synthesized initializer is identical.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Built<Content: View>: View {
+        let title: String
+        @ViewBuilder let content: Content
+        1️⃣init(title: String, @ViewBuilder content: () -> Content) {
+          self.title = title
+          self.content = content()
+        }
+        var body: some View { content }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func builderInitializerDoesNotSwapEvaluationTiming() {
+    // Each initializer changes when the builder runs, so no stored-property form reproduces it.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Built<Content: View>: View {
+        let content: () -> Content
+        init(@ViewBuilder content: @escaping () -> Content) { self.content = { content() } }
+        var body: some View { content() }
+      }
+
+      struct Deferred<Content: View>: View {
+        @ViewBuilder let content: Content
+        init(content: Content) { self.content = content }
+        var body: some View { content }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func escapingClosureParameterMatchesClosureProperty() {
+    // The synthesized initializer marks a closure parameter `@escaping` itself.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Row: View {
+        let action: () -> Void
+        1️⃣init(action: @escaping () -> Void) { self.action = action }
+        var body: some View { Button("Go", action: action) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func publicViewInitializersAreNotDiagnosed() {
+    // These mirror the toba-ui views. A synthesized initializer is never public, and several of
+    // them change labels or wrapper setup.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      public struct Checkbox: View {
+        public var isChecked: Bool = false
+        public var size: Double = 18
+        public var cornerRadius = 5.0
+
+        public init(isChecked: Bool = false, size: Double = 18, cornerRadius: Double = 5) {
+          self.isChecked = isChecked
+          self.size = size
+          self.cornerRadius = cornerRadius
+        }
+
+        public var body: some View { EmptyView() }
+      }
+
+      public struct ConditionalScrollView<Content: View>: View {
+        public var scrollable: Bool
+        @ViewBuilder public var content: (ScrollViewProxy?) -> Content
+
+        public init(scrollable: Bool, @ViewBuilder content: @escaping (ScrollViewProxy?) -> Content) {
+          self.scrollable = scrollable
+          self.content = content
+        }
+
+        public var body: some View { content(nil) }
+      }
+
+      public struct FontPicker: View {
+        private var label: LocalizedStringKey
+        @Binding public var selection: String
+
+        public init(_ label: LocalizedStringKey, selection: Binding<String>) {
+          self.label = label
+          _selection = selection
+        }
+
+        public var body: some View { EmptyView() }
+      }
+
+      public struct PopoverPicker<Popover: View>: View {
+        private var label: LocalizedStringKey
+        private var popover: Popover
+        private var description: String
+        private let popoverFrame: ViewFrameIntent?
+        @State private var menuPresented = false
+
+        public init(
+          _ label: LocalizedStringKey,
+          description: String,
+          popoverFrame: ViewFrameIntent? = nil,
+          @ViewBuilder popover: () -> Popover
+        ) {
+          self.label = label
+          self.popover = popover()
+          self.description = description
+          self.popoverFrame = popoverFrame
+        }
+
+        public var body: some View { EmptyView() }
+      }
+
+      public struct SymbolButton: View {
+        private let help: LocalizedStringKey
+        private let role: ButtonRole?
+        private let action: () -> Void
+        private let symbol: String
+
+        public init(_ symbol: String, tip help: LocalizedStringKey, role: ButtonRole? = nil, action: @escaping () -> Void) {
+          self.role = role
+          self.help = help
+          self.symbol = symbol
+          self.action = action
+        }
+
+        public var body: some View { EmptyView() }
+      }
+      """,
+      findings: []
+    )
+  }
 }

@@ -27,7 +27,9 @@ final class LintFrontend: Frontend, @unchecked Sendable {
         cache: LintCache?,
         additionalDiagnosticHandlers: [@Sendable (Diagnostic) -> Void] = [],
         suppressDefaultDiagnosticPrinter: Bool = false,
-        changedLines: [ClosedRange<Int>] = []
+        changedLines: [ClosedRange<Int>] = [],
+        changedSince: GitChangedLines? = nil,
+        onlyChanged: Bool = false
     ) {
         self.cache = cache
         super.init(
@@ -36,7 +38,9 @@ final class LintFrontend: Frontend, @unchecked Sendable {
             treatWarningsAsErrors: treatWarningsAsErrors,
             additionalDiagnosticHandlers: additionalDiagnosticHandlers,
             suppressDefaultDiagnosticPrinter: suppressDefaultDiagnosticPrinter,
-            changedLines: changedLines
+            changedLines: changedLines,
+            changedSince: changedSince,
+            onlyChanged: onlyChanged
         )
     }
 

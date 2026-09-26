@@ -840,6 +840,15 @@
           ],
           "description" : "Add `@available(*, unavailable)` to `required init(coder:)` that only calls `fatalError` .\n\nWhen a `UIView` or `UIViewController` subclass provides a `required init(coder:)` that immediately calls `fatalError` , it should be marked `@available(*, unavailable)` so the compiler prevents it from being called.\n\nLint: A `required init(coder:)` stub without `@available(*, unavailable)` yields a warning.\n\nRewrite: The `@available(*, unavailable)` attribute is added."
         },
+        "noUnusedPrivateMember" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `private` or `fileprivate` function or property that nothing in the file references.\n\nPrivate scope ends at the file. Thus a search of one file finds every possible reference, and a private member with no reference is dead code.\n\nA reference is any name expression or member access with the member's base name, a key path component, or a `#selector` argument. `$name` and `_name` count as references to `name` . The match is by name only, so a reference to a different declaration with the same name also counts. Thus the rule can miss dead code, but it does not report live code.\n\nThe rule skips these members:\n\n- A member with `@objc` , `@IBAction` , `@IBOutlet` , `@_dynamicReplacement` or another\nattribute that lets code outside the file reach it. A function with any attribute that is not a known inert attribute, such as a test macro, is also skipped.\n- A member with the `override` or `dynamic` modifier, and a member of an `@objcMembers` type.\n- `init` , `deinit` , subscripts, operators, and `callAsFunction` , because a call does not\nspell their names.\n- A `fileprivate` member of a type that declares a conformance in the file. A `fileprivate`\nmember can be a protocol witness, and the rule cannot see protocol requirements. A `private` member cannot be a witness, because Swift requires a witness to be at least `fileprivate` . Thus the rule still checks a `private` member of a conforming type.\n- A stored instance property of a type that conforms to a protocol outside a known set, such as\n`View` or `Sendable` . A synthesized conformance such as `Codable` or `Hashable` reads the stored properties without a reference in the source.\n\nLint: A `private` or `fileprivate` function or property has no reference in the file.",
+          "unevaluatedProperties" : false
+        },
         "noUnusedSetterValue" : {
           "allOf" : [
             {
@@ -937,7 +946,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Declare a custom `struct` initializer in an extension so the synthesized memberwise initializer stays available.\n\nAn initializer in the main body of a `struct` suppresses the memberwise initializer. The same initializer in an extension keeps it. The rule flags an initializer that only copies its parameters into stored properties under labels that differ from the memberwise labels. Such an initializer adds a second spelling and removes the first one for no reason.\n\nThe rule stays silent in these cases:\n\n- The labels match the memberwise labels in order. `UseSynthesizedInit` owns that case.\n- The initializer validates or normalizes its input. Any statement other than\n`self.property = parameter` counts as validation or normalization.\n- The initializer is failable or throws.\n- The type is `public`, `package` or `open` and a stored property is less visible than the\ntype. The synthesized initializer cannot reach the type's access level, so the explicit initializer must stay.\n\nLint: A plain relabeling initializer in the main body of a `struct` raises a warning.",
+          "description" : "Declare a custom `struct` initializer in an extension so the synthesized memberwise initializer stays available.\n\nAn initializer in the main body of a `struct` suppresses the memberwise initializer. The same initializer in an extension keeps it. The rule flags an initializer that only copies its parameters into stored properties under labels that differ from the memberwise labels. Such an initializer adds a second spelling and removes the first one for no reason.\n\nThe rule stays silent in these cases:\n\n- The labels match the memberwise labels in order. `UseSynthesizedInit` owns that case.\n- The initializer validates or normalizes its input. Any statement other than\n`self.property = parameter` counts as validation or normalization.\n- The initializer is failable or throws.\n- The type is `public`, `package` or `open` and a stored property is less visible than the type.\nThe synthesized initializer cannot reach the type's access level, so the explicit initializer must stay.\n\nLint: A plain relabeling initializer in the main body of a `struct` raises a warning.",
           "unevaluatedProperties" : false
         },
         "useMainAttributeNotMainFunc" : {
@@ -1136,6 +1145,15 @@
         }
       ],
       "description" : "Remove `@objc` when it is already implied by another attribute.\n\nThe `@objc` attribute is automatically implied by `@IBAction` , `@IBOutlet` , `@IBDesignable` , `@IBInspectable` , `@NSManaged` , and `@GKInspectable` . Writing `@objc` alongside any of these is redundant.\n\nThis rule does NOT flag `@objc` when it specifies an explicit Objective-C name (e.g. `@objc(mySelector:)` ), since that provides information beyond just marking the declaration as ObjC-visible.\n\nLint: If a redundant `@objc` is found, a lint warning is raised.\n\nRewrite: The redundant `@objc` attribute is removed."
+    },
+    "dropRedundantObservableOnModel" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Remove `@Observable` from a class that also carries `@Model` .\n\nThe `@Model` macro adds the `Observable` conformance and the observation storage. A second `@Observable` asks for the same work again. The two macros then declare the same members, and the compiler reports a redeclaration.\n\nLint: A class carries both `@Model` and `@Observable` .",
+      "unevaluatedProperties" : false
     },
     "dropRedundantOptionalBinding" : {
       "allOf" : [
@@ -1431,6 +1449,15 @@
       "description" : "Warn on `ForEach` whose receiver is an integer-index sequence (`<expr>.indices`, `a..<b`, `a...b`, `Range(...)`). Row identity becomes positional, so insertions and removals shift every following row's id and SwiftUI redraws (and resets `@State`) past the mutation point. Prefer `ForEach(Array(<collection>.enumerated()), id: \\.element.id)`.\n\nOrthogonal to `FlagForEachIDSelfInView`: that rule keys on the `id:` axis (`\\.self` is fragile on element collections); this rule keys on the receiver axis and ignores the `id:` argument entirely. The two rules are designed not to co-fire — the integer-indexed case is exempted from `FlagForEachIDSelfInView` and owned here.",
       "unevaluatedProperties" : false
     },
+    "flagInMemoryModelStore" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an in-memory SwiftData store outside tests and previews.\n\n`ModelConfiguration(isStoredInMemoryOnly: true)` and `.modelContainer(for:inMemory: true)` keep the store in memory only. The app loses every saved model when it quits. That is correct for a unit test and for a preview, and it is almost always a mistake in the app target. A flag that a developer sets for a quick test and does not remove is a common cause.\n\nThe rule does not report a test file, a file that imports XCTest or Testing, a Swift Testing `@Test` function, a `#Preview` body, or a type that conforms to `PreviewProvider` . A test file is a file under a `Tests/` directory or a file whose name ends in `Tests.swift` . The rule reports only the literal `true` , so a value that a launch argument sets does not get a finding.\n\nLint: `isStoredInMemoryOnly: true` or `modelContainer(..., inMemory: true)` appears outside a test or a preview.",
+      "unevaluatedProperties" : false
+    },
     "flagInvisibleCharacters" : {
       "allOf" : [
         {
@@ -1500,7 +1527,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nLint: A reference to one of these types raises a warning.",
+      "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nThe rule also flags two older patterns that have a Swift replacement:\n\n- Storage of `NSAttributedString` or `NSMutableAttributedString` → `AttributedString` . The rule\nreports a stored property of a type, an initializer parameter of a type and an enum case parameter. The Swift value type is `Sendable` , it is `Codable` and SwiftData stores it. The rule does not report a local, a computed property or a function parameter. A TextKit bridge can need the reference type. In that case, keep the code and ignore the finding.\n- A hand-written `animatableData` on a type that conforms to `Animatable` , `Shape` ,\n`InsettableShape` or `AnimatableModifier` → the `@Animatable` macro. The macro makes the stored properties animatable and writes `animatableData` . Mark a property that must not animate with `@AnimatableIgnored` . A custom `animatableData` that does more than pack the stored properties can need to stay.\n\nLint: A reference to a replaced type, a stored `NSAttributedString` or a hand-written `animatableData` raises a warning.",
       "unevaluatedProperties" : false
     },
     "flagSupersededSwiftUI" : {
@@ -1510,6 +1537,15 @@
         }
       ],
       "description" : "Flag superseded SwiftUI / Combine-era APIs that have modern `@Observable` / navigation replacements:\n\n- `@StateObject` → `@State` with an `@Observable` type\n- `@ObservedObject` → pass `@Observable` values directly (or `@Bindable` for two-way bindings)\n- `@EnvironmentObject` → `@Environment(MyType.self)` with an `@Observable` type\n- `@Published` → unnecessary on `@Observable` types\n- `ObservableObject` conformance → `@Observable` macro\n- `NavigationView` → `NavigationStack` / `NavigationSplitView`\n\nFlag-only — fixes are contextual (the consumer must move the type to `@Observable`, choose `NavigationStack` vs `NavigationSplitView`, etc.).",
+      "unevaluatedProperties" : false
+    },
+    "flagSwiftUILayoutHazard" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag three SwiftUI layout shapes that lay out wrongly or waste space.\n\nA `GeometryReader` takes all the space its container proposes. A scroll view or a lazy stack proposes no fixed size on its scroll axis, so a `GeometryReader` directly in its content collapses or fills the axis. `.onGeometryChange` measures a view without this problem.\n\nA `NavigationStack` or `NavigationSplitView` inside the content of another one makes a second navigation stack. The two stacks fight over the navigation bar and the path. A presented sheet is a separate context, so the rule does not report a stack inside a modal modifier. The rule also reports a same-file view whose `body` holds its own navigation container, when that view appears inside the content of another navigation container.\n\nTwo scroll views on the same axis in one `VStack` or `HStack` split the space of the stack between them, unless a `.frame` bounds each one. The result is seldom the layout the author wants.\n\nLint: A `GeometryReader` directly inside a `ScrollView` , a `List` or a lazy stack, a nested navigation container, or two unbounded same-axis scroll views in one stack.",
       "unevaluatedProperties" : false
     },
     "flagTaskDetached" : {
@@ -1563,7 +1599,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag `nonisolated(unsafe)` on a `let` the compiler already accepts.\n\n`nonisolated(unsafe)` tells the compiler to stop checking a declaration. On a `let` bound to a literal there is nothing to check, because the value is immutable and already `Sendable` . The marker then buys nothing and it silences the next real violation on that declaration.\n\nThe rule reports only a literal initializer: a number, a boolean, a string with no interpolation, or an array or dictionary of those. A `let` bound to a call keeps the marker, because the rule cannot see whether the constructed type is `Sendable` .\n\nLint: A `nonisolated(unsafe) let` whose every binding takes a literal raises a warning.",
+      "description" : "Flag `nonisolated(unsafe)` on a `let` whose literal value is already `Sendable` .\n\n`nonisolated(unsafe)` tells the compiler to stop checking a declaration. On a `let` bound to a literal of a standard library type there is nothing to check, because the value is immutable and `Sendable` . The marker then buys nothing and it silences the next real violation on that declaration.\n\nThe rule reports only a literal initializer: a number, a boolean, a string with no interpolation, or an array or dictionary of those. A type annotation must name a standard library `Sendable` type, such as `Int` , `String` , `[Double]` or `[String: Int]?` . The rule skips every other `let` , because the marker can be necessary there:\n\n- A `Regex` is not `Sendable` . A regex literal, `try Regex(...)` and `NSRegularExpression`\nkeep the marker.\n- A call, such as `DateFormatter()` , can build a class instance that is not `Sendable` .\n- A literal can build a type that is not `Sendable` , such as `let items: NSMutableArray = []` .\n\nBefore you remove the marker, make sure that no other code depends on it. A module that does not use strict concurrency checking can need a different fix.\n\nLint: A `nonisolated(unsafe) let` whose every binding takes a literal of a known `Sendable` type raises a warning.",
       "unevaluatedProperties" : false
     },
     "flagUnusedIgnoreDirective" : {
@@ -1798,7 +1834,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nLint: A reference to one of these types raises a warning.",
+          "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nThe rule also flags two older patterns that have a Swift replacement:\n\n- Storage of `NSAttributedString` or `NSMutableAttributedString` → `AttributedString` . The rule\nreports a stored property of a type, an initializer parameter of a type and an enum case parameter. The Swift value type is `Sendable` , it is `Codable` and SwiftData stores it. The rule does not report a local, a computed property or a function parameter. A TextKit bridge can need the reference type. In that case, keep the code and ignore the finding.\n- A hand-written `animatableData` on a type that conforms to `Animatable` , `Shape` ,\n`InsettableShape` or `AnimatableModifier` → the `@Animatable` macro. The macro makes the stored properties animatable and writes `animatableData` . Mark a property that must not animate with `@AnimatableIgnored` . A custom `animatableData` that does more than pack the stored properties can need to stay.\n\nLint: A reference to a replaced type, a stored `NSAttributedString` or a hand-written `animatableData` raises a warning.",
           "unevaluatedProperties" : false
         },
         "noAssignmentInExpressions" : {
@@ -2576,6 +2612,15 @@
           "description" : "Properties whose name ends in `delegate` should be declared `weak` to avoid retain cycles.\n\nThis rule fires only on class instance properties. Local variables, struct/enum members, computed properties, protocol requirements, and properties marked with one of the SwiftUI adaptor attributes ( `@UIApplicationDelegateAdaptor` , `@NSApplicationDelegateAdaptor` , `@WKExtensionDelegateAdaptor` ) are excluded. Properties already marked `weak` or `unowned` pass.\n\nLint: A class instance property named `*delegate` without a `weak` / `unowned` modifier yields a warning.",
           "unevaluatedProperties" : false
         },
+        "requireWeakSelfInObservations" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Require `[weak self]` in an `Observations` closure that a class or an actor creates.\n\nAn `Observations` sequence keeps its closure while a consumer iterates the sequence. A closure that captures `self` strongly keeps the owner alive for the same time. A `for await` loop over the sequence does not end by itself, so the owner often stays alive until the process ends. Add `[weak self]` to the capture list and read `self?` in the closure.\n\nThe rule also checks a `for await` loop over an `Observations` sequence inside a `Task { }` closure. The task keeps its closure until the loop ends. If the task closure captures `self` strongly, the task keeps the owner alive. The rule matches a sequence that the loop creates directly, or a local that an `Observations` initializer binds in the same function.\n\nSwift requires an explicit `self.` in an escaping closure of a class or an actor, unless the capture list holds `self`. So the rule looks for an explicit `self` in the closure body and for a strong `self` in the capture list. A value type does not have this problem, so the rule does not check a struct or an enum. The rule checks an extension only when the same file declares the extended type as a class or an actor. A static member does not capture an instance, so the rule does not check it.\n\nThe rule does not check `[weak self]` followed by `guard let self` before the loop. That form also keeps the owner alive while the loop runs. A task that the owner stores and cancels also gets a finding. Suppress the finding for that task.\n\n`UseWeakSelfInClosures` reports `unowned` captures. `FlagRecursiveObservationTracking` reports the recursive `withObservationTracking` pattern. This rule does not repeat either check.\n\nLint: An `Observations` closure in a class or an actor captures `self` strongly, or a `for await` loop over `Observations` runs in a `Task` closure that captures `self` strongly.",
+          "unevaluatedProperties" : false
+        },
         "useStrongOutlets" : {
           "allOf" : [
             {
@@ -3202,6 +3247,15 @@
       "description" : "`@retroactive` conformances are forbidden.\n\nLint: Using `@retroactive` results in a lint error.",
       "unevaluatedProperties" : false
     },
+    "noRootBranchSwapInBody" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a view `body` whose only statement is an `if` / `else` or a `switch` that swaps the root view type between branches.\n\nWhen the branches build different root types, SwiftUI gives each branch its own identity. A change of the condition destroys the views of one branch and creates the views of the other. The destroyed views lose their state, and SwiftUI cannot animate between the two trees. Keep one stable root view and put the conditional content inside it, or change a modifier value instead of the view.\n\nThe rule does not report an `if` without `else` , an `if #available` check, or branches whose root calls name the same view type. The root of a branch is the view that its modifier chain starts from.\n\nLint: The single top-level statement of a `View` `body` or a `ViewModifier` `body(content:)` is an `if` / `else` or a `switch` whose branches build two or more different root view types.",
+      "unevaluatedProperties" : false
+    },
     "noSortFilterInForEach" : {
       "allOf" : [
         {
@@ -3244,6 +3298,24 @@
       },
       "unevaluatedProperties" : false
     },
+    "noUnreadEnvironmentProperty" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an `@Environment` or `@FocusedValue` property of a view that no member of the view reads.\n\nThe declaration is the subscription. SwiftUI re-evaluates the view on every change to the value, even when no code reads it. A property that no member reads costs updates and gives nothing back.\n\nA read is a reference to the name, to `self.name` , or to `$name` in any member of the type or of a same-file extension of the type. A reference inside a nested type does not count. A local binding that shadows the name does not count.\n\nThe rule checks one file at a time. An extension in another file can read a property that is not `private` or `fileprivate` . Thus the rule reports only a `private` or `fileprivate` property, or a property of a type that is `private` or `fileprivate` or that is nested in such a type.\n\nLint: A private `@Environment` or `@FocusedValue` property of a `View` or `ViewModifier` type has no read in the file.",
+      "unevaluatedProperties" : false
+    },
+    "noUnusedPrivateMember" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `private` or `fileprivate` function or property that nothing in the file references.\n\nPrivate scope ends at the file. Thus a search of one file finds every possible reference, and a private member with no reference is dead code.\n\nA reference is any name expression or member access with the member's base name, a key path component, or a `#selector` argument. `$name` and `_name` count as references to `name` . The match is by name only, so a reference to a different declaration with the same name also counts. Thus the rule can miss dead code, but it does not report live code.\n\nThe rule skips these members:\n\n- A member with `@objc` , `@IBAction` , `@IBOutlet` , `@_dynamicReplacement` or another\nattribute that lets code outside the file reach it. A function with any attribute that is not a known inert attribute, such as a test macro, is also skipped.\n- A member with the `override` or `dynamic` modifier, and a member of an `@objcMembers` type.\n- `init` , `deinit` , subscripts, operators, and `callAsFunction` , because a call does not\nspell their names.\n- A `fileprivate` member of a type that declares a conformance in the file. A `fileprivate`\nmember can be a protocol witness, and the rule cannot see protocol requirements. A `private` member cannot be a witness, because Swift requires a witness to be at least `fileprivate` . Thus the rule still checks a `private` member of a conforming type.\n- A stored instance property of a type that conforms to a protocol outside a known set, such as\n`View` or `Sendable` . A synthesized conformance such as `Codable` or `Hashable` reads the stored properties without a reference in the source.\n\nLint: A `private` or `fileprivate` function or property has no reference in the file.",
+      "unevaluatedProperties" : false
+    },
     "noUnusedSetterValue" : {
       "allOf" : [
         {
@@ -3269,6 +3341,15 @@
         }
       ],
       "description" : "Don't use a ternary expression to call void-returning functions.\n\n`condition ? doA() : doB()` reads as if it produces a value, but when both branches return `Void` it's effectively a hidden if/else with strictly worse readability. Use a proper `if` / `else` statement instead.\n\nLint: A warning is raised when a ternary appears as a statement and both branches are call expressions.\n\nRewrite: Not auto-fixed; the rewrite would change formatting beyond the scope of this rule."
+    },
+    "noWithAnimationInOnChange" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `withAnimation` call directly inside the action closure of `.onChange(of:)` .\n\nThe action runs in the same update as the change that triggers it. Other state changes in that update can carry a transaction without an animation. That transaction can override the animation that `withAnimation` sets, so the view changes without animation.\n\nThe fix is `.animation(_:value:)` on the view that animates. The modifier ties the animation to the value, and it applies only to that view.\n\nThe rule reports only a `withAnimation` call that is a statement of the action closure itself. A call inside a nested closure, such as a `Task` , runs later in its own update.\n\nLint: A `withAnimation` call is a top-level statement of an `.onChange(of:)` action closure.",
+      "unevaluatedProperties" : false
     },
     "noWorkInViewInitializer" : {
       "allOf" : [
@@ -3312,6 +3393,15 @@
         }
       ],
       "description" : "In protocol property requirements, accessors must be declared in `get set` order. The reverse — `set get` — is legal Swift but inconsistent with the canonical form used throughout the standard library and the Swift book.\n\nLint: A finding is raised when a protocol property's accessor block lists `set` before `get` .\n\nRewrite: The accessors are reordered to `get set` ."
+    },
+    "orderViewMembers" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a member of a `View` type that is not in the standard member order.\n\nA fixed order makes each view easy to scan. The inputs and the state come first. The `body` comes after them, and the helpers come last. The order is:\n\n1. `@Environment` , `@FocusState` and `@FocusedValue` properties 2. `let` stored properties 3. `@State` and other stored properties 4. computed properties that do not build a view 5. `init` 6. `body` 7. other view builders: members that return `some View` or carry `@ViewBuilder` 8. other functions\n\nThe rule ignores `static` members, nested types, type aliases, subscripts and members inside `#if` blocks. It reports only the first member out of order in each member block.\n\nLint: A member of a `View` or `ViewModifier` type comes after a member of a later category.",
+      "unevaluatedProperties" : false
     },
     "pairAcquireWithDefer" : {
       "allOf" : [
@@ -3762,6 +3852,15 @@
       ],
       "description" : "`fatalError` calls should include a descriptive message.\n\nA bare `fatalError()` (or `fatalError(\"\")` ) gives no context when the program crashes. Including a message makes it far easier to diagnose the problem from the stack trace alone.\n\nLint: A warning is raised for `fatalError()` and `fatalError(\"\")` .\n\nRewrite: Not auto-fixed; the message must be supplied by the author."
     },
+    "requireFinalModelClass" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Require `final` on a class that carries `@Model` .\n\nSwiftData derives the schema from the stored properties of a `@Model` class. A subclass is a part of the schema only when it also carries `@Model` , and a deep query on the base class then returns the subclass too. A class that is not `final` lets a later change add a subclass by accident. `final` also lets the compiler call members directly.\n\nA model class that the same file subclasses is the base of a model hierarchy, so the rule does not report it. The rule does not report an `open` class. The rule cannot see a subclass in another file. Suppress the finding for a base class that another file subclasses.\n\nLint: A class with `@Model` has no `final` modifier.",
+      "unevaluatedProperties" : false
+    },
     "requireFinalOnXCTestCase" : {
       "allOf" : [
         {
@@ -3899,6 +3998,15 @@
         }
       ],
       "description" : "Properties whose name ends in `delegate` should be declared `weak` to avoid retain cycles.\n\nThis rule fires only on class instance properties. Local variables, struct/enum members, computed properties, protocol requirements, and properties marked with one of the SwiftUI adaptor attributes ( `@UIApplicationDelegateAdaptor` , `@NSApplicationDelegateAdaptor` , `@WKExtensionDelegateAdaptor` ) are excluded. Properties already marked `weak` or `unowned` pass.\n\nLint: A class instance property named `*delegate` without a `weak` / `unowned` modifier yields a warning.",
+      "unevaluatedProperties" : false
+    },
+    "requireWeakSelfInObservations" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Require `[weak self]` in an `Observations` closure that a class or an actor creates.\n\nAn `Observations` sequence keeps its closure while a consumer iterates the sequence. A closure that captures `self` strongly keeps the owner alive for the same time. A `for await` loop over the sequence does not end by itself, so the owner often stays alive until the process ends. Add `[weak self]` to the capture list and read `self?` in the closure.\n\nThe rule also checks a `for await` loop over an `Observations` sequence inside a `Task { }` closure. The task keeps its closure until the loop ends. If the task closure captures `self` strongly, the task keeps the owner alive. The rule matches a sequence that the loop creates directly, or a local that an `Observations` initializer binds in the same function.\n\nSwift requires an explicit `self.` in an escaping closure of a class or an actor, unless the capture list holds `self`. So the rule looks for an explicit `self` in the closure body and for a strong `self` in the capture list. A value type does not have this problem, so the rule does not check a struct or an enum. The rule checks an extension only when the same file declares the extended type as a class or an actor. A static member does not capture an instance, so the rule does not check it.\n\nThe rule does not check `[weak self]` followed by `guard let self` before the loop. That form also keeps the owner alive while the loop runs. A task that the owner stores and cancels also gets a finding. Suppress the finding for that task.\n\n`UseWeakSelfInClosures` reports `unowned` captures. `FlagRecursiveObservationTracking` reports the recursive `withObservationTracking` pattern. This rule does not repeat either check.\n\nLint: An `Observations` closure in a class or an actor captures `self` strongly, or a `for await` loop over `Observations` runs in a `Task` closure that captures `self` strongly.",
       "unevaluatedProperties" : false
     },
     "simplifyGenericConstraints" : {
@@ -4101,6 +4209,49 @@
       ],
       "description" : "Each enum case with associated values should appear in its own case declaration, and each variable declaration (except tuple destructuring) should declare only one variable.\n\nCases with raw values are permitted to share a `case` declaration with bare cases, since each raw value is a single literal and the result remains readable on one line.\n\nLint: If a single `case` declaration declares multiple cases where any has associated values, or if a variable declaration declares multiple variables, a lint error is raised.\n\nRewrite: Case declarations with associated values will be moved to their own case declarations. Variable declarations with multiple bindings will be split into individual declarations."
     },
+    "swiftdata" : {
+      "additionalProperties" : false,
+      "description" : "swiftdata rule group.",
+      "properties" : {
+        "dropRedundantObservableOnModel" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Remove `@Observable` from a class that also carries `@Model` .\n\nThe `@Model` macro adds the `Observable` conformance and the observation storage. A second `@Observable` asks for the same work again. The two macros then declare the same members, and the compiler reports a redeclaration.\n\nLint: A class carries both `@Model` and `@Observable` .",
+          "unevaluatedProperties" : false
+        },
+        "flagInMemoryModelStore" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an in-memory SwiftData store outside tests and previews.\n\n`ModelConfiguration(isStoredInMemoryOnly: true)` and `.modelContainer(for:inMemory: true)` keep the store in memory only. The app loses every saved model when it quits. That is correct for a unit test and for a preview, and it is almost always a mistake in the app target. A flag that a developer sets for a quick test and does not remove is a common cause.\n\nThe rule does not report a test file, a file that imports XCTest or Testing, a Swift Testing `@Test` function, a `#Preview` body, or a type that conforms to `PreviewProvider` . A test file is a file under a `Tests/` directory or a file whose name ends in `Tests.swift` . The rule reports only the literal `true` , so a value that a launch argument sets does not get a finding.\n\nLint: `isStoredInMemoryOnly: true` or `modelContainer(..., inMemory: true)` appears outside a test or a preview.",
+          "unevaluatedProperties" : false
+        },
+        "requireFinalModelClass" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Require `final` on a class that carries `@Model` .\n\nSwiftData derives the schema from the stored properties of a `@Model` class. A subclass is a part of the schema only when it also carries `@Model` , and a deep query on the base class then returns the subclass too. A class that is not `final` lets a later change add a subclass by accident. `final` also lets the compiler call members directly.\n\nA model class that the same file subclasses is the base of a model hierarchy, so the rule does not report it. The rule does not report an `open` class. The rule cannot see a subclass in another file. Suppress the finding for a base class that another file subclasses.\n\nLint: A class with `@Model` has no `final` modifier.",
+          "unevaluatedProperties" : false
+        },
+        "useFetchDescriptorNotPostFilter" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Push filters, limits and counts into the fetch instead of running them on the fetched array.\n\n`ModelContext.fetch(_:)` loads every model that the descriptor matches. A `filter` or a `first(where:)` on the result then runs in memory, after the store did the full load. A `#Predicate` on the `FetchDescriptor` lets the store skip the rows. `fetchLimit` does the same for `prefix` , and `fetchCount(_:)` counts the rows without loading a model.\n\nThe rule checks a call chained directly on the fetch, and a local that the fetch binds in the same scope. It reports a local only when the post-fetch operations are the only uses of the local. When the code uses the full array for other work too, the fetch is necessary. The rule does not report a `var` that the scope assigns again.\n\nThe rule is syntax-only. It accepts a `fetch` call when the receiver name contains \"context\" or when the argument is a `FetchDescriptor` initializer. A `fetch` method of another type can match when its receiver has a name such as `context` .\n\nLint: The result of `<context>.fetch(...)` flows into `filter` , `prefix` , `first(where:)` or `count` .",
+          "unevaluatedProperties" : false
+        }
+      },
+      "type" : "object"
+    },
     "swiftui" : {
       "additionalProperties" : false,
       "description" : "swiftui rule group.",
@@ -4176,6 +4327,15 @@
           "description" : "Flag superseded SwiftUI / Combine-era APIs that have modern `@Observable` / navigation replacements:\n\n- `@StateObject` → `@State` with an `@Observable` type\n- `@ObservedObject` → pass `@Observable` values directly (or `@Bindable` for two-way bindings)\n- `@EnvironmentObject` → `@Environment(MyType.self)` with an `@Observable` type\n- `@Published` → unnecessary on `@Observable` types\n- `ObservableObject` conformance → `@Observable` macro\n- `NavigationView` → `NavigationStack` / `NavigationSplitView`\n\nFlag-only — fixes are contextual (the consumer must move the type to `@Observable`, choose `NavigationStack` vs `NavigationSplitView`, etc.).",
           "unevaluatedProperties" : false
         },
+        "flagSwiftUILayoutHazard" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag three SwiftUI layout shapes that lay out wrongly or waste space.\n\nA `GeometryReader` takes all the space its container proposes. A scroll view or a lazy stack proposes no fixed size on its scroll axis, so a `GeometryReader` directly in its content collapses or fills the axis. `.onGeometryChange` measures a view without this problem.\n\nA `NavigationStack` or `NavigationSplitView` inside the content of another one makes a second navigation stack. The two stacks fight over the navigation bar and the path. A presented sheet is a separate context, so the rule does not report a stack inside a modal modifier. The rule also reports a same-file view whose `body` holds its own navigation container, when that view appears inside the content of another navigation container.\n\nTwo scroll views on the same axis in one `VStack` or `HStack` split the space of the stack between them, unless a `.frame` bounds each one. The result is seldom the layout the author wants.\n\nLint: A `GeometryReader` directly inside a `ScrollView` , a `List` or a lazy stack, a nested navigation container, or two unbounded same-axis scroll views in one stack.",
+          "unevaluatedProperties" : false
+        },
         "flagWholeValueModelViewInput" : {
           "allOf" : [
             {
@@ -4239,6 +4399,24 @@
           "description" : "Flag an `.onChange(of:)` whose source is a `@State` of the view and whose action assigns another stored property of the same view.\n\nThe write lands one update after the change it follows. SwiftUI evaluates `body` once with the new source and the old derived value, then again after the action runs. When the view owns both values, it can derive the second one in the same mutation, for example in a `didSet` of a model value, or compute it where it is read.\n\nThe rule only reports a source that the view owns as `@State` . An environment value or a `Binding` from a parent changes outside the view, so `onChange` is the correct reaction to it.\n\nLint: An `.onChange(of:)` of a `@State` property assigns a different stored property of the same view type.",
           "unevaluatedProperties" : false
         },
+        "noRootBranchSwapInBody" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a view `body` whose only statement is an `if` / `else` or a `switch` that swaps the root view type between branches.\n\nWhen the branches build different root types, SwiftUI gives each branch its own identity. A change of the condition destroys the views of one branch and creates the views of the other. The destroyed views lose their state, and SwiftUI cannot animate between the two trees. Keep one stable root view and put the conditional content inside it, or change a modifier value instead of the view.\n\nThe rule does not report an `if` without `else` , an `if #available` check, or branches whose root calls name the same view type. The root of a branch is the view that its modifier chain starts from.\n\nLint: The single top-level statement of a `View` `body` or a `ViewModifier` `body(content:)` is an `if` / `else` or a `switch` whose branches build two or more different root view types.",
+          "unevaluatedProperties" : false
+        },
+        "noUnreadEnvironmentProperty" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an `@Environment` or `@FocusedValue` property of a view that no member of the view reads.\n\nThe declaration is the subscription. SwiftUI re-evaluates the view on every change to the value, even when no code reads it. A property that no member reads costs updates and gives nothing back.\n\nA read is a reference to the name, to `self.name` , or to `$name` in any member of the type or of a same-file extension of the type. A reference inside a nested type does not count. A local binding that shadows the name does not count.\n\nThe rule checks one file at a time. An extension in another file can read a property that is not `private` or `fileprivate` . Thus the rule reports only a `private` or `fileprivate` property, or a property of a type that is `private` or `fileprivate` or that is nested in such a type.\n\nLint: A private `@Environment` or `@FocusedValue` property of a `View` or `ViewModifier` type has no read in the file.",
+          "unevaluatedProperties" : false
+        },
         "noViewFactoryMembers" : {
           "allOf" : [
             {
@@ -4248,6 +4426,15 @@
           "description" : "Flag a member of a `View` type, other than `body` , that returns `some View` or `AnyView` .\n\nA factory member runs as part of the caller's `body` . SwiftUI cannot compare its inputs or skip it, so every change the caller sees rebuilds the factory's views too. A separate `View` type gets its own stored inputs, and SwiftUI skips it when they do not change.\n\nA member that returns a concrete leaf type such as `Text` , `Image` , `Color` , a shape, a gradient or `EmptyView` is not a factory. Neither are the protocol entry points `body` , `body(content:)` and `makeBody(configuration:)` , nor a fluent method in `extension View` that transforms `self` .\n\nLint: A member of a `View` or `ViewModifier` type returns `some View` , `any View` or `AnyView` .",
           "unevaluatedProperties" : false
         },
+        "noWithAnimationInOnChange" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `withAnimation` call directly inside the action closure of `.onChange(of:)` .\n\nThe action runs in the same update as the change that triggers it. Other state changes in that update can carry a transaction without an animation. That transaction can override the animation that `withAnimation` sets, so the view changes without animation.\n\nThe fix is `.animation(_:value:)` on the view that animates. The modifier ties the animation to the value, and it applies only to that view.\n\nThe rule reports only a `withAnimation` call that is a statement of the action closure itself. A call inside a nested closure, such as a `Task` , runs later in its own update.\n\nLint: A `withAnimation` call is a top-level statement of an `.onChange(of:)` action closure.",
+          "unevaluatedProperties" : false
+        },
         "noWorkInViewInitializer" : {
           "allOf" : [
             {
@@ -4255,6 +4442,15 @@
             }
           ],
           "description" : "Flag a statement in an explicit `View` initializer that does more than store an input.\n\nA parent creates its child views again each time it evaluates its own `body` . Work in the child's initializer repeats on each of those evaluations, even when SwiftUI then skips the child's `body` because its inputs did not change. Store the inputs as they arrive, and do the work in `body` , where SwiftUI can skip it, or in a model that owns the result.\n\nThese statements are not work:\n\n- an assignment of a name, a literal, a member access or `nil` to a property\n- a property wrapper setup such as `_selection = selection` or\n`_count = State(initialValue: start)`\n- an assignment of the result of a `@ViewBuilder` or `@ContentBuilder` parameter call, such as\n`self.popover = popover()`\n- a delegation to `self.init(...)` or `super.init(...)`\n\nLint: An explicit initializer of a view type holds a statement other than those above.",
+          "unevaluatedProperties" : false
+        },
+        "orderViewMembers" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a member of a `View` type that is not in the standard member order.\n\nA fixed order makes each view easy to scan. The inputs and the state come first. The `body` comes after them, and the helpers come last. The order is:\n\n1. `@Environment` , `@FocusState` and `@FocusedValue` properties 2. `let` stored properties 3. `@State` and other stored properties 4. computed properties that do not build a view 5. `init` 6. `body` 7. other view builders: members that return `some View` or carry `@ViewBuilder` 8. other functions\n\nThe rule ignores `static` members, nested types, type aliases, subscripts and members inside `#if` blocks. It reports only the first member out of order in each member block.\n\nLint: A member of a `View` or `ViewModifier` type comes after a member of a later category.",
           "unevaluatedProperties" : false
         },
         "requireRepeatSafeOnAppear" : {
@@ -4290,6 +4486,15 @@
             }
           ],
           "description" : "Flag the pre-`Transferable` drag API.\n\n`.onDrag` builds an `NSItemProvider` , which carries an untyped payload behind a type identifier string. `.draggable` takes a value whose type conforms to `Transferable` , so the compiler checks the payload and the same conformance also serves copy, paste and share.\n\nLint: A call to `.onDrag` , or a reference to `NSItemProvider` , raises a warning.",
+          "unevaluatedProperties" : false
+        },
+        "useItemPresentation" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `Bool` `@State` flag that presents content which reads a separate optional `@State` .\n\nA view that presents a sheet for a value often keeps two properties: a `Bool` that shows the sheet and an optional that holds the value. The two properties can disagree. The flag can be `true` while the value is `nil` , and then the sheet shows empty content. The `item:` form takes one `Binding<T?>` . The sheet shows when the value is set, and the content gets the value unwrapped. `.alert` and `.confirmationDialog` get the same fix from their `presenting:` form.\n\nThe rule reads only the view type in the same file. It reports when the `isPresented:` argument is the projected binding of a `Bool` `@State` property, and a content closure of the modifier reads an optional `@State` property of the same view.\n\nLint: A `.sheet` , `.alert` , `.confirmationDialog` , `.popover` or `.fullScreenCover` presents with a `Bool` `@State` flag, and its content reads an optional `@State` property.",
           "unevaluatedProperties" : false
         },
         "useReadableDocument" : {
@@ -4599,7 +4804,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag `nonisolated(unsafe)` on a `let` the compiler already accepts.\n\n`nonisolated(unsafe)` tells the compiler to stop checking a declaration. On a `let` bound to a literal there is nothing to check, because the value is immutable and already `Sendable` . The marker then buys nothing and it silences the next real violation on that declaration.\n\nThe rule reports only a literal initializer: a number, a boolean, a string with no interpolation, or an array or dictionary of those. A `let` bound to a call keeps the marker, because the rule cannot see whether the constructed type is `Sendable` .\n\nLint: A `nonisolated(unsafe) let` whose every binding takes a literal raises a warning.",
+          "description" : "Flag `nonisolated(unsafe)` on a `let` whose literal value is already `Sendable` .\n\n`nonisolated(unsafe)` tells the compiler to stop checking a declaration. On a `let` bound to a literal of a standard library type there is nothing to check, because the value is immutable and `Sendable` . The marker then buys nothing and it silences the next real violation on that declaration.\n\nThe rule reports only a literal initializer: a number, a boolean, a string with no interpolation, or an array or dictionary of those. A type annotation must name a standard library `Sendable` type, such as `Int` , `String` , `[Double]` or `[String: Int]?` . The rule skips every other `let` , because the marker can be necessary there:\n\n- A `Regex` is not `Sendable` . A regex literal, `try Regex(...)` and `NSRegularExpression`\nkeep the marker.\n- A call, such as `DateFormatter()` , can build a class instance that is not `Sendable` .\n- A literal can build a type that is not `Sendable` , such as `let items: NSMutableArray = []` .\n\nBefore you remove the marker, make sure that no other code depends on it. A module that does not use strict concurrency checking can need a different fix.\n\nLint: A `nonisolated(unsafe) let` whose every binding takes a literal of a known `Sendable` type raises a warning.",
           "unevaluatedProperties" : false
         },
         "noAwaitInsideWithLock" : {
@@ -5120,7 +5325,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Declare a custom `struct` initializer in an extension so the synthesized memberwise initializer stays available.\n\nAn initializer in the main body of a `struct` suppresses the memberwise initializer. The same initializer in an extension keeps it. The rule flags an initializer that only copies its parameters into stored properties under labels that differ from the memberwise labels. Such an initializer adds a second spelling and removes the first one for no reason.\n\nThe rule stays silent in these cases:\n\n- The labels match the memberwise labels in order. `UseSynthesizedInit` owns that case.\n- The initializer validates or normalizes its input. Any statement other than\n`self.property = parameter` counts as validation or normalization.\n- The initializer is failable or throws.\n- The type is `public`, `package` or `open` and a stored property is less visible than the\ntype. The synthesized initializer cannot reach the type's access level, so the explicit initializer must stay.\n\nLint: A plain relabeling initializer in the main body of a `struct` raises a warning.",
+      "description" : "Declare a custom `struct` initializer in an extension so the synthesized memberwise initializer stays available.\n\nAn initializer in the main body of a `struct` suppresses the memberwise initializer. The same initializer in an extension keeps it. The rule flags an initializer that only copies its parameters into stored properties under labels that differ from the memberwise labels. Such an initializer adds a second spelling and removes the first one for no reason.\n\nThe rule stays silent in these cases:\n\n- The labels match the memberwise labels in order. `UseSynthesizedInit` owns that case.\n- The initializer validates or normalizes its input. Any statement other than\n`self.property = parameter` counts as validation or normalization.\n- The initializer is failable or throws.\n- The type is `public`, `package` or `open` and a stored property is less visible than the type.\nThe synthesized initializer cannot reach the type's access level, so the explicit initializer must stay.\n\nLint: A plain relabeling initializer in the main body of a `struct` raises a warning.",
       "unevaluatedProperties" : false
     },
     "useFailableStringInit" : {
@@ -5130,6 +5335,15 @@
         }
       ],
       "description" : "`String(decoding: data, as: UTF8.self)` silently substitutes `U+FFFD` for invalid bytes, hiding decoding errors. Prefer the failable `String(bytes: data, encoding: .utf8)` initializer so the caller can handle invalid input explicitly.\n\nLint: A warning is raised for any call of the form `String(decoding:as:)` or `String.init(decoding:as:)` whose `as:` argument is `UTF8.self` . Other unicode codecs ( `UTF16.self` , etc.) are not flagged.",
+      "unevaluatedProperties" : false
+    },
+    "useFetchDescriptorNotPostFilter" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Push filters, limits and counts into the fetch instead of running them on the fetched array.\n\n`ModelContext.fetch(_:)` loads every model that the descriptor matches. A `filter` or a `first(where:)` on the result then runs in memory, after the store did the full load. A `#Predicate` on the `FetchDescriptor` lets the store skip the rows. `fetchLimit` does the same for `prefix` , and `fetchCount(_:)` counts the rows without loading a model.\n\nThe rule checks a call chained directly on the fetch, and a local that the fetch binds in the same scope. It reports a local only when the post-fetch operations are the only uses of the local. When the code uses the full array for other work too, the fetch is necessary. The rule does not report a `var` that the scope assigns again.\n\nThe rule is syntax-only. It accepts a `fetch` call when the receiver name contains \"context\" or when the argument is a `FetchDescriptor` initializer. A `fetch` method of another type can match when its receiver has a name such as `context` .\n\nLint: The result of `<context>.fetch(...)` flows into `filter` , `prefix` , `first(where:)` or `count` .",
       "unevaluatedProperties" : false
     },
     "useFileIDNotFile" : {
@@ -5233,6 +5447,15 @@
         }
       ],
       "description" : "Prefer `isEmpty` over comparing `count` against zero.\n\nChecking `count == 0` or `count != 0` (or `count > 0` ) is less expressive and potentially less efficient than using `isEmpty` . Collections conforming to `Collection` guarantee O(1) `isEmpty` but `count` may be O(n) for some types (e.g. lazy sequences conforming to `Collection` ).\n\nWhen the receiver is optional ( `foo?.count == 0` ), the replacement uses explicit boolean comparison ( `foo?.isEmpty == true` ) to preserve semantics.\n\nLint: Using `.count == 0` , `.count != 0` , or `.count > 0` raises a warning.\n\nRewrite: The comparison is replaced with `.isEmpty` or `!.isEmpty` ."
+    },
+    "useItemPresentation" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `Bool` `@State` flag that presents content which reads a separate optional `@State` .\n\nA view that presents a sheet for a value often keeps two properties: a `Bool` that shows the sheet and an optional that holds the value. The two properties can disagree. The flag can be `true` while the value is `nil` , and then the sheet shows empty content. The `item:` form takes one `Binding<T?>` . The sheet shows when the value is set, and the content gets the value unwrapped. `.alert` and `.confirmationDialog` get the same fix from their `presenting:` form.\n\nThe rule reads only the view type in the same file. It reports when the `isPresented:` argument is the projected binding of a `Bool` `@State` property, and a content closure of the modifier reads an optional `@State` property of the same view.\n\nLint: A `.sheet` , `.alert` , `.confirmationDialog` , `.popover` or `.fullScreenCover` presents with a `Bool` `@State` flag, and its content reads an optional `@State` property.",
+      "unevaluatedProperties" : false
     },
     "useKeyPath" : {
       "allOf" : [

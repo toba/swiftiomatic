@@ -32,6 +32,8 @@ package enum ConfigurationGroup: String, CaseIterable, Sendable, Hashable, Codab
     case spaces
     /// SwiftUI-specific patterns (`@Entry`, `View.body`, `ForEach(id:)`).
     case swiftui
+    /// SwiftData patterns (`@Model`, `ModelContext.fetch`, `ModelConfiguration`).
+    case swiftdata
     case testing
     case types
     case unsafety
