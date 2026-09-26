@@ -9,23 +9,31 @@ import SwiftSyntax
 /// on element collections); this rule keys on the receiver axis and ignores the `id:` argument
 /// entirely. The two rules are designed not to co-fire — the integer-indexed case is exempted from
 /// `FlagForEachIDSelfInView` and owned here.
+///
+/// When the rows hold `@State` or `@FocusState` , `FlagStatefulForEachOverIndices` reports the
+/// `ForEach` instead of this rule, so a `// sm:ignore` directive for this rule does not hide it.
 final class FlagForEachOverIndices: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
-            ident.baseName.text == "ForEach" else { return .visitChildren }
-
-        guard let firstArg = node.arguments.first, firstArg.label == nil
-        else { return .visitChildren }
-
-        if isIntegerIndexedReceiver(firstArg.expression) {
-            diagnose(.indicesReceiver, on: firstArg.expression)
+        // `FlagStatefulForEachOverIndices` owns the case where the rows hold state
+        if let receiver = Self.integerIndexedReceiver(of: node),
+           FlagStatefulForEachOverIndices.rowState(of: node, context: context) == nil {
+            diagnose(.indicesReceiver, on: receiver)
         }
         return .visitChildren
     }
 
-    private func isIntegerIndexedReceiver(_ expr: ExprSyntax) -> Bool {
+    /// The receiver of a `ForEach` call when it is an integer-index sequence
+    static func integerIndexedReceiver(of node: FunctionCallExprSyntax) -> ExprSyntax? {
+        guard let ident = node.calledExpression.as(DeclReferenceExprSyntax.self),
+              ident.baseName.text == "ForEach",
+              let firstArg = node.arguments.first, firstArg.label == nil,
+              isIntegerIndexedReceiver(firstArg.expression) else { return nil }
+        return firstArg.expression
+    }
+
+    private static func isIntegerIndexedReceiver(_ expr: ExprSyntax) -> Bool {
         if let member = expr.as(MemberAccessExprSyntax.self),
            member.declName.baseName.text == "indices" { return true }
 

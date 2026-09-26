@@ -223,7 +223,7 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     )
   }
 
-  @Test func inlineWorkInBodyNotFlagged() {
+  @Test func inlineWorkInBodyFlagged() {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
       """
@@ -231,8 +231,125 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         let values: [Int]
 
         var body: some View {
-          Text(values.map(String.init).joined())
+          Text(values.1️⃣map(String.init).joined())
         }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.call("map", "body"))]
+    )
+  }
+
+  @Test func dictionariesAndStreakBuiltInBodyFlagged() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct WritingActivityHeatMap: View {
+        private let today: Date
+        private let calendar: Calendar
+
+        @Fetch private var activity: [DailyActivity] = []
+
+        var body: some View {
+          let peakByUnit = Dictionary(activity.1️⃣map { ($0.unit, $0.magnitude) }, uniquingKeysWith: max)
+          let byDay = Dictionary(
+            activity.2️⃣map { ($0.day, $0) },
+            uniquingKeysWith: { lhs, rhs in
+              intensity(lhs, peakByUnit: peakByUnit) >= intensity(rhs, peakByUnit: peakByUnit) ? lhs : rhs
+            })
+          let streak = DailyActivity.3️⃣currentStreak(
+            through: activity, today: today, calendar: calendar)
+
+          VStack {
+            if streak > 0 { Text("\\(streak)-day streak") }
+            grid(byDay: byDay)
+          }
+        }
+
+        private func intensity(_ day: DailyActivity, peakByUnit: [Unit: Int]) -> Double { 0 }
+
+        private func grid(byDay: [Date: DailyActivity]) -> some View { Text("grid") }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("map", "body")),
+        FindingSpec("2️⃣", message: Self.call("map", "body")),
+        FindingSpec("3️⃣", message: Self.opaqueCall("DailyActivity.currentStreak", "activity")),
+      ]
+    )
+  }
+
+  @Test func publicationsMappedInBodyFlagged() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct PublishView: View {
+        @State private var state: PublicationState = .shared
+        @State private var selection: Publication.ID?
+
+        var body: some View {
+          PreviewWindow(
+            selections: state.publications.1️⃣map(\\.id),
+            selection: $selection,
+            displayName: { id in state.publications.first { $0.id == id }?.displayName ?? "-" },
+            perform: { id in await publish(to: id) }
+          )
+          .task { await state.load() }
+        }
+
+        private func publish(to id: Publication.ID) async {}
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.call("map", "body"))]
+    )
+  }
+
+  @Test func functionReferencesPassedOutOfBodyNotFollowed() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct ProjectTree: View {
+        let items: [MenuTreeItem]
+        @State private var draggingID: Node.ID?
+
+        private var drag: OutlineDrag<Node.ID> {
+          OutlineDrag(
+            draggingID: $draggingID,
+            nestTarget: nestTarget,
+            canDrop: canDrop,
+            onDrop: self.move
+          )
+        }
+
+        var body: some View {
+          List {
+            ForEach(items, id: \\.id) { item in ProjectTreeRow(item: item, drag: drag) }
+          }
+          .onDrop(
+            of: [.text],
+            delegate: RootDropDelegate(draggingID: $draggingID, canDrop: canDragOut, onDrop: clearFolder)
+          )
+        }
+
+        private func nestTarget(_ dragged: Node.ID, _ target: Node.ID) -> Node.ID? {
+          items.filter { $0.id != dragged }.first?.id
+        }
+
+        private func canDrop(_ dragged: Node.ID, _ target: Node.ID) -> Bool {
+          items.flatMap(\\.children).isEmpty
+        }
+
+        private func move(_ dragged: Node.ID, _ target: Node.ID) {
+          for item in items { print(item) }
+        }
+
+        private func canDragOut(_ dragged: Node.ID) -> Bool {
+          var current: Node.ID? = dragged
+          while let id = current { current = parent(of: id) }
+          return true
+        }
+
+        private func clearFolder(_ dragged: Node.ID) {}
+        private func parent(of id: Node.ID) -> Node.ID? { nil }
       }
       """,
       findings: []

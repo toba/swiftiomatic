@@ -18,11 +18,11 @@ struct FlagDeepViewCompositionTests: RuleTesting {
       """
       struct FontMenu: View {
         var body: some View {
-          1️⃣VStack {
+          VStack {
             TextField("Filter by name", text: $filter)
             ScrollView(.vertical) {
               LazyVStack(alignment: .leading, spacing: 1) {
-                ForEach(visibleRows) { FontPreview(row: $0) }
+                1️⃣ForEach(visibleRows) { FontPreview(row: $0) }
               }
               .padding(2)
             }
@@ -43,18 +43,18 @@ struct FlagDeepViewCompositionTests: RuleTesting {
       """
       struct FontList: View {
         var body: some View {
-          1️⃣ScrollView {
+          ScrollView {
             LazyVStack {
               ForEach(rows) { Text($0.name) }
             }
             HStack {
-              ForEach(tags) { Text($0) }
+              1️⃣ForEach(tags) { Text($0) }
             }
           }
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("ScrollView > LazyVStack > ForEach", 3))]
+      findings: [FindingSpec("1️⃣", message: Self.message("ScrollView > HStack > ForEach", 3))]
     )
   }
 
@@ -64,7 +64,7 @@ struct FlagDeepViewCompositionTests: RuleTesting {
       """
       struct Framed: ViewModifier {
         func body(content: Content) -> some View {
-          1️⃣HStack { VStack { Group { content } } }
+          HStack { VStack { 1️⃣Group { content } } }
         }
       }
       """,
@@ -115,6 +115,44 @@ struct FlagDeepViewCompositionTests: RuleTesting {
         var body: some Sequence { VStack { HStack { ZStack { } } } }
       }
       """
+    )
+  }
+
+  @Test func findingSitsOnTheLastDeepestContainer() {
+    // From Thesis `ReferenceFilterForm.swift`
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct TagMatchPicker: View {
+        @Binding var matchAllTags: Bool
+
+        var body: some View {
+          LabeledContent {
+            VStack(alignment: .leading, spacing: 0) {
+              HStack(spacing: 4) {
+                Button { matchAllTags = false } label: {
+                  HStack(spacing: 3) {
+                    Image(systemName: "line.3.horizontal")
+                    Text("Any of")
+                  }
+                }
+                .buttonStyle(PickerButton(isSelected: !matchAllTags))
+
+                Button { matchAllTags = true } label: {
+                  1️⃣HStack(spacing: 3) {
+                    Image(systemName: "line.3.horizontal.decrease")
+                    Text("All of")
+                  }
+                }
+              }
+            }
+          } label: {
+            Text("Tags")
+          }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("VStack > HStack > HStack", 3))]
     )
   }
 }

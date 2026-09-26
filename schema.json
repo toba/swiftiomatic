@@ -75,7 +75,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Add `private` to `@State` properties without explicit access control.\n\nSwiftUI `@State` and `@StateObject` properties should be `private` because they are owned by the view and should not be set from outside. If no access control modifier is present, `private` is added. Existing access modifiers (including `private(set)` ) and `@Previewable` properties are left unchanged.\n\nLint: A `@State` or `@StateObject` property without access control raises a warning.\n\nRewrite: The `private` modifier is added before the binding keyword."
+          "description" : "Add `private` to view-owned state properties without explicit access control.\n\nSwiftUI owns the storage of `@State` , `@StateObject` , `@AppStorage` , `@SceneStorage` , `@FocusState` and `@GestureState` properties. The view installs the storage, so a value that a parent passes through the memberwise initializer only seeds it once and is then ignored. Make these properties `private` so that no caller can pass a value that has no effect.\n\nIf no access control modifier is present, `private` is added. Existing access modifiers (including `private(set)` ) and `@Previewable` properties are left unchanged.\n\nLint: A `@State` , `@StateObject` , `@AppStorage` , `@SceneStorage` , `@FocusState` or `@GestureState` property without access control raises a warning.\n\nRewrite: The `private` modifier is added before the binding keyword."
         },
         "matchExtensionAccessToMembers" : {
           "allOf" : [
@@ -426,7 +426,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0` , the closure can be replaced with a keyPath expression: `map(\\.foo)` . This is more concise and expressive.\n\nApplies to `map` , `flatMap` , `compactMap` , `allSatisfy` , `filter` , and `contains(where:)` .\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nRewrite: The closure is replaced with a keyPath expression."
+          "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0` , the closure can be replaced with a keyPath expression: `map(\\.foo)` . This is more concise and expressive.\n\nApplies to `map` , `flatMap` , `compactMap` , `allSatisfy` , `filter` , and `contains(where:)` .\n\nA key path literal converts to any function type `(Root) -> Value` (SE-0249), so the rule also applies to a closure passed with an argument label, such as `displayName: { $0.name }` . A closure that uses only `$0` can match only a function type with one parameter. A label that names an action, such as `action:` , `perform:` or `onDismiss:` , usually takes a `Void` result, which a key path cannot supply, so the rule skips it.\n\nA trailing closure hides its argument label, and the rewrite has to spell it. The rule therefore converts a trailing closure only for calls whose label it knows: `ForEach` ( `content:` ) and `onGeometryChange` / `onScrollGeometryChange` ( `of:` ). For the geometry modifiers the `action:` closure that follows becomes the trailing closure.\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nRewrite: The closure is replaced with a keyPath expression."
         },
         "useLastWhere" : {
           "allOf" : [
@@ -752,7 +752,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a `ForEach` row closure whose number of top-level views can change.\n\nSwiftUI gives each element of a `ForEach` a fixed number of views. When one row builds a different number, SwiftUI cannot map elements to views directly and falls back to a slower path. An `if` without `else` , a nested `ForEach` , or several top-level views each break the one-view-per-element shape. Wrap the row in one container or extract a row `View` .\n\nThe rule follows a call to a `@ViewBuilder` method or computed property of the same type, at the top level of the row or inside a `switch` case or `if` branch. A helper that builds more than one view, an `if` without `else` or a `ForEach` changes the row's view count the same way.\n\nLint: A `ForEach` content closure holds an `if` without a final `else` , a `ForEach` at its top level, more than one top-level view, or a call to a same-type `@ViewBuilder` helper that builds a variable number of views.",
+      "description" : "Flag a `ForEach` row closure whose number of top-level views can change.\n\nSwiftUI gives each element of a `ForEach` a fixed number of views. When one row builds a different number, SwiftUI cannot map elements to views directly and falls back to a slower path. An `if` without `else` , a nested `ForEach` , or several top-level views each break the one-view-per-element shape. Wrap the row in one container or extract a row `View` .\n\nThe rule follows a call to a `@ViewBuilder` method or computed property of the same type, at the top level of the row or inside a `switch` case or `if` branch. A helper that builds more than one view, an `if` without `else` or a `ForEach` changes the row's view count the same way.\n\nThe rule also follows a row that is one custom `View` of the same file into that type's `body` . Several root views, an `if` without `else` or a branch at the root of that body change the row's view count, or make a lazy container run the body only to count the rows.\n\nLint: A `ForEach` content closure holds an `if` without a final `else` , a `ForEach` at its top level, more than one top-level view, or a call to a same-type `@ViewBuilder` helper that builds a variable number of views, or the row is a custom `View` whose `body` root does one of these.",
       "unevaluatedProperties" : false
     },
     "controlFlow" : {
@@ -955,7 +955,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Name a complex closure type of a stored property with a `typealias` .\n\nA closure type that takes or returns another closure, or that spells several nested types, is hard to read in a declaration. A `typealias` names what the closure does and keeps the stored property on one short line.\n\nA closure type counts as complex when a parameter or the result is itself a closure type, or when it spells five or more types in total. `(Item?, Binding<Bool>) -> Editor` spells five: `Item?` , `Item` , `Binding<Bool>` , `Bool` and `Editor` .\n\nLint: A stored property of a type has a complex closure type.",
+          "description" : "Name a complex closure type of a stored property with a `typealias` .\n\nA closure type that takes or returns another closure, or that spells several nested types, is hard to read in a declaration. A `typealias` names what the closure does and keeps the stored property on one short line.\n\nA closure type counts as complex when a parameter or the result is itself a closure type, or when it spells five or more types in total. `(Item?, Binding<Bool>) -> Editor` spells five: `Item?` , `Item` , `Binding<Bool>` , `Bool` and `Editor` .\n\nA closure type also earns a name when the file spells it more than once, in stored properties or in function and initializer parameters. Two spellings match when they differ only in parameter labels, attributes such as `@escaping` , or an outer optional. Two closure types with the same list of two or more parameters also match, so `(ID, Edge, ID) -> Bool` and `(ID, Edge, ID) -> Void` both report. `() -> Void` never counts as a repeat.\n\nTwo closure types of two or more parameters that differ in exactly one parameter type share a shape, as in `(Item, Importable) -> Void` and `(Item, Exportable) -> Void` . A generic `typealias` names that shape once.\n\nA closure type with three or more attributes and effects, such as `@escaping @Sendable (Transaction) throws -> ID` , also counts as complex. This check applies to parameters as well as to stored properties.\n\nLint: A stored property of a type has a complex closure type, a parameter has a heavily decorated closure type, or a stored property or parameter spells a closure type or a closure shape that the file repeats.",
           "unevaluatedProperties" : false
         },
         "useExtensionInitToKeepMemberwise" : {
@@ -1220,7 +1220,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Remove explicit `self.` where the compiler allows implicit self.\n\nIn most contexts inside type bodies, `self.` is redundant when accessing members because Swift resolves bare identifiers to instance members. This rule removes the `self.` prefix when:\n- The access is inside a type member (method, computed property, init, subscript)\n- The member name is not shadowed by a local variable, parameter, or nested function\n- The scope allows implicit self (not a closure in a reference type without capture)\n\nFor closures, implicit self is allowed per SE-0269 (Swift 5.3+) when:\n- The enclosing type is a value type (struct/enum)\n- The closure explicitly captures self: `[self]` , `[unowned self]`\n\nThe `[weak self]` + `guard let self` pattern (SE-0365, Swift 5.8+) is handled conservatively: `self.` is kept in weak-self closures.\n\n**Known limitation (`@dynamicMemberLookup`):** when an extension or member is on a type that conforms to `@dynamicMemberLookup` in a *different* module, this rule cannot see the attribute and may strip a required `self.` (the bare name is not in scope — it resolves through the dynamic-lookup subscript). Source-local declarations and a hardcoded list of stdlib/SwiftUI types (`AttributedString`, `AttributedSubstring`, `ScopedAttributeContainer`, `Binding`) are detected; user types in other modules are not.\n\nLint: A lint warning is raised for redundant `self.` usage.\n\nRewrite: The `self.` prefix is removed."
+      "description" : "Remove explicit `self.` where the compiler allows implicit self.\n\nIn most contexts inside type bodies, `self.` is redundant when accessing members because Swift resolves bare identifiers to instance members. This rule removes the `self.` prefix when:\n- The access is inside a type member (method, computed property, init, subscript)\n- The member name is not shadowed by a local variable, parameter, or nested function\n- The scope allows implicit self (not a closure in a reference type without capture)\n\nFor closures, implicit self is allowed per SE-0269 (Swift 5.3+) when:\n- The enclosing type is a value type (struct/enum)\n- The closure explicitly captures self: `[self]` , `[unowned self]`\n\nIn a `[weak self]` closure, implicit self is allowed per SE-0365 (Swift 5.8+) after `guard let self` , and in the body of `if let self` . The rule removes `self.` there too. It keeps `self.` in a nested closure, which needs its own capture, and before the unwrap.\n\n**Known limitation (`@dynamicMemberLookup`):** when an extension or member is on a type that conforms to `@dynamicMemberLookup` in a *different* module, this rule cannot see the attribute and may strip a required `self.` (the bare name is not in scope — it resolves through the dynamic-lookup subscript). Source-local declarations and a hardcoded list of stdlib/SwiftUI types (`AttributedString`, `AttributedSubstring`, `ScopedAttributeContainer`, `Binding`) are detected; user types in other modules are not.\n\nLint: A lint warning is raised for redundant `self.` usage.\n\nRewrite: The `self.` prefix is removed."
     },
     "dropRedundantSetterACL" : {
       "allOf" : [
@@ -1372,7 +1372,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a view `body` that nests three or more structural containers inside each other.\n\nSwiftUI evaluates the whole `body` of a view as one unit. A body that nests stacks, scroll views, lists and `ForEach` several levels deep rebuilds every level when any value it reads changes. An inner level extracted into its own `View` type gets its own inputs, and SwiftUI skips it when they do not change.\n\nA container counts toward the depth only when it sits inside the content of another container. Containers in sibling modifiers such as `.overlay { }` and `.background { }` do not add up.\n\nLint: The `body` of a `View` , or `body(content:)` of a `ViewModifier` , nests three or more structural containers.",
+      "description" : "Flag a view `body` that nests three or more structural containers inside each other.\n\nSwiftUI evaluates the whole `body` of a view as one unit. A body that nests stacks, scroll views, lists and `ForEach` several levels deep rebuilds every level when any value it reads changes. An inner level extracted into its own `View` type gets its own inputs, and SwiftUI skips it when they do not change.\n\nA container counts toward the depth only when it sits inside the content of another container. Containers in sibling modifiers such as `.overlay { }` and `.background { }` do not add up.\n\nThe rule reports once per body, on the innermost container of the deepest path, because that level is the one to extract. When several paths reach the same depth, the last one counts.\n\nLint: The `body` of a `View` , or `body(content:)` of a `ViewModifier` , nests three or more structural containers.",
       "unevaluatedProperties" : false
     },
     "flagEmptyCollectionLiteral" : {
@@ -1464,7 +1464,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Warn on `ForEach` whose receiver is an integer-index sequence (`<expr>.indices`, `a..<b`, `a...b`, `Range(...)`). Row identity becomes positional, so insertions and removals shift every following row's id and SwiftUI redraws (and resets `@State`) past the mutation point. Prefer `ForEach(Array(<collection>.enumerated()), id: \\.element.id)`.\n\nOrthogonal to `FlagForEachIDSelfInView`: that rule keys on the `id:` axis (`\\.self` is fragile on element collections); this rule keys on the receiver axis and ignores the `id:` argument entirely. The two rules are designed not to co-fire — the integer-indexed case is exempted from `FlagForEachIDSelfInView` and owned here.",
+      "description" : "Warn on `ForEach` whose receiver is an integer-index sequence (`<expr>.indices`, `a..<b`, `a...b`, `Range(...)`). Row identity becomes positional, so insertions and removals shift every following row's id and SwiftUI redraws (and resets `@State`) past the mutation point. Prefer `ForEach(Array(<collection>.enumerated()), id: \\.element.id)`.\n\nOrthogonal to `FlagForEachIDSelfInView`: that rule keys on the `id:` axis (`\\.self` is fragile on element collections); this rule keys on the receiver axis and ignores the `id:` argument entirely. The two rules are designed not to co-fire — the integer-indexed case is exempted from `FlagForEachIDSelfInView` and owned here.\n\nWhen the rows hold `@State` or `@FocusState` , `FlagStatefulForEachOverIndices` reports the `ForEach` instead of this rule, so a `// sm:ignore` directive for this rule does not hide it.",
       "unevaluatedProperties" : false
     },
     "flagInMemoryModelStore" : {
@@ -1545,7 +1545,16 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a view initializer that seeds `@State` from one of its parameters.\n\nSwiftUI creates the state storage once, for the first value of the view's identity. When the parent later passes a new value for the same view, the initializer runs again but the state keeps its first value. The seed is correct only when each new input also gives the view a new identity, for example a sheet that opens on a fresh presentation.\n\nLint: An initializer of a view type assigns `State(initialValue:)` or `State(wrappedValue:)` , built from a parameter of the initializer, to a `_name` storage property.",
+      "description" : "Flag a view initializer that seeds `@State` from one of its parameters.\n\nSwiftUI creates the state storage once, for the first value of the view's identity. When the parent later passes a new value for the same view, the initializer runs again but the state keeps its first value. The seed is correct only when each new input also gives the view a new identity, for example a sheet that opens on a fresh presentation.\n\nLint: An initializer of a view type assigns `State(initialValue:)` or `State(wrappedValue:)` , built from a parameter of the initializer, to a `_name` storage property, or assigns a value built from a parameter directly to a `@State` property, as in `name = input.value` .",
+      "unevaluatedProperties" : false
+    },
+    "flagStatefulForEachOverIndices" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `ForEach` over integer indices whose rows hold state.\n\nA `ForEach` over `items.indices` or `0..<count` keys each row by its position. After an insert or a remove, the row at a position shows a different element, but SwiftUI keeps the state of the old row at that position. A `@State` or `@FocusState` in the row, or focus bound to the index with `.focused($focus, equals: index)` , then belongs to the wrong element.\n\n`FlagForEachOverIndices` reports the stateless case, and a `// sm:ignore` directive can accept it where the indices never change. This rule reports the stateful case under its own name, so a directive that names only `flagForEachOverIndices` does not hide it. Only a directive that names this rule, or a bare `// sm:ignore` , suppresses it.\n\nThe rule reads the row type when the same file declares it. For a row type declared in another file, it sees only focus that the closure binds to the index.\n\nLint: A `ForEach` over integer indices whose row closure binds focus to the index, or builds a same-file `View` that holds `@State` , `@FocusState` , `@StateObject` or `@AccessibilityFocusState` .",
       "unevaluatedProperties" : false
     },
     "flagSupersededFrameworkAPI" : {
@@ -1644,7 +1653,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a view input whose type is a large struct declared in the same file.\n\nSwiftUI compares a value input as a whole. When a view stores a model with many properties and reads only a few of them, a change to any other property still makes the input look changed, and SwiftUI evaluates the view's `body` again. Pass only the properties the view reads.\n\nA struct counts as large when it and its same-file extensions declare at least five stored instance properties. A `View` type is not a model, and neither is a type that names a generic parameter of the view. A property the view owns, such as `@State` , is not an input.\n\nA type declared in another file has no property count the rule can see. The rule then reports the input when the view reads at least three of its properties and never uses the value as a whole: it does not pass it on, call a method on it, compare it or bind it. Standard library, Foundation and SwiftUI types are exempt, and so is a name that ends in `View` .\n\nLint: A stored input of a view type has the type of a same-file struct with five or more stored instance properties, or has a type from another file of which the view reads three or more properties and nothing else.",
+      "description" : "Flag a view input whose type is a large struct declared in the same file.\n\nSwiftUI compares a value input as a whole. When a view stores a model with many properties and reads only a few of them, a change to any other property still makes the input look changed, and SwiftUI evaluates the view's `body` again. Pass only the properties the view reads.\n\nA struct counts as large when it and its same-file extensions declare at least five stored instance properties. A `View` type is not a model, and neither is a type that names a generic parameter of the view. A property the view owns, such as `@State` , is not an input.\n\nA type declared in another file has no property count the rule can see. The rule then reports the input when the view reads at least three of its properties and never uses the value as a whole: it does not pass it on, call a method on it, compare it or bind it. A use inside a closure that runs later, such as a `Button` action, does not count as a whole use, and neither does passing the value to a `View` declared in the same file. Standard library, Foundation and SwiftUI types are exempt, and so is a name that ends in `View` . A type that the file uses with `@Bindable` or `@Environment(Type.self)` is an `@Observable` class, which SwiftUI tracks by property, so it is exempt too.\n\nLint: A stored input of a view type has the type of a same-file struct with five or more stored instance properties, or has a type from another file of which the view reads three or more properties and nothing else.",
       "unevaluatedProperties" : false
     },
     "forEachRowReadsOnlyElement" : {
@@ -1653,7 +1662,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a `ForEach` or `List` row closure that reads a member of the enclosing view.\n\nA row that reads only its element depends only on that element. When the closure also reads a property or calls a method of the enclosing view, every row depends on that value, and a change to it re-evaluates every row. Pass what the row needs into a row `View` as a stored input.\n\nThese reads are allowed:\n\n- A `private let` or `static` member, because neither can change while the view lives.\n- A method or computed property that itself reads only allowed members. It is a pure helper.\n- A projected binding such as `$selection` . Forwarding it to a row `View` does not read the\nvalue, and the row that writes the selection needs it.\n- A read inside an argument of the custom row `View` the closure builds, such as\n`TagRow(tag: tag, isSelected: selection == tag)` or `ItemRow(item: item, canWrite: canWrite)` . The row stores the value as an input, and SwiftUI skips it when the value does not change. This is the fix the finding recommends. Whether the input is too large a value is the concern of `flagWholeValueModelViewInput` .\n\nLint: A row closure reads a same-type member outside those cases.",
+      "description" : "Flag a `ForEach` or `List` row closure that reads a member of the enclosing view.\n\nA row that reads only its element depends only on that element. When the closure also reads a property or calls a method of the enclosing view, every row depends on that value, and a change to it re-evaluates every row. Pass what the row needs into a row `View` as a stored input.\n\nThese reads are allowed:\n\n- A `private let` or `static` member, because neither can change while the view lives.\n- A method or computed property that itself reads only allowed members. It is a pure helper.\n- A projected binding such as `$selection` . Forwarding it to a row `View` does not read the\nvalue, and the row that writes the selection needs it.\n- A read inside an argument of the custom row `View` the closure builds, such as\n`TagRow(tag: tag, isSelected: selection == tag)` or `ItemRow(item: item, canWrite: canWrite)` . The row stores the value as an input, and SwiftUI skips it when the value does not change. This is the fix the finding recommends. Whether the input is too large a value is the concern of `flagWholeValueModelViewInput` .\n- A read inside a closure passed to the custom row `View` or to one of its modifiers, such as\n`copy: { library.copy(theme) }` or `.onTapGesture { selection = tag }` . The closure runs later, and the row is already one named `View` .\n\nThe rule reports each row once, at the `ForEach` or `List` call, and adds a note at each read.\n\nLint: A row closure reads a same-type member outside those cases.",
       "unevaluatedProperties" : false
     },
     "formatSpecialComments" : {
@@ -2035,7 +2044,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Check for a framework with `#if canImport(...)`, not with `#if os(...)`.\n\nAn `#if os(...)` block that holds only an `import` uses the platform as a stand-in for the framework. `canImport` states the real question. It also keeps working when the framework comes to a new platform, such as UIKit on visionOS or Mac Catalyst.\n\nThe rule fires only on a block with a single `#if` clause, a condition made only of `os(...)` checks, and a body made only of `import` declarations. An `#else` or `#elseif` branch marks a platform split, such as AppKit on macOS and UIKit elsewhere. There the file depends on platform types, not only on one framework, so the rule stays silent.\n\nLint: An `#if os(...)` block that guards only framework imports raises a warning.",
+          "description" : "Check for a framework with `#if canImport(...)`, not with `#if os(...)`.\n\nAn `#if os(...)` block that holds only an `import` uses the platform as a stand-in for the framework. `canImport` states the real question. It also keeps working when the framework comes to a new platform, such as UIKit on visionOS or Mac Catalyst.\n\nThe rule fires on a block whose conditions are made only of `os(...)` checks and whose branches hold only `import` declarations. An `#else` or `#elseif` branch marks a platform split, such as AppKit on macOS and UIKit elsewhere. When the file names an `NS` or `UI` type outside any `#if` block, the file depends on a type both frameworks spell, so the split stays and the rule is silent. When every such type sits inside its own `#if` , `#if canImport(AppKit)` with `#elseif canImport(UIKit)` states the need.\n\nLint: An `#if os(...)` block that guards only framework imports raises a warning.",
           "unevaluatedProperties" : false
         },
         "useCompoundAssignment" : {
@@ -2301,7 +2310,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a text input bound to the view's own `@State` in a `body` that also builds unrelated views.\n\nEach keystroke writes the state, and each write makes SwiftUI evaluate the whole `body` again. When the same `body` builds other sections that never read the text, their construction repeats on every keystroke. Move the field and its state into their own `View` , so a keystroke only evaluates that view.\n\nA view counts as unrelated when it is a sibling statement of the field, or of a container that holds the field, and its source never names the state. A binding the view receives is exempt, because its owner already evaluates on each keystroke.\n\nLint: A `TextField` , `SecureField` or `TextEditor` in `body` binds `$name` of a same-type `@State` , and two or more views beside it in `body` do not name `name` .",
+      "description" : "Flag a text input bound to the view's own `@State` in a `body` that also builds unrelated views.\n\nEach keystroke writes the state, and each write makes SwiftUI evaluate the whole `body` again. When the same `body` builds other sections that never read the text, their construction repeats on every keystroke. Move the field and its state into their own `View` , so a keystroke only evaluates that view.\n\nA view counts as unrelated when it is a sibling statement of the field, or of a container that holds the field, and its source never names the state. A binding the view receives is exempt, because its owner already evaluates on each keystroke.\n\nThe field can sit in `body` or in a same-type helper that builds part of the view. The rule also reports the field when `body` , or a same-type member that `body` reaches, reads an `@Environment` value in a member that does not name the state. That work repeats on every keystroke too.\n\nLint: A `TextField` , `SecureField` or `TextEditor` in `body` or a view helper binds `$name` of a same-type `@State` , and two or more views beside it do not name `name` , or `body` reaches an `@Environment` read in a member that does not name `name` .",
       "unevaluatedProperties" : false
     },
     "keepModifiersOnSameLine" : {
@@ -2574,7 +2583,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Add `private` to `@State` properties without explicit access control.\n\nSwiftUI `@State` and `@StateObject` properties should be `private` because they are owned by the view and should not be set from outside. If no access control modifier is present, `private` is added. Existing access modifiers (including `private(set)` ) and `@Previewable` properties are left unchanged.\n\nLint: A `@State` or `@StateObject` property without access control raises a warning.\n\nRewrite: The `private` modifier is added before the binding keyword."
+      "description" : "Add `private` to view-owned state properties without explicit access control.\n\nSwiftUI owns the storage of `@State` , `@StateObject` , `@AppStorage` , `@SceneStorage` , `@FocusState` and `@GestureState` properties. The view installs the storage, so a value that a parent passes through the memberwise initializer only seeds it once and is then ignored. Make these properties `private` so that no caller can pass a value that has no effect.\n\nIf no access control modifier is present, `private` is added. Existing access modifiers (including `private(set)` ) and `@Previewable` properties are left unchanged.\n\nLint: A `@State` , `@StateObject` , `@AppStorage` , `@SceneStorage` , `@FocusState` or `@GestureState` property without access control raises a warning.\n\nRewrite: The `private` modifier is added before the binding keyword."
     },
     "markInitCoderUnavailable" : {
       "allOf" : [
@@ -2967,6 +2976,15 @@
       "description" : "Lint `withLock { ... await ... }` — holding a lock across suspension is a blocking/deadlock hazard.\n\nThe rule fires on any function call whose callee is `<receiver>.withLock` when the trailing closure (or first closure argument) contains an `await` expression at any nesting level *outside* of nested closures (a nested `Task { }` body is a separate isolation context and doesn't hold the lock).",
       "unevaluatedProperties" : false
     },
+    "noBindingConstructionInView" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `Binding(get:set:)` that a view builds in its body, in a helper, or in a closure.\n\nA binding built from closures is a new value on each update. SwiftUI cannot compare two closure bindings, so each child view that receives one is always different from its last value and updates each time the parent does. The closures also capture the current values of the view, and the code that they hold is hidden from the owner of the state.\n\nProject the binding with `$` from the owner of the value. When the binding needs logic, move that logic into the model, for example as a computed property with a setter, and project a binding to that property.\n\nThe rule reports each `Binding(get:set:)` in a member of a type that conforms to `View` or `ViewModifier` in the same file. A binding that a model or another type builds is not reported.\n\nLint: A member of a view type calls `Binding(get:set:)` .",
+      "unevaluatedProperties" : false
+    },
     "noBlockComments" : {
       "allOf" : [
         {
@@ -2999,7 +3017,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag collection work in a computed property or method that a view's `body` reads.\n\nA computed property is not stored. It runs again on every `body` evaluation, and so does every method `body` calls. A `.filter` , `.sorted` , `.map` or loop there walks the whole collection on each update, even when the collection did not change. Store the derived value and update it when its inputs change.\n\nThe rule follows `body` into same-type computed properties and methods, and from those into further members. Closures that run later, such as a `Button` action or a `.task` body, are not followed.\n\nA reached member can call a static function on another type, such as `Row.rows(projects:)` . When the file declares that type, the rule follows the call into the function body. When the type is declared in another file, the rule cannot see the body. It then reports the call when an argument passes a stored collection of the view, because the function most likely walks it.\n\nLint: A same-type member that `body` reaches, or a same-file static function it calls, calls `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` , `while` or `repeat` loop. A reached member passes a stored collection of the view to a static function declared in another file.",
+      "description" : "Flag collection work in a view's `body` , or in a computed property or method that `body` reads.\n\nA computed property is not stored. It runs again on every `body` evaluation, and so does every method `body` calls. A `.filter` , `.sorted` , `.map` or loop there walks the whole collection on each update, even when the collection did not change. Store the derived value and update it when its inputs change.\n\nThe rule checks `body` itself, and follows it into same-type computed properties and the methods it calls, and from those into further members. Closures that run later, such as a `Button` action or a `.task` body, are not followed. A method named without a call, such as a function reference passed to a drop delegate, runs later too, so the rule does not follow it.\n\nA reached member can call a static function on another type, such as `Row.rows(projects:)` . When the file declares that type, the rule follows the call into the function body. When the type is declared in another file, the rule cannot see the body. It then reports the call when an argument passes a stored collection of the view, because the function most likely walks it.\n\nLint: `body` , a same-type member that `body` reaches, or a same-file static function it calls, calls `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` , `while` or `repeat` loop. `body` or a reached member passes a stored collection of the view to a static function declared in another file.",
       "unevaluatedProperties" : false
     },
     "noDocCommentsInFunctionBodies" : {
@@ -3045,6 +3063,15 @@
         }
       ],
       "description" : "Dictionary literals with duplicate keys silently overwrite earlier values.\n\nThe Swift compiler accepts duplicate static keys but the resulting dictionary only retains the *last* value for each key — almost always a copy-paste bug.\n\nOnly static keys are checked: literals, identifiers, and member access expressions. Dynamic keys like `UUID()` or `#line` can legitimately produce distinct values at runtime and are skipped.\n\nLint: When a static key appears more than once in the same dictionary literal, every occurrence after the first is flagged.",
+      "unevaluatedProperties" : false
+    },
+    "noDynamicPropertyInViewInitializer" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an initializer that reads, calls a method on, or changes one of its own dynamic properties.\n\nSwiftUI installs the storage of a dynamic property such as `@State` or `@Environment` after the initializer returns. Inside the initializer, a read sees a default value, and a change such as `citations.update(...)` on a `@State` model goes to a copy that SwiftUI then discards. Store the inputs in the initializer, and do the work in `body` , in `task(id:)` , or in the parent.\n\nThe rule applies to any struct whose stored properties carry a dynamic property wrapper, so it also covers a view that conforms to `View` through a protocol declared in another file. These uses are not flagged:\n\n- the storage setup `_name = State(initialValue: value)`\n- an assignment `name = value` that initializes a wrapper with no default value, such as\n`@State private var size: Double`\n- a parameter or local that shadows the property name\n\nLint: An initializer uses a property that carries `@State` , `@Binding` , `@Environment` , `@FocusState` , `@AppStorage` or another dynamic property wrapper.",
       "unevaluatedProperties" : false
     },
     "noEmptyBlock" : {
@@ -3139,7 +3166,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a view input that the view stores only to pass it unchanged to a child view.\n\nA forwarded input makes the parent depend on a value it never reads. Each change to the value makes SwiftUI evaluate the parent's `body` as well as the child's. Build the child in the view that owns the value and pass it in as content, or let the child read the value from its source.\n\nA binding and a closure are exempt, because a child needs them to write back or to act. So is an input that the view reads, adapts or passes to two different children. A built-in SwiftUI view such as `Text` or `Image` renders the value, so passing it there counts as a read.\n\nLint: Every use of a stored value input of a view type, outside its initializers, is an argument of one call to an uppercase callee, passed as `name` or `self.name` .",
+      "description" : "Flag a view input that the view stores only to pass it unchanged to a child view.\n\nA forwarded input makes the parent depend on a value it never reads. Each change to the value makes SwiftUI evaluate the parent's `body` as well as the child's. Build the child in the view that owns the value and pass it in as content, or let the child read the value from its source.\n\nA binding and a closure are exempt, because a child needs them to write back or to act. So is an input that the view reads, adapts or passes to two different children. A built-in SwiftUI view such as `Text` or `Image` renders the value, so passing it there counts as a read. A callee that the file declares as a type that is not a `View` or a `ViewModifier` takes no content, so passing the value there counts as a read. An input whose value an initializer also passes to a property wrapper's storage, as in `_items = Fetch(..., since: start)` , is exempt.\n\nLint: Every use of a stored value input of a view type, outside its initializers, is an argument of one call to an uppercase callee, passed as `name` or `self.name` .",
       "unevaluatedProperties" : false
     },
     "noGuardInTests" : {
@@ -3211,6 +3238,15 @@
         }
       ],
       "description" : "Lint nested `<receiver>.withLock { ... <receiver>.withLock { ... } ... }` on the same receiver. Re-entering a non-recursive lock (e.g. `Mutex` ) is a guaranteed deadlock.",
+      "unevaluatedProperties" : false
+    },
+    "noOnAppearDerivedState" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an `.onAppear` that assigns a `@State` property a value derived from another property of the view.\n\n`.onAppear` runs when the view appears, not when its inputs change. A parent can pass a new value, or a binding can change, while the view stays on screen. The state then keeps the value from the last appearance and goes stale. Compute the value where it is read, for example in a computed property, or keep it current with `.onChange(of: source, initial: true)` .\n\n`RequireRepeatSafeOnAppear` covers writes that accumulate, such as `count += 1` . This rule does not report an assignment whose value reads only the target itself, or reads no property of the view, such as `isFocused = true` .\n\nLint: An assignment in an `.onAppear` closure targets a `@State` property of the view, and its value reads a different stored property of the same view.",
       "unevaluatedProperties" : false
     },
     "noOnChangeDerivedStateWrite" : {
@@ -3298,7 +3334,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a view `body` whose only statement is an `if` / `else` or a `switch` that swaps the root view type between branches.\n\nWhen the branches build different root types, SwiftUI gives each branch its own identity. A change of the condition destroys the views of one branch and creates the views of the other. The destroyed views lose their state, and SwiftUI cannot animate between the two trees. Keep one stable root view and put the conditional content inside it, or change a modifier value instead of the view.\n\nThe rule does not report an `if` without `else` , an `if #available` check, or branches whose root calls name the same view type. The root of a branch is the view that its modifier chain starts from.\n\nLint: The single top-level statement of a `View` `body` or a `ViewModifier` `body(content:)` is an `if` / `else` or a `switch` whose branches build two or more different root view types.",
+      "description" : "Flag a view `body` whose only statement is an `if` / `else` or a `switch` that swaps the root view type between branches.\n\nWhen the branches build different root types, SwiftUI gives each branch its own identity. A change of the condition destroys the views of one branch and creates the views of the other. The destroyed views lose their state, and SwiftUI cannot animate between the two trees. Keep one stable root view and put the conditional content inside it, or change a modifier value instead of the view.\n\nThe rule does not report an `if` without `else` , an `if #available` check, or branches whose root calls name the same view type. The root of a branch is the view that its modifier chain starts from.\n\nWhen every branch is an `HStack` , `VStack` , `ZStack` or `Grid` that holds the same children, only the layout changes. The message then names `AnyLayout` , which switches between `HStackLayout` , `VStackLayout` and the other layouts and keeps the identity of the children.\n\nLint: The single top-level statement of a `View` `body` or a `ViewModifier` `body(content:)` is an `if` / `else` or a `switch` whose branches build two or more different root view types.",
       "unevaluatedProperties" : false
     },
     "noSortFilterInForEach" : {
@@ -3343,6 +3379,15 @@
       },
       "unevaluatedProperties" : false
     },
+    "noUnprojectedBindable" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `@Bindable` property that nothing projects with `$` .\n\n`@Bindable` exists to make bindings to the properties of an `@Observable` model, as in `$model.name` . A view that only reads the model, or only writes to it through the reference, gets the same observation from a plain property. The wrapper then adds a dynamic property to the view and tells the reader that the view edits the model through bindings, which it does not.\n\nThe rule searches the type and its extensions in the same file for a member, and the rest of the enclosing block for a local declaration such as `@Bindable var model = model` . An extension in another file that projects the property is not visible to the rule.\n\nLint: A `@Bindable` property or local variable whose `$name` projection does not occur in its scope.",
+      "unevaluatedProperties" : false
+    },
     "noUnreadEnvironmentProperty" : {
       "allOf" : [
         {
@@ -3376,7 +3421,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag a type member, other than `body` , that returns `some View` or `AnyView` .\n\nA factory member runs as part of the caller's `body` . SwiftUI cannot compare its inputs or skip it, so every change the caller sees rebuilds the factory's views too. A separate `View` type gets its own stored inputs, and SwiftUI skips it when they do not change.\n\nThe rule covers members of every type, not only views. A factory on a model type or in a protocol extension runs inside the caller's `body` too.\n\nA member that returns a concrete leaf type such as `Text` , `Image` , `Color` , a shape, a gradient or `EmptyView` is not a factory. Neither are the protocol entry points `body` , `body(content:)` , `makeBody(configuration:)` and `previews` , nor a fluent method in an extension of `View` or a SwiftUI view type such as `Text` that transforms `self` .\n\nLint: A type member returns `some View` , `any View` or `AnyView` .",
+      "description" : "Flag a type member, other than `body` , that returns `some View` , `AnyView` or a concrete custom view type.\n\nA factory member runs as part of the caller's `body` . SwiftUI cannot compare its inputs or skip it, so every change the caller sees rebuilds the factory's views too. A separate `View` type gets its own stored inputs, and SwiftUI skips it when they do not change.\n\nThe rule covers members of every type, not only views. A factory on a model type or in a protocol extension runs inside the caller's `body` too.\n\nA member that returns a concrete custom view type, such as `-> RowView` , is a factory too. The rule counts a return type as a view when a type of that name in the same file conforms to `View` , or, for a type declared elsewhere, when its name ends in `View` and has no AppKit or UIKit prefix such as `NS` or `UI` . A member that returns a concrete leaf type such as `Text` , `Image` , `Color` , a shape, a gradient or `EmptyView` is not a factory. Neither are the protocol entry points `body` , `body(content:)` , `makeBody(configuration:)` and `previews` , nor a fluent method in an extension of `View` or a SwiftUI view type such as `Text` that transforms `self` .\n\nLint: A type member returns `some View` , `any View` , `AnyView` or a concrete custom view type.",
       "unevaluatedProperties" : false
     },
     "noVoidTernary" : {
@@ -3716,7 +3761,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Remove explicit `self.` where the compiler allows implicit self.\n\nIn most contexts inside type bodies, `self.` is redundant when accessing members because Swift resolves bare identifiers to instance members. This rule removes the `self.` prefix when:\n- The access is inside a type member (method, computed property, init, subscript)\n- The member name is not shadowed by a local variable, parameter, or nested function\n- The scope allows implicit self (not a closure in a reference type without capture)\n\nFor closures, implicit self is allowed per SE-0269 (Swift 5.3+) when:\n- The enclosing type is a value type (struct/enum)\n- The closure explicitly captures self: `[self]` , `[unowned self]`\n\nThe `[weak self]` + `guard let self` pattern (SE-0365, Swift 5.8+) is handled conservatively: `self.` is kept in weak-self closures.\n\n**Known limitation (`@dynamicMemberLookup`):** when an extension or member is on a type that conforms to `@dynamicMemberLookup` in a *different* module, this rule cannot see the attribute and may strip a required `self.` (the bare name is not in scope — it resolves through the dynamic-lookup subscript). Source-local declarations and a hardcoded list of stdlib/SwiftUI types (`AttributedString`, `AttributedSubstring`, `ScopedAttributeContainer`, `Binding`) are detected; user types in other modules are not.\n\nLint: A lint warning is raised for redundant `self.` usage.\n\nRewrite: The `self.` prefix is removed."
+          "description" : "Remove explicit `self.` where the compiler allows implicit self.\n\nIn most contexts inside type bodies, `self.` is redundant when accessing members because Swift resolves bare identifiers to instance members. This rule removes the `self.` prefix when:\n- The access is inside a type member (method, computed property, init, subscript)\n- The member name is not shadowed by a local variable, parameter, or nested function\n- The scope allows implicit self (not a closure in a reference type without capture)\n\nFor closures, implicit self is allowed per SE-0269 (Swift 5.3+) when:\n- The enclosing type is a value type (struct/enum)\n- The closure explicitly captures self: `[self]` , `[unowned self]`\n\nIn a `[weak self]` closure, implicit self is allowed per SE-0365 (Swift 5.8+) after `guard let self` , and in the body of `if let self` . The rule removes `self.` there too. It keeps `self.` in a nested closure, which needs its own capture, and before the unwrap.\n\n**Known limitation (`@dynamicMemberLookup`):** when an extension or member is on a type that conforms to `@dynamicMemberLookup` in a *different* module, this rule cannot see the attribute and may strip a required `self.` (the bare name is not in scope — it resolves through the dynamic-lookup subscript). Source-local declarations and a hardcoded list of stdlib/SwiftUI types (`AttributedString`, `AttributedSubstring`, `ScopedAttributeContainer`, `Binding`) are detected; user types in other modules are not.\n\nLint: A lint warning is raised for redundant `self.` usage.\n\nRewrite: The `self.` prefix is removed."
         },
         "dropRedundantSetterACL" : {
           "allOf" : [
@@ -4034,7 +4079,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Pass an explicit `priority:` when starting an unstructured task.\n\n`Task { }` inherits the priority of its caller, and `Task.detached { }` runs at the default priority. Neither default states how urgent the work is. An explicit priority lets the scheduler run user-facing work first and background work last.\n\n`Task { }` and `Task.immediate { }` stay silent in a main-actor UI context, because that work correctly inherits the priority of the UI event that started it. The rule treats these as a main-actor UI context:\n\n- a closure that declares `@MainActor`,\n- a declaration that carries `@MainActor`, and everything inside it,\n- a SwiftUI type (`View`, `ViewModifier`, `App`, `Scene`, `ToolbarContent`, `Commands`) or an\nAppKit or UIKit representable,\n- an extension of `View`, whose methods are view modifiers.\n\n`Task.detached { }` and `Task.immediateDetached { }` always fire. A detached task inherits no priority, so the exemption does not apply.\n\nLint: An unstructured task with no `priority:` argument outside a main-actor UI context raises a warning.",
+      "description" : "Pass an explicit `priority:` when starting an unstructured task.\n\n`Task { }` inherits the priority of its caller, and `Task.detached { }` runs at the default priority. Neither default states how urgent the work is. An explicit priority lets the scheduler run user-facing work first and background work last.\n\nThe rule fires in every context, including SwiftUI views and `@MainActor` code. A task that a view starts often does persistence or network work whose urgency differs from the UI event that started it. Keep the inherited priority only when the task must run at its caller's priority, and suppress the finding there.\n\nLint: An unstructured task (`Task { }`, `Task.immediate { }`, `Task.detached { }` or `Task.immediateDetached { }`) with no `priority:` argument raises a warning.",
       "unevaluatedProperties" : false
     },
     "requireTestFnPrefixOrAttribute" : {
@@ -4316,7 +4361,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a `ForEach` row closure whose number of top-level views can change.\n\nSwiftUI gives each element of a `ForEach` a fixed number of views. When one row builds a different number, SwiftUI cannot map elements to views directly and falls back to a slower path. An `if` without `else` , a nested `ForEach` , or several top-level views each break the one-view-per-element shape. Wrap the row in one container or extract a row `View` .\n\nThe rule follows a call to a `@ViewBuilder` method or computed property of the same type, at the top level of the row or inside a `switch` case or `if` branch. A helper that builds more than one view, an `if` without `else` or a `ForEach` changes the row's view count the same way.\n\nLint: A `ForEach` content closure holds an `if` without a final `else` , a `ForEach` at its top level, more than one top-level view, or a call to a same-type `@ViewBuilder` helper that builds a variable number of views.",
+          "description" : "Flag a `ForEach` row closure whose number of top-level views can change.\n\nSwiftUI gives each element of a `ForEach` a fixed number of views. When one row builds a different number, SwiftUI cannot map elements to views directly and falls back to a slower path. An `if` without `else` , a nested `ForEach` , or several top-level views each break the one-view-per-element shape. Wrap the row in one container or extract a row `View` .\n\nThe rule follows a call to a `@ViewBuilder` method or computed property of the same type, at the top level of the row or inside a `switch` case or `if` branch. A helper that builds more than one view, an `if` without `else` or a `ForEach` changes the row's view count the same way.\n\nThe rule also follows a row that is one custom `View` of the same file into that type's `body` . Several root views, an `if` without `else` or a branch at the root of that body change the row's view count, or make a lazy container run the body only to count the rows.\n\nLint: A `ForEach` content closure holds an `if` without a final `else` , a `ForEach` at its top level, more than one top-level view, or a call to a same-type `@ViewBuilder` helper that builds a variable number of views, or the row is a custom `View` whose `body` root does one of these.",
           "unevaluatedProperties" : false
         },
         "dropRedundantMainActorOnView" : {
@@ -4333,7 +4378,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a view `body` that nests three or more structural containers inside each other.\n\nSwiftUI evaluates the whole `body` of a view as one unit. A body that nests stacks, scroll views, lists and `ForEach` several levels deep rebuilds every level when any value it reads changes. An inner level extracted into its own `View` type gets its own inputs, and SwiftUI skips it when they do not change.\n\nA container counts toward the depth only when it sits inside the content of another container. Containers in sibling modifiers such as `.overlay { }` and `.background { }` do not add up.\n\nLint: The `body` of a `View` , or `body(content:)` of a `ViewModifier` , nests three or more structural containers.",
+          "description" : "Flag a view `body` that nests three or more structural containers inside each other.\n\nSwiftUI evaluates the whole `body` of a view as one unit. A body that nests stacks, scroll views, lists and `ForEach` several levels deep rebuilds every level when any value it reads changes. An inner level extracted into its own `View` type gets its own inputs, and SwiftUI skips it when they do not change.\n\nA container counts toward the depth only when it sits inside the content of another container. Containers in sibling modifiers such as `.overlay { }` and `.background { }` do not add up.\n\nThe rule reports once per body, on the innermost container of the deepest path, because that level is the one to extract. When several paths reach the same depth, the last one counts.\n\nLint: The `body` of a `View` , or `body(content:)` of a `ViewModifier` , nests three or more structural containers.",
           "unevaluatedProperties" : false
         },
         "flagForEachIDSelfInView" : {
@@ -4351,7 +4396,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Warn on `ForEach` whose receiver is an integer-index sequence (`<expr>.indices`, `a..<b`, `a...b`, `Range(...)`). Row identity becomes positional, so insertions and removals shift every following row's id and SwiftUI redraws (and resets `@State`) past the mutation point. Prefer `ForEach(Array(<collection>.enumerated()), id: \\.element.id)`.\n\nOrthogonal to `FlagForEachIDSelfInView`: that rule keys on the `id:` axis (`\\.self` is fragile on element collections); this rule keys on the receiver axis and ignores the `id:` argument entirely. The two rules are designed not to co-fire — the integer-indexed case is exempted from `FlagForEachIDSelfInView` and owned here.",
+          "description" : "Warn on `ForEach` whose receiver is an integer-index sequence (`<expr>.indices`, `a..<b`, `a...b`, `Range(...)`). Row identity becomes positional, so insertions and removals shift every following row's id and SwiftUI redraws (and resets `@State`) past the mutation point. Prefer `ForEach(Array(<collection>.enumerated()), id: \\.element.id)`.\n\nOrthogonal to `FlagForEachIDSelfInView`: that rule keys on the `id:` axis (`\\.self` is fragile on element collections); this rule keys on the receiver axis and ignores the `id:` argument entirely. The two rules are designed not to co-fire — the integer-indexed case is exempted from `FlagForEachIDSelfInView` and owned here.\n\nWhen the rows hold `@State` or `@FocusState` , `FlagStatefulForEachOverIndices` reports the `ForEach` instead of this rule, so a `// sm:ignore` directive for this rule does not hide it.",
           "unevaluatedProperties" : false
         },
         "flagPreviewProvider" : {
@@ -4378,7 +4423,16 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a view initializer that seeds `@State` from one of its parameters.\n\nSwiftUI creates the state storage once, for the first value of the view's identity. When the parent later passes a new value for the same view, the initializer runs again but the state keeps its first value. The seed is correct only when each new input also gives the view a new identity, for example a sheet that opens on a fresh presentation.\n\nLint: An initializer of a view type assigns `State(initialValue:)` or `State(wrappedValue:)` , built from a parameter of the initializer, to a `_name` storage property.",
+          "description" : "Flag a view initializer that seeds `@State` from one of its parameters.\n\nSwiftUI creates the state storage once, for the first value of the view's identity. When the parent later passes a new value for the same view, the initializer runs again but the state keeps its first value. The seed is correct only when each new input also gives the view a new identity, for example a sheet that opens on a fresh presentation.\n\nLint: An initializer of a view type assigns `State(initialValue:)` or `State(wrappedValue:)` , built from a parameter of the initializer, to a `_name` storage property, or assigns a value built from a parameter directly to a `@State` property, as in `name = input.value` .",
+          "unevaluatedProperties" : false
+        },
+        "flagStatefulForEachOverIndices" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `ForEach` over integer indices whose rows hold state.\n\nA `ForEach` over `items.indices` or `0..<count` keys each row by its position. After an insert or a remove, the row at a position shows a different element, but SwiftUI keeps the state of the old row at that position. A `@State` or `@FocusState` in the row, or focus bound to the index with `.focused($focus, equals: index)` , then belongs to the wrong element.\n\n`FlagForEachOverIndices` reports the stateless case, and a `// sm:ignore` directive can accept it where the indices never change. This rule reports the stateful case under its own name, so a directive that names only `flagForEachOverIndices` does not hide it. Only a directive that names this rule, or a bare `// sm:ignore` , suppresses it.\n\nThe rule reads the row type when the same file declares it. For a row type declared in another file, it sees only focus that the closure binds to the index.\n\nLint: A `ForEach` over integer indices whose row closure binds focus to the index, or builds a same-file `View` that holds `@State` , `@FocusState` , `@StateObject` or `@AccessibilityFocusState` .",
           "unevaluatedProperties" : false
         },
         "flagSupersededSwiftUI" : {
@@ -4405,7 +4459,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a view input whose type is a large struct declared in the same file.\n\nSwiftUI compares a value input as a whole. When a view stores a model with many properties and reads only a few of them, a change to any other property still makes the input look changed, and SwiftUI evaluates the view's `body` again. Pass only the properties the view reads.\n\nA struct counts as large when it and its same-file extensions declare at least five stored instance properties. A `View` type is not a model, and neither is a type that names a generic parameter of the view. A property the view owns, such as `@State` , is not an input.\n\nA type declared in another file has no property count the rule can see. The rule then reports the input when the view reads at least three of its properties and never uses the value as a whole: it does not pass it on, call a method on it, compare it or bind it. Standard library, Foundation and SwiftUI types are exempt, and so is a name that ends in `View` .\n\nLint: A stored input of a view type has the type of a same-file struct with five or more stored instance properties, or has a type from another file of which the view reads three or more properties and nothing else.",
+          "description" : "Flag a view input whose type is a large struct declared in the same file.\n\nSwiftUI compares a value input as a whole. When a view stores a model with many properties and reads only a few of them, a change to any other property still makes the input look changed, and SwiftUI evaluates the view's `body` again. Pass only the properties the view reads.\n\nA struct counts as large when it and its same-file extensions declare at least five stored instance properties. A `View` type is not a model, and neither is a type that names a generic parameter of the view. A property the view owns, such as `@State` , is not an input.\n\nA type declared in another file has no property count the rule can see. The rule then reports the input when the view reads at least three of its properties and never uses the value as a whole: it does not pass it on, call a method on it, compare it or bind it. A use inside a closure that runs later, such as a `Button` action, does not count as a whole use, and neither does passing the value to a `View` declared in the same file. Standard library, Foundation and SwiftUI types are exempt, and so is a name that ends in `View` . A type that the file uses with `@Bindable` or `@Environment(Type.self)` is an `@Observable` class, which SwiftUI tracks by property, so it is exempt too.\n\nLint: A stored input of a view type has the type of a same-file struct with five or more stored instance properties, or has a type from another file of which the view reads three or more properties and nothing else.",
           "unevaluatedProperties" : false
         },
         "forEachRowReadsOnlyElement" : {
@@ -4414,7 +4468,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a `ForEach` or `List` row closure that reads a member of the enclosing view.\n\nA row that reads only its element depends only on that element. When the closure also reads a property or calls a method of the enclosing view, every row depends on that value, and a change to it re-evaluates every row. Pass what the row needs into a row `View` as a stored input.\n\nThese reads are allowed:\n\n- A `private let` or `static` member, because neither can change while the view lives.\n- A method or computed property that itself reads only allowed members. It is a pure helper.\n- A projected binding such as `$selection` . Forwarding it to a row `View` does not read the\nvalue, and the row that writes the selection needs it.\n- A read inside an argument of the custom row `View` the closure builds, such as\n`TagRow(tag: tag, isSelected: selection == tag)` or `ItemRow(item: item, canWrite: canWrite)` . The row stores the value as an input, and SwiftUI skips it when the value does not change. This is the fix the finding recommends. Whether the input is too large a value is the concern of `flagWholeValueModelViewInput` .\n\nLint: A row closure reads a same-type member outside those cases.",
+          "description" : "Flag a `ForEach` or `List` row closure that reads a member of the enclosing view.\n\nA row that reads only its element depends only on that element. When the closure also reads a property or calls a method of the enclosing view, every row depends on that value, and a change to it re-evaluates every row. Pass what the row needs into a row `View` as a stored input.\n\nThese reads are allowed:\n\n- A `private let` or `static` member, because neither can change while the view lives.\n- A method or computed property that itself reads only allowed members. It is a pure helper.\n- A projected binding such as `$selection` . Forwarding it to a row `View` does not read the\nvalue, and the row that writes the selection needs it.\n- A read inside an argument of the custom row `View` the closure builds, such as\n`TagRow(tag: tag, isSelected: selection == tag)` or `ItemRow(item: item, canWrite: canWrite)` . The row stores the value as an input, and SwiftUI skips it when the value does not change. This is the fix the finding recommends. Whether the input is too large a value is the concern of `flagWholeValueModelViewInput` .\n- A read inside a closure passed to the custom row `View` or to one of its modifiers, such as\n`copy: { library.copy(theme) }` or `.onTapGesture { selection = tag }` . The closure runs later, and the row is already one named `View` .\n\nThe rule reports each row once, at the `ForEach` or `List` call, and adds a note at each read.\n\nLint: A row closure reads a same-type member outside those cases.",
           "unevaluatedProperties" : false
         },
         "isolateTextInputState" : {
@@ -4423,7 +4477,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a text input bound to the view's own `@State` in a `body` that also builds unrelated views.\n\nEach keystroke writes the state, and each write makes SwiftUI evaluate the whole `body` again. When the same `body` builds other sections that never read the text, their construction repeats on every keystroke. Move the field and its state into their own `View` , so a keystroke only evaluates that view.\n\nA view counts as unrelated when it is a sibling statement of the field, or of a container that holds the field, and its source never names the state. A binding the view receives is exempt, because its owner already evaluates on each keystroke.\n\nLint: A `TextField` , `SecureField` or `TextEditor` in `body` binds `$name` of a same-type `@State` , and two or more views beside it in `body` do not name `name` .",
+          "description" : "Flag a text input bound to the view's own `@State` in a `body` that also builds unrelated views.\n\nEach keystroke writes the state, and each write makes SwiftUI evaluate the whole `body` again. When the same `body` builds other sections that never read the text, their construction repeats on every keystroke. Move the field and its state into their own `View` , so a keystroke only evaluates that view.\n\nA view counts as unrelated when it is a sibling statement of the field, or of a container that holds the field, and its source never names the state. A binding the view receives is exempt, because its owner already evaluates on each keystroke.\n\nThe field can sit in `body` or in a same-type helper that builds part of the view. The rule also reports the field when `body` , or a same-type member that `body` reaches, reads an `@Environment` value in a member that does not name the state. That work repeats on every keystroke too.\n\nLint: A `TextField` , `SecureField` or `TextEditor` in `body` or a view helper binds `$name` of a same-type `@State` , and two or more views beside it do not name `name` , or `body` reaches an `@Environment` read in a member that does not name `name` .",
           "unevaluatedProperties" : false
         },
         "noAnyViewInForEach" : {
@@ -4433,6 +4487,15 @@
             }
           ],
           "description" : "Flag `AnyView(...)` constructed inside a `ForEach` body. Type-erasing each row defeats SwiftUI's structural identity, forces extra invalidation, and almost always indicates a missing `@ViewBuilder` helper or a `Group { ... }` with branches. Move the branching into a `@ViewBuilder` function or use `if / switch` directly inside the closure.",
+          "unevaluatedProperties" : false
+        },
+        "noBindingConstructionInView" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `Binding(get:set:)` that a view builds in its body, in a helper, or in a closure.\n\nA binding built from closures is a new value on each update. SwiftUI cannot compare two closure bindings, so each child view that receives one is always different from its last value and updates each time the parent does. The closures also capture the current values of the view, and the code that they hold is hidden from the owner of the state.\n\nProject the binding with `$` from the owner of the value. When the binding needs logic, move that logic into the model, for example as a computed property with a setter, and project a binding to that property.\n\nThe rule reports each `Binding(get:set:)` in a member of a type that conforms to `View` or `ViewModifier` in the same file. A binding that a model or another type builds is not reported.\n\nLint: A member of a view type calls `Binding(get:set:)` .",
           "unevaluatedProperties" : false
         },
         "noClosureInputInView" : {
@@ -4450,7 +4513,16 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag collection work in a computed property or method that a view's `body` reads.\n\nA computed property is not stored. It runs again on every `body` evaluation, and so does every method `body` calls. A `.filter` , `.sorted` , `.map` or loop there walks the whole collection on each update, even when the collection did not change. Store the derived value and update it when its inputs change.\n\nThe rule follows `body` into same-type computed properties and methods, and from those into further members. Closures that run later, such as a `Button` action or a `.task` body, are not followed.\n\nA reached member can call a static function on another type, such as `Row.rows(projects:)` . When the file declares that type, the rule follows the call into the function body. When the type is declared in another file, the rule cannot see the body. It then reports the call when an argument passes a stored collection of the view, because the function most likely walks it.\n\nLint: A same-type member that `body` reaches, or a same-file static function it calls, calls `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` , `while` or `repeat` loop. A reached member passes a stored collection of the view to a static function declared in another file.",
+          "description" : "Flag collection work in a view's `body` , or in a computed property or method that `body` reads.\n\nA computed property is not stored. It runs again on every `body` evaluation, and so does every method `body` calls. A `.filter` , `.sorted` , `.map` or loop there walks the whole collection on each update, even when the collection did not change. Store the derived value and update it when its inputs change.\n\nThe rule checks `body` itself, and follows it into same-type computed properties and the methods it calls, and from those into further members. Closures that run later, such as a `Button` action or a `.task` body, are not followed. A method named without a call, such as a function reference passed to a drop delegate, runs later too, so the rule does not follow it.\n\nA reached member can call a static function on another type, such as `Row.rows(projects:)` . When the file declares that type, the rule follows the call into the function body. When the type is declared in another file, the rule cannot see the body. It then reports the call when an argument passes a stored collection of the view, because the function most likely walks it.\n\nLint: `body` , a same-type member that `body` reaches, or a same-file static function it calls, calls `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` , `while` or `repeat` loop. `body` or a reached member passes a stored collection of the view to a static function declared in another file.",
+          "unevaluatedProperties" : false
+        },
+        "noDynamicPropertyInViewInitializer" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an initializer that reads, calls a method on, or changes one of its own dynamic properties.\n\nSwiftUI installs the storage of a dynamic property such as `@State` or `@Environment` after the initializer returns. Inside the initializer, a read sees a default value, and a change such as `citations.update(...)` on a `@State` model goes to a copy that SwiftUI then discards. Store the inputs in the initializer, and do the work in `body` , in `task(id:)` , or in the parent.\n\nThe rule applies to any struct whose stored properties carry a dynamic property wrapper, so it also covers a view that conforms to `View` through a protocol declared in another file. These uses are not flagged:\n\n- the storage setup `_name = State(initialValue: value)`\n- an assignment `name = value` that initializes a wrapper with no default value, such as\n`@State private var size: Double`\n- a parameter or local that shadows the property name\n\nLint: An initializer uses a property that carries `@State` , `@Binding` , `@Environment` , `@FocusState` , `@AppStorage` or another dynamic property wrapper.",
           "unevaluatedProperties" : false
         },
         "noFormatterInViewBody" : {
@@ -4468,7 +4540,16 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a view input that the view stores only to pass it unchanged to a child view.\n\nA forwarded input makes the parent depend on a value it never reads. Each change to the value makes SwiftUI evaluate the parent's `body` as well as the child's. Build the child in the view that owns the value and pass it in as content, or let the child read the value from its source.\n\nA binding and a closure are exempt, because a child needs them to write back or to act. So is an input that the view reads, adapts or passes to two different children. A built-in SwiftUI view such as `Text` or `Image` renders the value, so passing it there counts as a read.\n\nLint: Every use of a stored value input of a view type, outside its initializers, is an argument of one call to an uppercase callee, passed as `name` or `self.name` .",
+          "description" : "Flag a view input that the view stores only to pass it unchanged to a child view.\n\nA forwarded input makes the parent depend on a value it never reads. Each change to the value makes SwiftUI evaluate the parent's `body` as well as the child's. Build the child in the view that owns the value and pass it in as content, or let the child read the value from its source.\n\nA binding and a closure are exempt, because a child needs them to write back or to act. So is an input that the view reads, adapts or passes to two different children. A built-in SwiftUI view such as `Text` or `Image` renders the value, so passing it there counts as a read. A callee that the file declares as a type that is not a `View` or a `ViewModifier` takes no content, so passing the value there counts as a read. An input whose value an initializer also passes to a property wrapper's storage, as in `_items = Fetch(..., since: start)` , is exempt.\n\nLint: Every use of a stored value input of a view type, outside its initializers, is an argument of one call to an uppercase callee, passed as `name` or `self.name` .",
+          "unevaluatedProperties" : false
+        },
+        "noOnAppearDerivedState" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an `.onAppear` that assigns a `@State` property a value derived from another property of the view.\n\n`.onAppear` runs when the view appears, not when its inputs change. A parent can pass a new value, or a binding can change, while the view stays on screen. The state then keeps the value from the last appearance and goes stale. Compute the value where it is read, for example in a computed property, or keep it current with `.onChange(of: source, initial: true)` .\n\n`RequireRepeatSafeOnAppear` covers writes that accumulate, such as `count += 1` . This rule does not report an assignment whose value reads only the target itself, or reads no property of the view, such as `isFocused = true` .\n\nLint: An assignment in an `.onAppear` closure targets a `@State` property of the view, and its value reads a different stored property of the same view.",
           "unevaluatedProperties" : false
         },
         "noOnChangeDerivedStateWrite" : {
@@ -4486,7 +4567,16 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a view `body` whose only statement is an `if` / `else` or a `switch` that swaps the root view type between branches.\n\nWhen the branches build different root types, SwiftUI gives each branch its own identity. A change of the condition destroys the views of one branch and creates the views of the other. The destroyed views lose their state, and SwiftUI cannot animate between the two trees. Keep one stable root view and put the conditional content inside it, or change a modifier value instead of the view.\n\nThe rule does not report an `if` without `else` , an `if #available` check, or branches whose root calls name the same view type. The root of a branch is the view that its modifier chain starts from.\n\nLint: The single top-level statement of a `View` `body` or a `ViewModifier` `body(content:)` is an `if` / `else` or a `switch` whose branches build two or more different root view types.",
+          "description" : "Flag a view `body` whose only statement is an `if` / `else` or a `switch` that swaps the root view type between branches.\n\nWhen the branches build different root types, SwiftUI gives each branch its own identity. A change of the condition destroys the views of one branch and creates the views of the other. The destroyed views lose their state, and SwiftUI cannot animate between the two trees. Keep one stable root view and put the conditional content inside it, or change a modifier value instead of the view.\n\nThe rule does not report an `if` without `else` , an `if #available` check, or branches whose root calls name the same view type. The root of a branch is the view that its modifier chain starts from.\n\nWhen every branch is an `HStack` , `VStack` , `ZStack` or `Grid` that holds the same children, only the layout changes. The message then names `AnyLayout` , which switches between `HStackLayout` , `VStackLayout` and the other layouts and keeps the identity of the children.\n\nLint: The single top-level statement of a `View` `body` or a `ViewModifier` `body(content:)` is an `if` / `else` or a `switch` whose branches build two or more different root view types.",
+          "unevaluatedProperties" : false
+        },
+        "noUnprojectedBindable" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `@Bindable` property that nothing projects with `$` .\n\n`@Bindable` exists to make bindings to the properties of an `@Observable` model, as in `$model.name` . A view that only reads the model, or only writes to it through the reference, gets the same observation from a plain property. The wrapper then adds a dynamic property to the view and tells the reader that the view edits the model through bindings, which it does not.\n\nThe rule searches the type and its extensions in the same file for a member, and the rest of the enclosing block for a local declaration such as `@Bindable var model = model` . An extension in another file that projects the property is not visible to the rule.\n\nLint: A `@Bindable` property or local variable whose `$name` projection does not occur in its scope.",
           "unevaluatedProperties" : false
         },
         "noUnreadEnvironmentProperty" : {
@@ -4504,7 +4594,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag a type member, other than `body` , that returns `some View` or `AnyView` .\n\nA factory member runs as part of the caller's `body` . SwiftUI cannot compare its inputs or skip it, so every change the caller sees rebuilds the factory's views too. A separate `View` type gets its own stored inputs, and SwiftUI skips it when they do not change.\n\nThe rule covers members of every type, not only views. A factory on a model type or in a protocol extension runs inside the caller's `body` too.\n\nA member that returns a concrete leaf type such as `Text` , `Image` , `Color` , a shape, a gradient or `EmptyView` is not a factory. Neither are the protocol entry points `body` , `body(content:)` , `makeBody(configuration:)` and `previews` , nor a fluent method in an extension of `View` or a SwiftUI view type such as `Text` that transforms `self` .\n\nLint: A type member returns `some View` , `any View` or `AnyView` .",
+          "description" : "Flag a type member, other than `body` , that returns `some View` , `AnyView` or a concrete custom view type.\n\nA factory member runs as part of the caller's `body` . SwiftUI cannot compare its inputs or skip it, so every change the caller sees rebuilds the factory's views too. A separate `View` type gets its own stored inputs, and SwiftUI skips it when they do not change.\n\nThe rule covers members of every type, not only views. A factory on a model type or in a protocol extension runs inside the caller's `body` too.\n\nA member that returns a concrete custom view type, such as `-> RowView` , is a factory too. The rule counts a return type as a view when a type of that name in the same file conforms to `View` , or, for a type declared elsewhere, when its name ends in `View` and has no AppKit or UIKit prefix such as `NS` or `UI` . A member that returns a concrete leaf type such as `Text` , `Image` , `Color` , a shape, a gradient or `EmptyView` is not a factory. Neither are the protocol entry points `body` , `body(content:)` , `makeBody(configuration:)` and `previews` , nor a fluent method in an extension of `View` or a SwiftUI view type such as `Text` that transforms `self` .\n\nLint: A type member returns `some View` , `any View` , `AnyView` or a concrete custom view type.",
           "unevaluatedProperties" : false
         },
         "noWithAnimationInOnChange" : {
@@ -4578,6 +4668,15 @@
           "description" : "Flag a `Bool` `@State` flag that presents content which reads a separate optional `@State` .\n\nA view that presents a sheet for a value often keeps two properties: a `Bool` that shows the sheet and an optional that holds the value. The two properties can disagree. The flag can be `true` while the value is `nil` , and then the sheet shows empty content. The `item:` form takes one `Binding<T?>` . The sheet shows when the value is set, and the content gets the value unwrapped. `.alert` and `.confirmationDialog` get the same fix from their `presenting:` form.\n\nThe rule reads only the view type in the same file. It reports when the `isPresented:` argument is the projected binding of a `Bool` `@State` property, and a content closure of the modifier reads an optional `@State` property of the same view.\n\nLint: A `.sheet` , `.alert` , `.confirmationDialog` , `.popover` or `.fullScreenCover` presents with a `Bool` `@State` flag, and its content reads an optional `@State` property.",
           "unevaluatedProperties" : false
         },
+        "useOnChangeInitialNotOnAppear" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an `.onAppear` and an `.onChange(of:)` in one modifier chain that run the same action.\n\nThe pair runs the action once when the view appears and again each time the value changes. `.onChange(of: value, initial: true)` does the same with one modifier, and the reader sees at once that the action tracks the value. Two copies of the action can also drift apart when one of them is edited.\n\nThe actions match when their source text is the same after whitespace is removed. An `.onChange` action that names its old or new value does not match, because `.onAppear` has no such values. An `.onChange` that already passes `initial:` is not reported.\n\nLint: An `.onAppear` and an `.onChange(of:)` without `initial:` in the same modifier chain run the same closure or function.",
+          "unevaluatedProperties" : false
+        },
         "useReadableDocument" : {
           "allOf" : [
             {
@@ -4604,6 +4703,15 @@
           ],
           "description" : "Prefer `.scaledToFit()` / `.scaledToFill()` over `.aspectRatio(contentMode:)` with a constant content mode.\n\nSwiftUI's `scaledToFit()` and `scaledToFill()` are exact equivalents of `aspectRatio(contentMode: .fit)` and `aspectRatio(contentMode: .fill)` respectively, and read more clearly. The rewrite only fires when the call has a single `contentMode:` argument whose value is a constant `.fit` / `.fill` (optionally spelled `ContentMode.fit` / `ContentMode.fill`). A leading ratio argument, a non-constant content mode, or a differently-typed enum base leaves the call untouched.\n\nLint: Using `aspectRatio(contentMode:)` with a constant content mode raises a warning.\n\nRewrite: `.aspectRatio(contentMode: .fit)` becomes `.scaledToFit()` and `.aspectRatio(contentMode: .fill)` becomes `.scaledToFill()`."
         },
+        "useTaskIDNotTaskInOnChange" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `Task` that starts inside the action closure of `.onChange(of:)` .\n\nThe action closure is synchronous, so it can start async work only as an unstructured task. Nothing cancels that task when the value changes again, so two tasks for two values can run at the same time and finish in the wrong order. Nothing cancels it when the view goes away either.\n\n`.task(id:)` with the same value runs the work when the view appears and each time the value changes. It cancels the previous run first, and it cancels the last run with the view.\n\nThe rule reports a `Task` , `Task.immediate` or `Task.detached` call in the action closure, including one inside an `if` or `switch` . A task inside a nested closure, such as a `Button` action, runs from that closure and is not reported.\n\nLint: An `.onChange(of:)` action closure starts a `Task` .",
+          "unevaluatedProperties" : false
+        },
         "useTaskModifierNotOnAppear" : {
           "allOf" : [
             {
@@ -4629,6 +4737,15 @@
             }
           ],
           "description" : "Flag uses of system notifications whose name has a typed `NotificationCenter.MainActorMessage` adapter on macOS 26 / iOS 26+. Matches `addObserver(forName:...)`, `.notifications(named:)`, `.messages(named:)`, and `post(name:...)` whose name argument matches an entry in `NotificationAPI.generatedSystemAdapters` (SDK-derived) or `NotificationAPI.foundationLegacyAdapters` (free-floating Foundation names).\n\nFlag-only — the suggested replacement (`addObserver(of:for:)` / `messages(of:)`) reshapes the surrounding call and is out of scope for an autofix.",
+          "unevaluatedProperties" : false
+        },
+        "useViewExtensionForCustomModifier" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `.modifier(CustomModifier(...))` at a call site.\n\nA call site that names the `ViewModifier` type depends on how the modifier is built. A `View` extension method, such as `.draggableRow(...)` , gives the modifier a fluent name that reads like the SwiftUI modifiers. The type can then become `private` , and its initializer can change without an edit at each call site.\n\nThe rule does not report the `.modifier(...)` call inside a `View` extension, because that call is the wrapper that the rule asks for. It reports only an argument that constructs a type by name. A stored or conditional modifier value is not reported.\n\nLint: A `.modifier(_:)` call receives an initializer call of a named type, outside a `View` extension.",
           "unevaluatedProperties" : false
         }
       },
@@ -5005,7 +5122,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Pass an explicit `priority:` when starting an unstructured task.\n\n`Task { }` inherits the priority of its caller, and `Task.detached { }` runs at the default priority. Neither default states how urgent the work is. An explicit priority lets the scheduler run user-facing work first and background work last.\n\n`Task { }` and `Task.immediate { }` stay silent in a main-actor UI context, because that work correctly inherits the priority of the UI event that started it. The rule treats these as a main-actor UI context:\n\n- a closure that declares `@MainActor`,\n- a declaration that carries `@MainActor`, and everything inside it,\n- a SwiftUI type (`View`, `ViewModifier`, `App`, `Scene`, `ToolbarContent`, `Commands`) or an\nAppKit or UIKit representable,\n- an extension of `View`, whose methods are view modifiers.\n\n`Task.detached { }` and `Task.immediateDetached { }` always fire. A detached task inherits no priority, so the exemption does not apply.\n\nLint: An unstructured task with no `priority:` argument outside a main-actor UI context raises a warning.",
+          "description" : "Pass an explicit `priority:` when starting an unstructured task.\n\n`Task { }` inherits the priority of its caller, and `Task.detached { }` runs at the default priority. Neither default states how urgent the work is. An explicit priority lets the scheduler run user-facing work first and background work last.\n\nThe rule fires in every context, including SwiftUI views and `@MainActor` code. A task that a view starts often does persistence or network work whose urgency differs from the UI event that started it. Keep the inherited priority only when the task must run at its caller's priority, and suppress the finding there.\n\nLint: An unstructured task (`Task { }`, `Task.immediate { }`, `Task.detached { }` or `Task.immediateDetached { }`) with no `priority:` argument raises a warning.",
           "unevaluatedProperties" : false
         },
         "useActorNotLock" : {
@@ -5270,7 +5387,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Check for a framework with `#if canImport(...)`, not with `#if os(...)`.\n\nAn `#if os(...)` block that holds only an `import` uses the platform as a stand-in for the framework. `canImport` states the real question. It also keeps working when the framework comes to a new platform, such as UIKit on visionOS or Mac Catalyst.\n\nThe rule fires only on a block with a single `#if` clause, a condition made only of `os(...)` checks, and a body made only of `import` declarations. An `#else` or `#elseif` branch marks a platform split, such as AppKit on macOS and UIKit elsewhere. There the file depends on platform types, not only on one framework, so the rule stays silent.\n\nLint: An `#if os(...)` block that guards only framework imports raises a warning.",
+      "description" : "Check for a framework with `#if canImport(...)`, not with `#if os(...)`.\n\nAn `#if os(...)` block that holds only an `import` uses the platform as a stand-in for the framework. `canImport` states the real question. It also keeps working when the framework comes to a new platform, such as UIKit on visionOS or Mac Catalyst.\n\nThe rule fires on a block whose conditions are made only of `os(...)` checks and whose branches hold only `import` declarations. An `#else` or `#elseif` branch marks a platform split, such as AppKit on macOS and UIKit elsewhere. When the file names an `NS` or `UI` type outside any `#if` block, the file depends on a type both frameworks spell, so the split stays and the rule is silent. When every such type sits inside its own `#if` , `#if canImport(AppKit)` with `#elseif canImport(UIKit)` states the need.\n\nLint: An `#if os(...)` block that guards only framework imports raises a warning.",
       "unevaluatedProperties" : false
     },
     "useClosureNotificationObserver" : {
@@ -5288,7 +5405,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Name a complex closure type of a stored property with a `typealias` .\n\nA closure type that takes or returns another closure, or that spells several nested types, is hard to read in a declaration. A `typealias` names what the closure does and keeps the stored property on one short line.\n\nA closure type counts as complex when a parameter or the result is itself a closure type, or when it spells five or more types in total. `(Item?, Binding<Bool>) -> Editor` spells five: `Item?` , `Item` , `Binding<Bool>` , `Bool` and `Editor` .\n\nLint: A stored property of a type has a complex closure type.",
+      "description" : "Name a complex closure type of a stored property with a `typealias` .\n\nA closure type that takes or returns another closure, or that spells several nested types, is hard to read in a declaration. A `typealias` names what the closure does and keeps the stored property on one short line.\n\nA closure type counts as complex when a parameter or the result is itself a closure type, or when it spells five or more types in total. `(Item?, Binding<Bool>) -> Editor` spells five: `Item?` , `Item` , `Binding<Bool>` , `Bool` and `Editor` .\n\nA closure type also earns a name when the file spells it more than once, in stored properties or in function and initializer parameters. Two spellings match when they differ only in parameter labels, attributes such as `@escaping` , or an outer optional. Two closure types with the same list of two or more parameters also match, so `(ID, Edge, ID) -> Bool` and `(ID, Edge, ID) -> Void` both report. `() -> Void` never counts as a repeat.\n\nTwo closure types of two or more parameters that differ in exactly one parameter type share a shape, as in `(Item, Importable) -> Void` and `(Item, Exportable) -> Void` . A generic `typealias` names that shape once.\n\nA closure type with three or more attributes and effects, such as `@escaping @Sendable (Transaction) throws -> ID` , also counts as complex. This check applies to parameters as well as to stored properties.\n\nLint: A stored property of a type has a complex closure type, a parameter has a heavily decorated closure type, or a stored property or parameter spells a closure type or a closure shape that the file repeats.",
       "unevaluatedProperties" : false
     },
     "useCommaNotAndInConditions" : {
@@ -5553,7 +5670,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0` , the closure can be replaced with a keyPath expression: `map(\\.foo)` . This is more concise and expressive.\n\nApplies to `map` , `flatMap` , `compactMap` , `allSatisfy` , `filter` , and `contains(where:)` .\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nRewrite: The closure is replaced with a keyPath expression."
+      "description" : "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.\n\nWhen a closure's only expression is a property access on `$0` , the closure can be replaced with a keyPath expression: `map(\\.foo)` . This is more concise and expressive.\n\nApplies to `map` , `flatMap` , `compactMap` , `allSatisfy` , `filter` , and `contains(where:)` .\n\nA key path literal converts to any function type `(Root) -> Value` (SE-0249), so the rule also applies to a closure passed with an argument label, such as `displayName: { $0.name }` . A closure that uses only `$0` can match only a function type with one parameter. A label that names an action, such as `action:` , `perform:` or `onDismiss:` , usually takes a `Void` result, which a key path cannot supply, so the rule skips it.\n\nA trailing closure hides its argument label, and the rewrite has to spell it. The rule therefore converts a trailing closure only for calls whose label it knows: `ForEach` ( `content:` ) and `onGeometryChange` / `onScrollGeometryChange` ( `of:` ). For the geometry modifiers the `action:` closure that follows becomes the trailing closure.\n\nOnly fires for simple property chains (not method calls, subscripts, or complex expressions).\n\nLint: A trivial `{ $0.property }` closure raises a warning.\n\nRewrite: The closure is replaced with a keyPath expression."
     },
     "useLastWhere" : {
       "allOf" : [
@@ -5615,6 +5732,15 @@
         }
       ],
       "description" : "`String.data(using: .utf8)` returns `Data?` , even though UTF-8 encoding can never fail. Prefer the non-optional `Data(_:)` initializer that takes a `String.UTF8View` : `Data(\"foo\".utf8)` instead of `\"foo\".data(using: .utf8)` .\n\nLint: A warning is raised for any call of the form `<expr>.data(using: .utf8)` . Other encodings ( `.ascii` , `.unicode` , etc.) are not flagged because they really can fail.",
+      "unevaluatedProperties" : false
+    },
+    "useOnChangeInitialNotOnAppear" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an `.onAppear` and an `.onChange(of:)` in one modifier chain that run the same action.\n\nThe pair runs the action once when the view appears and again each time the value changes. `.onChange(of: value, initial: true)` does the same with one modifier, and the reader sees at once that the action tracks the value. Two copies of the action can also drift apart when one of them is edited.\n\nThe actions match when their source text is the same after whitespace is removed. An `.onChange` action that names its old or new value does not match, because `.onAppear` has no such values. An `.onChange` that already passes `initial:` is not reported.\n\nLint: An `.onAppear` and an `.onChange(of:)` without `initial:` in the same modifier chain run the same closure or function.",
       "unevaluatedProperties" : false
     },
     "useOrderedSetForUniqueAppend" : {
@@ -5773,6 +5899,15 @@
       "description" : "Flag async cleanup in a `defer` that a cancelled task may skip.\n\nA cancelled task keeps running, and the APIs it calls observe the cancellation. Cleanup that calls one of those APIs can return early and leave the resource open. SE-0504 adds `withTaskCancellationShield` , which hides the cancellation from the scope it wraps so the cleanup runs to completion.\n\n```swift defer { await withTaskCancellationShield { await connection.close() } } ```\n\n**Off by default.** Whether a given call observes cancellation is not visible at the call site, so this rule cannot tell a cleanup that needs the shield from one that does not. It fires on every awaiting `defer` . Turn it on for a codebase that wants the shield as a standing rule for cleanup, and leave it off otherwise.\n\nLint: An `await` inside a `defer` body that is not already inside a `withTaskCancellationShield` raises a warning.",
       "unevaluatedProperties" : false
     },
+    "useTaskIDNotTaskInOnChange" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `Task` that starts inside the action closure of `.onChange(of:)` .\n\nThe action closure is synchronous, so it can start async work only as an unstructured task. Nothing cancels that task when the value changes again, so two tasks for two values can run at the same time and finish in the wrong order. Nothing cancels it when the view goes away either.\n\n`.task(id:)` with the same value runs the work when the view appears and each time the value changes. It cancels the previous run first, and it cancels the last run with the view.\n\nThe rule reports a `Task` , `Task.immediate` or `Task.detached` call in the action closure, including one inside an `if` or `switch` . A task inside a nested closure, such as a `Button` action, runs from that closure and is not reported.\n\nLint: An `.onChange(of:)` action closure starts a `Task` .",
+      "unevaluatedProperties" : false
+    },
     "useTaskModifierNotOnAppear" : {
       "allOf" : [
         {
@@ -5893,6 +6028,15 @@
         }
       ],
       "description" : "Prefer `#unavailable(...)` over `#available(...) {} else { ... }` .\n\nInverting an availability check via an empty `if` -body and a non-empty `else` -body is harder to read than the direct `#unavailable` form (Swift 5.6+). This rule rewrites the simple shape; it does not touch chains where the `else` body has its own availability check (rewriting those is not a simple inversion).\n\nLint: A warning is raised on `if #available(iOS X, *) {} else { body }` .\n\nRewrite: The `if` is rewritten to `if #unavailable(iOS X, *) { body }` ."
+    },
+    "useViewExtensionForCustomModifier" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `.modifier(CustomModifier(...))` at a call site.\n\nA call site that names the `ViewModifier` type depends on how the modifier is built. A `View` extension method, such as `.draggableRow(...)` , gives the modifier a fluent name that reads like the SwiftUI modifiers. The type can then become `private` , and its initializer can change without an edit at each call site.\n\nThe rule does not report the `.modifier(...)` call inside a `View` extension, because that call is the wrapper that the rule asks for. It reports only an argument that constructs a type by name. A stored or conditional modifier value is not reported.\n\nLint: A `.modifier(_:)` call receives an initializer call of a named type, outside a `View` extension.",
+      "unevaluatedProperties" : false
     },
     "useVoidNotEmptyTuple" : {
       "allOf" : [

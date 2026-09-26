@@ -11,9 +11,13 @@ import SwiftSyntax
 /// top level of the row or inside a `switch` case or `if` branch. A helper that builds more than
 /// one view, an `if` without `else` or a `ForEach` changes the row's view count the same way.
 ///
+/// The rule also follows a row that is one custom `View` of the same file into that type's `body` .
+/// Several root views, an `if` without `else` or a branch at the root of that body change the
+/// row's view count, or make a lazy container run the body only to count the rows.
+///
 /// Lint: A `ForEach` content closure holds an `if` without a final `else` , a `ForEach` at its top
 /// level, more than one top-level view, or a call to a same-type `@ViewBuilder` helper that builds
-/// a variable number of views.
+/// a variable number of views, or the row is a custom `View` whose `body` root does one of these.
 final class ConstantForEachRowCount: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
 
@@ -23,8 +27,73 @@ final class ConstantForEachRowCount: LintSyntaxRule<LintOnlyValue>, @unchecked S
         let views = Self.views(in: closure.statements)
         if views.count > 1 { diagnose(.severalViews(views.count), on: node.calledExpression) }
 
-        checkRowViews(views, in: context.typeMembers(around: node).enclosingType(of: node))
+        let index = context.typeMembers(around: node)
+        checkRowViews(views, in: index.enclosingType(of: node))
+        if views.count == 1, let view = views.first { checkNamedRow(view, in: index) }
         return .visitChildren
+    }
+
+    /// The row `View` bodies the rule already reported, so a recursive row reports once
+    private var checkedRowBodies: Set<SyntaxIdentifier> = []
+
+    /// Reports the root of the body of the custom row `View` that `view` builds
+    ///
+    /// A lazy container counts the rows of each element from the row's type. A row `View` whose
+    /// body holds several root views, an `if` without `else` , or a branch at its root makes the
+    /// container run every row's body only to count its rows. A `Form` or `List` also flattens the
+    /// views of a multi-view body into separate rows.
+    private func checkNamedRow(_ view: ExprSyntax, in index: TypeMemberIndex) {
+        guard let name = Self.customViewName(view),
+              let entry = index.types[name], entry.isView,
+              let body = Self.bodyStatements(of: entry),
+              checkedRowBodies.insert(body.id).inserted else { return }
+
+        let views = Self.views(in: body)
+        if views.count > 1, let first = views.first {
+            diagnose(.rowBodyViews(name, views.count), on: first)
+        }
+        for root in views {
+            if let ifExpr = root.as(IfExprSyntax.self) {
+                if Self.hasFinalElse(ifExpr) {
+                    if views.count == 1 { diagnose(.rowBodyBranch(name), on: ifExpr.ifKeyword) }
+                } else {
+                    diagnose(.rowBodyIfWithoutElse(name), on: ifExpr.ifKeyword)
+                }
+            } else if let switchExpr = root.as(SwitchExprSyntax.self), views.count == 1 {
+                diagnose(.rowBodyBranch(name), on: switchExpr.switchKeyword)
+            } else if Self.isForEach(root) {
+                diagnose(.nestedForEach, on: root)
+            }
+        }
+    }
+
+    /// The name of the custom `View` that `view` builds, with or without modifiers applied to it
+    private static func customViewName(_ view: ExprSyntax) -> String? {
+        var current: ExprSyntax? = view
+
+        while let call = current?.as(FunctionCallExprSyntax.self) {
+            if let reference = call.calledExpression.as(DeclReferenceExprSyntax.self) {
+                let name = reference.baseName.text
+                guard name.first?.isUppercase == true,
+                      !SwiftUIBuiltInViews.names.contains(name) else { return nil }
+                return name
+            }
+            current = call.calledExpression.as(MemberAccessExprSyntax.self)?.base
+        }
+        return nil
+    }
+
+    /// The statements of the `body` property of a `View` type
+    private static func bodyStatements(
+        of entry: TypeMemberIndex.TypeEntry
+    ) -> CodeBlockItemListSyntax? {
+        for member in entry.members["body"] ?? [] where !member.isStatic {
+            guard let body = member.body else { continue }
+            if let statements = body.as(CodeBlockItemListSyntax.self) { return statements }
+            if let block = body.as(AccessorDeclSyntax.self)?.body { return block.statements }
+            if let block = body.as(CodeBlockSyntax.self) { return block.statements }
+        }
+        return nil
     }
 
     /// The deepest chain of helper calls the rule follows
@@ -163,6 +232,18 @@ fileprivate extension Finding.Message {
 
     static func variableHelper(_ name: String) -> Finding.Message {
         "'\(name)' builds a variable number of views, so this 'ForEach' row changes its view count. Give the helper one root view or extract a row 'View'"
+    }
+
+    static func rowBodyViews(_ name: String, _ count: Int) -> Finding.Message {
+        "'\(name)' body builds \(count) top-level views, so each 'ForEach' element makes \(count) rows. Wrap them in one container"
+    }
+
+    static func rowBodyIfWithoutElse(_ name: String) -> Finding.Message {
+        "'if' without 'else' at the root of the '\(name)' row body changes the row's view count. Add an 'else' branch or wrap the body in one container"
+    }
+
+    static func rowBodyBranch(_ name: String) -> Finding.Message {
+        "'\(name)' row body starts with a branch, so a lazy container runs every row's body to count its rows. Move the branch inside one root view"
     }
 
     static func severalViews(_ count: Int) -> Finding.Message {

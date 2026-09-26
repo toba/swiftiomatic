@@ -10,6 +10,9 @@ import SwiftSyntax
 /// A container counts toward the depth only when it sits inside the content of another container.
 /// Containers in sibling modifiers such as `.overlay { }` and `.background { }` do not add up.
 ///
+/// The rule reports once per body, on the innermost container of the deepest path, because that
+/// level is the one to extract. When several paths reach the same depth, the last one counts.
+///
 /// Lint: The `body` of a `View` , or `body(content:)` of a `ViewModifier` , nests three or more
 /// structural containers.
 final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -49,11 +52,11 @@ final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked S
     private func check(_ body: some SyntaxProtocol) {
         let finder = DepthFinder(viewMode: .sourceAccurate)
         finder.walk(body)
-        guard finder.deepest.count >= Self.threshold, let outermost = finder.deepest.first else {
+        guard finder.deepest.count >= Self.threshold, let innermost = finder.deepest.last else {
             return
         }
         let path = finder.deepest.map(\.name).joined(separator: " > ")
-        diagnose(.deepComposition(path: path, count: finder.deepest.count), on: outermost.call)
+        diagnose(.deepComposition(path: path, count: finder.deepest.count), on: innermost.call)
     }
 
     private final class DepthFinder: SyntaxVisitor {
@@ -65,7 +68,8 @@ final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked S
         override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
             guard let name = Self.containerName(of: node) else { return .visitChildren }
             stack.append((name, node))
-            if stack.count > deepest.count { deepest = stack }
+            // the last of equally deep paths wins, so the finding sits on the level read last
+            if stack.count >= deepest.count { deepest = stack }
             return .visitChildren
         }
 

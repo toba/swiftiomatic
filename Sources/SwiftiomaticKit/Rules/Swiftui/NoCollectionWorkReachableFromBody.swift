@@ -1,25 +1,26 @@
 import SwiftSyntax
 
-/// Flag collection work in a computed property or method that a view's `body` reads.
+/// Flag collection work in a view's `body` , or in a computed property or method that `body` reads.
 ///
 /// A computed property is not stored. It runs again on every `body` evaluation, and so does every
 /// method `body` calls. A `.filter` , `.sorted` , `.map` or loop there walks the whole collection
 /// on each update, even when the collection did not change. Store the derived value and update it
 /// when its inputs change.
 ///
-/// The rule follows `body` into same-type computed properties and methods, and from those into
-/// further members. Closures that run later, such as a `Button` action or a `.task` body, are not
-/// followed.
+/// The rule checks `body` itself, and follows it into same-type computed properties and the
+/// methods it calls, and from those into further members. Closures that run later, such as a
+/// `Button` action or a `.task` body, are not followed. A method named without a call, such as a
+/// function reference passed to a drop delegate, runs later too, so the rule does not follow it.
 ///
 /// A reached member can call a static function on another type, such as `Row.rows(projects:)` .
 /// When the file declares that type, the rule follows the call into the function body. When the
 /// type is declared in another file, the rule cannot see the body. It then reports the call when an
 /// argument passes a stored collection of the view, because the function most likely walks it.
 ///
-/// Lint: A same-type member that `body` reaches, or a same-file static function it calls, calls
-/// `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` , `while`
-/// or `repeat` loop. A reached member passes a stored collection of the view to a static function
-/// declared in another file.
+/// Lint: `body` , a same-type member that `body` reaches, or a same-file static function it calls,
+/// calls `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` ,
+/// `while` or `repeat` loop. `body` or a reached member passes a stored collection of the view to
+/// a static function declared in another file.
 final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
 
@@ -58,6 +59,11 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
         var pending = Self.reachedMembers(from: accessor, entry: entry)
         let types = context.typeMembers(around: node).types
         let viewName = TypeMemberIndex.enclosingTypeName(of: node) ?? ""
+
+        for call in reportWork(in: Syntax(accessor), member: "body") {
+            reportStaticCall(
+                call, selfType: viewName, view: entry, types: types, visited: &visited)
+        }
 
         while !pending.isEmpty {
             let (name, member) = pending.removeFirst()
@@ -154,9 +160,25 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
         TypeMemberIndex.references(in: region, of: entry, skipping: isDeferred)
             .filter { !$0.spelling.hasPrefix("$") }
             .flatMap { reference in
-                // follow every overload, because a syntax-only rule cannot pick the one called
-                reference.members.filter { $0.kind != .storedProperty }.map { (reference.name, $0) }
+                // follow every overload, because a syntax-only rule cannot pick the one called.
+                // A method named without a call, such as `canDrop: canDrop` , passes a function
+                // reference that runs later, so the rule does not follow it.
+                let called = isCalled(reference.node)
+                return reference.members
+                    .filter { $0.kind == .computedProperty || ($0.kind == .method && called) }
+                    .map { (reference.name, $0) }
             }
+    }
+
+    /// Whether `reference` is the callee of a call, as `name(...)` or `self.name(...)`
+    private static func isCalled(_ reference: DeclReferenceExprSyntax) -> Bool {
+        var callee = Syntax(reference)
+        if let access = reference.parent?.as(MemberAccessExprSyntax.self),
+           access.declName.id == reference.id
+        {
+            callee = Syntax(access)
+        }
+        return callee.parent?.as(FunctionCallExprSyntax.self)?.calledExpression.id == callee.id
     }
 
     /// Whether a closure runs later than the `body` evaluation that builds it

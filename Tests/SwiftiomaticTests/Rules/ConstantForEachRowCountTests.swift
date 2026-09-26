@@ -16,6 +16,124 @@ struct ConstantForEachRowCountTests: RuleTesting {
     "'\(name)' builds a variable number of views, so this 'ForEach' row changes its view count. Give the helper one root view or extract a row 'View'"
   }
 
+  private static func rowBodyViews(_ name: String, _ count: Int) -> String {
+    "'\(name)' body builds \(count) top-level views, so each 'ForEach' element makes \(count) rows. Wrap them in one container"
+  }
+
+  private static func rowBodyIfWithoutElse(_ name: String) -> String {
+    "'if' without 'else' at the root of the '\(name)' row body changes the row's view count. Add an 'else' branch or wrap the body in one container"
+  }
+
+  private static func rowBodyBranch(_ name: String) -> String {
+    "'\(name)' row body starts with a branch, so a lazy container runs every row's body to count its rows. Move the branch inside one root view"
+  }
+
+  @Test func namedRowBodyWithSeveralViewsAndIfFlagged() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      struct NumberingInspectorSection: View {
+        let settings: NumberingSettings
+
+        var body: some View {
+          Section(header: Text("Numbering")) {
+            ForEach(NumberingSettings.numberableTypes, id: \\.rawValue) { type in
+              NumberingTypeRow(type: type, numbering: binding(for: type))
+            }
+          }
+        }
+      }
+
+      private struct NumberingTypeRow: View {
+        let type: NodeType
+        @Binding var numbering: NodeNumbering?
+
+        var body: some View {
+          1️⃣Toggle(isOn: enabled) { Text(type.numberingTitle) }
+
+          2️⃣if numbering != nil {
+            Picker("Style", selection: field(\\.style, default: .arabic)) {
+              ForEach(NumberStyle.allCases, id: \\.rawValue) { Text($0.title).tag($0) }
+            }
+            Toggle("Include Parent Number", isOn: field(\\.includesParentNumber, default: false))
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.rowBodyViews("NumberingTypeRow", 2)),
+        FindingSpec("2️⃣", message: Self.rowBodyIfWithoutElse("NumberingTypeRow")),
+      ]
+    )
+  }
+
+  @Test func namedRowBodyRootSwitchFlaggedOnce() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      struct ProjectTree: View {
+        var body: some View {
+          List {
+            ForEach(items, id: \\.id) { item in
+              ProjectTreeRow(item: item, expandedFolders: $expandedFolders)
+            }
+          }
+        }
+      }
+
+      struct ProjectTreeRow: View {
+        let item: MenuTreeItem
+        @Binding var expandedFolders: Set<ProjectFolder.ID>
+
+        var body: some View {
+          1️⃣switch item.kind {
+            case let .folder(folder):
+              let folderID = folder.id
+              DisclosureGroup(
+                isExpanded: .constant(true),
+                content: {
+                  ForEach(item.children ?? [], id: \\.id) { child in
+                    ProjectTreeRow(item: child, expandedFolders: $expandedFolders)
+                  }
+                },
+                label: { Text(folder.name) }
+              )
+
+            case let .project(node):
+              ProjectNodeRow(node: node)
+          }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.rowBodyBranch("ProjectTreeRow"))]
+    )
+  }
+
+  @Test func namedRowWithOneRootViewNotFlagged() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      struct Rows: View {
+        var body: some View {
+          ForEach(items) { item in ItemView(item: item).padding() }
+        }
+      }
+
+      struct ItemView: View {
+        let item: Item
+
+        var body: some View {
+          HStack {
+            if item.isOn { Image(systemName: "star") }
+            Text(item.name)
+          }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
   @Test func helperInSwitchCaseFollowed() {
     assertLint(
       ConstantForEachRowCount.self,

@@ -91,4 +91,34 @@ struct UseCanImportNotOSCheckTests: RuleTesting {
             findings: []
         )
     }
+
+    @Test func platformSplitUsedOnlyInsideConditionsFlagged() {
+        // From Thesis `ProjectLanguagePicker.swift`.
+        assertLint(
+            UseCanImportNotOSCheck.self,
+            """
+            import SwiftUI
+
+            1️⃣#if os(macOS)
+            import AppKit
+            #else
+            import UIKit
+            import TobaCore
+            public import Foundation
+            #endif
+
+            struct ProjectLanguagePicker: View {
+              var languages: [String] {
+                #if os(macOS)
+                let identifiers = NSSpellChecker.shared.availableLanguages
+                #else
+                let identifiers = UITextChecker.availableLanguages
+                #endif
+                return identifiers
+              }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
 }

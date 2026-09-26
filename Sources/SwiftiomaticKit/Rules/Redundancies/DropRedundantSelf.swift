@@ -12,8 +12,9 @@ import SwiftSyntax
 /// - The enclosing type is a value type (struct/enum)
 /// - The closure explicitly captures self: `[self]` , `[unowned self]`
 ///
-/// The `[weak self]` + `guard let self` pattern (SE-0365, Swift 5.8+) is handled conservatively:
-/// `self.` is kept in weak-self closures.
+/// In a `[weak self]` closure, implicit self is allowed per SE-0365 (Swift 5.8+) after
+/// `guard let self` , and in the body of `if let self` . The rule removes `self.` there too. It keeps
+/// `self.` in a nested closure, which needs its own capture, and before the unwrap.
 ///
 /// **Known limitation (`@dynamicMemberLookup`):** when an extension or member is on a type that
 /// conforms to `@dynamicMemberLookup` in a *different* module, this rule cannot see the attribute
@@ -343,7 +344,7 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
 
     static func transform(
         _ node: MemberAccessExprSyntax,
-        original _: MemberAccessExprSyntax,
+        original: MemberAccessExprSyntax,
         parent _: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -358,7 +359,8 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
         else { return ExprSyntax(node) }
 
         guard !state.implicitSelfStack.isEmpty else { return ExprSyntax(node) }
-        guard state.implicitSelfAllowed else { return ExprSyntax(node) }
+        guard state.implicitSelfAllowed || Self.followsWeakSelfUnwrap(original)
+        else { return ExprSyntax(node) }
         guard !state.inDynamicLookupScope else { return ExprSyntax(node) }
         guard !state.allLocalNames.contains(memberName) else { return ExprSyntax(node) }
         if state.isReferenceType, Self.isInArgumentStringInterpolation(of: node) {
@@ -374,6 +376,54 @@ final class DropRedundantSelf: StaticFormatRule<BasicRuleValue>, @unchecked Send
     }
 
     // MARK: - Helpers
+
+    /// Whether `node` sits in a `[weak self]` closure after a `guard let self` , or in the body of
+    /// an `if let self` , with no other closure in between
+    ///
+    /// SE-0365 (Swift 5.8) allows implicit `self` there, because `self` is a strong, non-optional
+    /// reference.
+    private static func followsWeakSelfUnwrap(_ node: some SyntaxProtocol) -> Bool {
+        var child = Syntax(node)
+        var current = node.parent
+        var unwrapped = false
+
+        while let cur = current {
+            if let closure = cur.as(ClosureExprSyntax.self) {
+                return unwrapped && capturesWeakSelf(closure)
+            }
+            if cur.is(FunctionDeclSyntax.self) || cur.is(MemberBlockSyntax.self) { return false }
+
+            if let list = cur.as(CodeBlockItemListSyntax.self) {
+                for item in list where item.endPosition <= child.position {
+                    if let guardStmt = item.item.as(GuardStmtSyntax.self),
+                       unwrapsSelf(guardStmt.conditions) { unwrapped = true }
+                }
+            }
+            if let ifExpr = cur.as(IfExprSyntax.self), child.id == ifExpr.body.id,
+               unwrapsSelf(ifExpr.conditions) { unwrapped = true }
+            child = cur
+            current = cur.parent
+        }
+        return false
+    }
+
+    /// Whether the conditions hold `let self` or `let self = self`
+    private static func unwrapsSelf(_ conditions: ConditionElementListSyntax) -> Bool {
+        conditions.contains {
+            guard case let .optionalBinding(binding) = $0.condition,
+                  binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.tokenKind
+                      == .keyword(.self) else { return false }
+            guard let value = binding.initializer?.value else { return true }
+            return value.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind == .keyword(.self)
+        }
+    }
+
+    private static func capturesWeakSelf(_ closure: ClosureExprSyntax) -> Bool {
+        closure.signature?.capture?.items.contains {
+            $0.name.tokenKind == .keyword(.self)
+                && $0.specifier?.specifier.tokenKind == .keyword(.weak)
+        } == true
+    }
 
     /// Determines if a closure captures `self` explicitly (strong or unowned). `[weak self]`
     /// returns false (conservative — requires guard let self detection).

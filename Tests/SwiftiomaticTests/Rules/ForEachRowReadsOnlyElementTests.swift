@@ -4,9 +4,12 @@ import Testing
 
 @Suite
 struct ForEachRowReadsOnlyElementTests: RuleTesting {
-  private static func message(_ name: String) -> String {
-    "'ForEach' row reads '\(name)' from the enclosing view. Pass the value into a row 'View' so the row depends only on its element"
+  private static func message(_ call: String = "ForEach", _ names: String...) -> String {
+    let list = names.map { "'\($0)'" }.joined(separator: ", ")
+    return "'\(call)' row reads \(list) from the enclosing view. Extract the row into a 'View' that takes the values as inputs so the row depends only on its element"
   }
+
+  private static func read(_ name: String) -> String { "the row reads '\(name)' here" }
 
   @Test func gutterRowReadsEditorState() {
     assertLint(
@@ -17,7 +20,7 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         static let width: CGFloat = 18
 
         var body: some View {
-          ForEach(visibleMarkers, id: \\.id) { marker in
+          0️⃣ForEach(visibleMarkers, id: \\.id) { marker in
             markerView(marker)
               .position(
                 x: Self.width / 2,
@@ -30,7 +33,9 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
       }
       """,
       findings: [
-        FindingSpec("1️⃣", message: Self.message("editorState")),
+        FindingSpec(
+          "0️⃣", message: Self.message("ForEach", "editorState"),
+          notes: [NoteSpec("1️⃣", message: Self.read("editorState"))]),
       ]
     )
   }
@@ -44,7 +49,7 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
 
         var body: some View {
           HStack {
-            ForEach(Array(items.enumerated()), id: \\.offset) { index, item in
+            0️⃣ForEach(Array(items.enumerated()), id: \\.offset) { index, item in
               Text(item.label)
                 .foregroundStyle(index == 1️⃣items.count - 1 ? .primary : .secondary)
             }
@@ -52,11 +57,15 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("items"))]
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.message("ForEach", "items"),
+          notes: [NoteSpec("1️⃣", message: Self.read("items"))]),
+      ]
     )
   }
 
-  @Test func fontPickerRowReadsSelectionAndDismissInActionClosure() {
+  @Test func namedRowActionClosuresNotFlagged() {
     assertLint(
       ForEachRowReadsOnlyElement.self,
       """
@@ -68,18 +77,15 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
           LazyVStack {
             ForEach(visibleRows) { row in
               FontPreview(row: row) {
-                1️⃣selection = row.name
-                2️⃣dismiss()
+                selection = row.name
+                dismiss()
               }
             }
           }
         }
       }
       """,
-      findings: [
-        FindingSpec("1️⃣", message: Self.message("selection")),
-        FindingSpec("2️⃣", message: Self.message("dismiss")),
-      ]
+      findings: []
     )
   }
 
@@ -91,13 +97,17 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         var highlight: Int
 
         var body: some View {
-          ForEach(items) { item in
+          0️⃣ForEach(items) { item in
             Text(item.name).bold(item.id == self.1️⃣highlight || item.id == highlight)
           }
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("highlight"))]
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.message("ForEach", "highlight"),
+          notes: [NoteSpec("1️⃣", message: Self.read("highlight"))]),
+      ]
     )
   }
 
@@ -109,11 +119,15 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         @State private var filter = ""
 
         var body: some View {
-          List(items) { item in Text(item.name).opacity(1️⃣filter.isEmpty ? 1 : 0.5) }
+          0️⃣List(items) { item in Text(item.name).opacity(1️⃣filter.isEmpty ? 1 : 0.5) }
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("filter"))]
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.message("List", "filter"),
+          notes: [NoteSpec("1️⃣", message: Self.read("filter"))]),
+      ]
     )
   }
 
@@ -222,7 +236,7 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         @State private var hovered: Int?
 
         var body: some View {
-          ForEach(tabs.indices, id: \\.self) { index in
+          0️⃣ForEach(tabs.indices, id: \\.self) { index in
             TabRow(tab: tabs[index])
               .opacity(1️⃣dividerVisible(before: index) ? 1 : 0)
             Text(tabs[index].name).bold(2️⃣hovered == index)
@@ -233,8 +247,12 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
       }
       """,
       findings: [
-        FindingSpec("1️⃣", message: Self.message("dividerVisible")),
-        FindingSpec("2️⃣", message: Self.message("hovered")),
+        FindingSpec(
+          "0️⃣", message: Self.message("ForEach", "dividerVisible", "hovered"),
+          notes: [
+            NoteSpec("1️⃣", message: Self.read("dividerVisible")),
+            NoteSpec("2️⃣", message: Self.read("hovered")),
+          ]),
       ]
     )
   }
@@ -267,11 +285,15 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         var _highlight: Int
 
         var body: some View {
-          ForEach(items) { item in Text(item.name).bold(item.id == 1️⃣_highlight) }
+          0️⃣ForEach(items) { item in Text(item.name).bold(item.id == 1️⃣_highlight) }
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("_highlight"))]
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.message("ForEach", "_highlight"),
+          notes: [NoteSpec("1️⃣", message: Self.read("_highlight"))]),
+      ]
     )
   }
 
@@ -283,14 +305,106 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         var title: String
 
         var body: some View {
-          ForEach(items) { item in Text(1️⃣label(item.id)) }
+          0️⃣ForEach(items) { item in Text(1️⃣label(item.id)) }
         }
 
         private func label(_ id: Int) -> String { String(id) }
         private func label(_ name: String) -> String { name + title }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("label"))]
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.message("ForEach", "label"),
+          notes: [NoteSpec("1️⃣", message: Self.read("label"))]),
+      ]
+    )
+  }
+
+  @Test func composedRowReadingOutsideStateFlaggedAtRow() {
+    assertLint(
+      ForEachRowReadsOnlyElement.self,
+      """
+      struct BackupBrowser: View {
+        @State private var isRestoring = false
+
+        var body: some View { Text("x") }
+
+        private func snapshots(of project: ProjectBackups) -> some View {
+          0️⃣List(project.snapshots) { snapshot in
+            HStack {
+              VStack(alignment: .leading, spacing: 2) {
+                Text(snapshot.date.formatted(date: .abbreviated, time: .shortened))
+              }
+              Spacer()
+              Menu("Restore") {
+                Button("Merge into Library") { 1️⃣restore(snapshot, mode: .keepIDs) }
+                Button("Restore as Copy") { restore(snapshot, mode: .newCopy) }
+              }
+              .fixedSize()
+              .disabled(2️⃣isRestoring)
+            }
+            .contextMenu {
+              Button("Delete Backup", role: .destructive) { 3️⃣delete(snapshot) }
+            }
+          }
+          .navigationTitle(project.name)
+        }
+
+        private func restore(_ snapshot: Snapshot, mode: IdentityMode) { isRestoring = true }
+        private func delete(_ snapshot: Snapshot) { isRestoring = false }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.message("List", "restore", "isRestoring", "delete"),
+          notes: [
+            NoteSpec("1️⃣", message: Self.read("restore")),
+            NoteSpec("2️⃣", message: Self.read("isRestoring")),
+            NoteSpec("3️⃣", message: Self.read("delete")),
+          ]),
+      ]
+    )
+  }
+
+  @Test func rowThatIsOneNamedViewNotFlagged() {
+    assertLint(
+      ForEachRowReadsOnlyElement.self,
+      """
+      struct EditorThemePreferences: View {
+        @State private var library = ThemeLibrary()
+        @State private var editID: Theme.ID?
+        @State private var themeState = ThemeState()
+
+        var body: some View {
+          ThemeCardGrid {
+            ForEach($library.themes) { theme in
+              EditorThemePreview(
+                size: 125,
+                theme: theme,
+                selection: $themeState.selected,
+                copy: { library.copy(theme.wrappedValue) },
+                edit: { editID = theme.id },
+                delete: { library.delete(theme.wrappedValue) }
+              )
+            }
+          }
+        }
+      }
+
+      struct NodeStatusPreferences: View {
+        @State private var statuses: [NodeStatus] = []
+        @State private var selection: NodeStatus?
+
+        var body: some View {
+          List(statuses) { status in
+            NodeStatusRow(status: status, isSelected: selection?.id == status.id)
+              .listRowInsets(.init(top: 0, leading: -6, bottom: 0, trailing: 0))
+              .onTapGesture { selection = status }
+          }
+        }
+      }
+      """,
+      findings: []
     )
   }
 

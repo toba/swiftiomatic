@@ -32,7 +32,7 @@ struct MakeStateVarsPrivateTests: RuleTesting {
         @StateObject private var counter: Int
         """,
       findings: [
-        FindingSpec("1️⃣", message: "add 'private' to this @State property"),
+        FindingSpec("1️⃣", message: "add 'private' to this @StateObject property"),
       ]
     )
   }
@@ -51,6 +51,59 @@ struct MakeStateVarsPrivateTests: RuleTesting {
       findings: [
         FindingSpec("1️⃣", message: "add 'private' to this @State property"),
       ]
+    )
+  }
+
+  @Test func guidanceIsMust() {
+    #expect(MakeStateVarsPrivate.guidance == .must)
+  }
+
+  /// The Thesis `ContentView` and `ProjectTree` shape: `@AppStorage` with no access control.
+  @Test func privateAppStorageAndFriends() {
+    assertFormatting(
+      MakeStateVarsPrivate.self,
+      input: """
+        struct ContentView: View {
+          @AppStorage("inspector") 1️⃣var selectedTab: InspectorTab = .settings
+          @AppStorage(.expandedProjectNodes) 2️⃣var expandedNodes: ExpandedIDs
+          @SceneStorage("tab") 3️⃣var tab = 0
+          @FocusState 4️⃣var focus: FocusArea?
+          @GestureState 5️⃣var offset: CGSize = .zero
+          @Binding var filter: ReferenceFilter
+          @Environment(\\.editorTheme) var theme
+        }
+        """,
+      expected: """
+        struct ContentView: View {
+          @AppStorage("inspector") private var selectedTab: InspectorTab = .settings
+          @AppStorage(.expandedProjectNodes) private var expandedNodes: ExpandedIDs
+          @SceneStorage("tab") private var tab = 0
+          @FocusState private var focus: FocusArea?
+          @GestureState private var offset: CGSize = .zero
+          @Binding var filter: ReferenceFilter
+          @Environment(\\.editorTheme) var theme
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "add 'private' to this @AppStorage property"),
+        FindingSpec("2️⃣", message: "add 'private' to this @AppStorage property"),
+        FindingSpec("3️⃣", message: "add 'private' to this @SceneStorage property"),
+        FindingSpec("4️⃣", message: "add 'private' to this @FocusState property"),
+        FindingSpec("5️⃣", message: "add 'private' to this @GestureState property"),
+      ]
+    )
+  }
+
+  @Test func privateAppStorageUnchanged() {
+    assertFormatting(
+      MakeStateVarsPrivate.self,
+      input: """
+        @AppStorage("showReferenceFilter") private var formPresented: Bool = false
+        """,
+      expected: """
+        @AppStorage("showReferenceFilter") private var formPresented: Bool = false
+        """,
+      findings: []
     )
   }
 

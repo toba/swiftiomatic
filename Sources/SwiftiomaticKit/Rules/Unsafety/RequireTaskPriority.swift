@@ -6,43 +6,21 @@ import SwiftSyntax
 /// priority. Neither default states how urgent the work is. An explicit priority lets the scheduler
 /// run user-facing work first and background work last.
 ///
-/// `Task { }` and `Task.immediate { }` stay silent in a main-actor UI context, because that work
-/// correctly inherits the priority of the UI event that started it. The rule treats these as a
-/// main-actor UI context:
+/// The rule fires in every context, including SwiftUI views and `@MainActor` code. A task that a
+/// view starts often does persistence or network work whose urgency differs from the UI event that
+/// started it. Keep the inherited priority only when the task must run at its caller's priority,
+/// and suppress the finding there.
 ///
-/// - a closure that declares `@MainActor`,
-/// - a declaration that carries `@MainActor`, and everything inside it,
-/// - a SwiftUI type (`View`, `ViewModifier`, `App`, `Scene`, `ToolbarContent`, `Commands`) or an
-///   AppKit or UIKit representable,
-/// - an extension of `View`, whose methods are view modifiers.
-///
-/// `Task.detached { }` and `Task.immediateDetached { }` always fire. A detached task inherits no
-/// priority, so the exemption does not apply.
-///
-/// Lint: An unstructured task with no `priority:` argument outside a main-actor UI context raises a
-/// warning.
+/// Lint: An unstructured task (`Task { }`, `Task.immediate { }`, `Task.detached { }` or
+/// `Task.immediateDetached { }`) with no `priority:` argument raises a warning.
 final class RequireTaskPriority: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .unsafety }
     override class var guidance: GuidanceLevel { .consider }
 
-    /// The types whose members run on the main actor to service UI events.
-    private static let uiTypes: Set<String> = [
-        "View", "ViewModifier", "App", "Scene", "ToolbarContent", "Commands",
-        "NSViewRepresentable", "UIViewRepresentable",
-        "NSViewControllerRepresentable", "UIViewControllerRepresentable",
-    ]
-
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        guard node.createsUnstructuredTask, let call = node.taskCall else { return .visitChildren }
-        guard !node.arguments.contains(where: { $0.label?.text == "priority" }) else {
-            return .visitChildren
-        }
-
-        let detached = call.factory == "detached" || call.factory == "immediateDetached"
-
-        if !detached, isMainActorClosure(node.trailingClosure) || isInMainActorUIContext(node) {
-            return .visitChildren
-        }
+        guard node.createsUnstructuredTask, let call = node.taskCall,
+              !node.arguments.contains(where: { $0.label?.text == "priority" })
+        else { return .visitChildren }
 
         if let factory = call.factory, let token = call.factoryToken {
             diagnose(.taskStaticMissingPriority(factory), on: token)
@@ -50,31 +28,6 @@ final class RequireTaskPriority: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
             diagnose(.taskInitMissingPriority, on: call.anchor)
         }
         return .visitChildren
-    }
-
-    private func isMainActorClosure(_ closure: ClosureExprSyntax?) -> Bool {
-        closure?.signature?.attributes.attribute(named: "MainActor") != nil
-    }
-
-    /// Reports whether an enclosing declaration carries `@MainActor` or is a UI type.
-    private func isInMainActorUIContext(_ node: some SyntaxProtocol) -> Bool {
-        var current = node.parent
-
-        while let syntax = current {
-            if let decl = syntax.asProtocol(WithAttributesSyntax.self),
-               decl.attributes.attribute(named: "MainActor") != nil { return true }
-
-            if let group = syntax.asProtocol(DeclGroupSyntax.self),
-               let inheritance = group.inheritanceClause,
-               Self.uiTypes.contains(where: inheritance.contains(named:)) { return true }
-
-            if let ext = syntax.as(ExtensionDeclSyntax.self),
-               ["View", "SwiftUI.View"].contains(ext.extendedType.trimmedDescription) {
-                return true
-            }
-            current = syntax.parent
-        }
-        return false
     }
 }
 

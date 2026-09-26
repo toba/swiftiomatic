@@ -210,4 +210,62 @@ struct NoViewFactoryMembersTests: RuleTesting {
       findings: []
     )
   }
+  @Test func concreteCustomViewReturnFlagged() {
+    // From Thesis `EditorThemeStylesPreview.styleView(_:_:markdown:)`.
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      struct EditorThemeStylesPreview: View {
+        @Binding var theme: EditorTheme
+
+        var body: some View {
+          VStack { styleView(.chapterTitle, "Chapter Title"); header; scroller }
+        }
+
+        private 1️⃣func styleView(
+          _ type: StyleType,
+          _ textResource: LocalizedStringResource,
+          markdown: Bool = false,
+        ) -> EditorThemeStyleView {
+          .init($theme[type], type: type)
+        }
+
+        private 2️⃣var header: HeaderRowView { HeaderRowView(theme: theme) }
+        private 3️⃣var scroller: ScrollView<Text> { ScrollView { Text("x") } }
+      }
+
+      struct EditorThemeStyleView: View {
+        var body: some View { Text("x") }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message("styleView")),
+        FindingSpec("2️⃣", message: Self.message("header")),
+        FindingSpec("3️⃣", message: Self.message("scroller")),
+      ]
+    )
+  }
+
+  @Test func concreteNonViewReturnNotFlagged() {
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      private struct WindowFramePersister: NSViewRepresentable {
+        let child: ChildView
+        func makeNSView(context: Context) -> WindowFrameView { WindowFrameView() }
+        func updateNSView(_ view: WindowFrameView, context: Context) {}
+        func makeTable() -> NSTableView { NSTableView() }
+        func makeCanvas() -> MTKView { MTKView() }
+        var model: RowModel { RowModel() }
+      }
+
+      private final class WindowFrameView: NSView {}
+
+      struct RowModel {
+        func summary() -> Summary { Summary() }
+      }
+      """,
+      findings: []
+    )
+  }
 }

@@ -13,6 +13,10 @@ import SwiftSyntax
 /// root calls name the same view type. The root of a branch is the view that its modifier chain
 /// starts from.
 ///
+/// When every branch is an `HStack` , `VStack` , `ZStack` or `Grid` that holds the same children,
+/// only the layout changes. The message then names `AnyLayout` , which switches between
+/// `HStackLayout` , `VStackLayout` and the other layouts and keeps the identity of the children.
+///
 /// Lint: The single top-level statement of a `View` `body` or a `ViewModifier` `body(content:)` is
 /// an `if` / `else` or a `switch` whose branches build two or more different root view types.
 final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
@@ -83,7 +87,46 @@ final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Se
                 role: .branch
             )
         }
-        diagnose(.rootSwap(names), on: keyword, notes: notes)
+        let message: Finding.Message = Self.swapsLayoutOnly(roots)
+            ? .layoutSwap(names)
+            : .rootSwap(names)
+        diagnose(message, on: keyword, notes: notes)
+    }
+
+    /// Stack views that have an `AnyLayout` counterpart
+    private static let layoutStacks: Set<String> = ["HStack", "VStack", "ZStack", "Grid"]
+
+    /// Whether every root is a layout stack and every stack holds the same children
+    ///
+    /// Two children match when their modifier chains start from the same name, so `form()` and
+    /// `form().frame(maxWidth: .infinity)` match. `AnyLayout` can then switch the layout and keep
+    /// the identity of the children.
+    private static func swapsLayoutOnly(_ roots: [Root]) -> Bool {
+        let children = roots.map { root -> [String]? in
+            guard layoutStacks.contains(root.name),
+                  let call = stackCall(of: root.node),
+                  let content = call.trailingClosure else { return nil }
+            return content.statements.map { item in
+                expression(of: item).map(rootName(of:)) ?? item.trimmedDescription
+            }
+        }
+        guard let first = children.first, let first, !first.isEmpty else { return false }
+        return children.allSatisfy { $0 == first }
+    }
+
+    /// The call that builds the stack at the start of a modifier chain
+    private static func stackCall(of node: Syntax) -> FunctionCallExprSyntax? {
+        var current = node.as(ExprSyntax.self)
+
+        while let expression = current {
+            guard let call = expression.as(FunctionCallExprSyntax.self) else { return nil }
+            if let member = call.calledExpression.as(MemberAccessExprSyntax.self) {
+                current = member.base
+            } else {
+                return call
+            }
+        }
+        return nil
     }
 
     private static func expression(of item: CodeBlockItemSyntax) -> ExprSyntax? {
@@ -153,6 +196,11 @@ fileprivate extension Finding.Message {
     static func rootSwap(_ names: [String]) -> Finding.Message {
         let list = names.map { "'\($0)'" }.joined(separator: ", ")
         return "'body' swaps its root view between \(list). Keep one stable root view and put the condition inside it"
+    }
+
+    static func layoutSwap(_ names: [String]) -> Finding.Message {
+        let list = names.map { "'\($0)'" }.joined(separator: ", ")
+        return "'body' swaps its root view between \(list), which hold the same children. Use 'AnyLayout' to change the layout and keep the identity of the children"
     }
 
     static func branchBuilds(_ name: String) -> Finding.Message { "this branch builds '\(name)'" }

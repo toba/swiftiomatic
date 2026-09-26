@@ -192,4 +192,79 @@ struct NoRootBranchSwapInBodyTests: RuleTesting {
             """
         )
     }
+
+    private static func layoutMessage(_ names: [String]) -> String {
+        let list = names.map { "'\($0)'" }.joined(separator: ", ")
+        return "'body' swaps its root view between \(list), which hold the same children. Use 'AnyLayout' to change the layout and keep the identity of the children"
+    }
+
+    @Test func stackBranchesWithSameChildrenSuggestAnyLayout() {
+        assertLint(
+            NoRootBranchSwapInBody.self,
+            """
+            struct CitationStyleSearch: View {
+              var layoutStyle: UserInterfaceSizeClass = .regular
+
+              var body: some View {
+                1️⃣if layoutStyle == .regular {
+                  2️⃣HStack(alignment: .top, spacing: 0) {
+                    form().frame(maxWidth: .infinity)
+                    results().frame(maxWidth: .infinity)
+                  }
+                } else {
+                  3️⃣VStack {
+                    form()
+                    results()
+                  }
+                }
+              }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: Self.layoutMessage(["HStack", "VStack"]),
+                    notes: [
+                        NoteSpec("2️⃣", message: Self.note("HStack")),
+                        NoteSpec("3️⃣", message: Self.note("VStack")),
+                    ]
+                )
+            ]
+        )
+    }
+
+    @Test func stackBranchesWithDifferentChildrenKeepMessage() {
+        assertLint(
+            NoRootBranchSwapInBody.self,
+            """
+            struct SearchResults: View {
+              var layoutStyle: UserInterfaceSizeClass = .regular
+
+              var body: some View {
+                1️⃣if layoutStyle == .regular {
+                  2️⃣VStack {
+                    VStack(alignment: .center) { Spacer() }
+                    if !styles.searchResults.isEmpty { SearchResultsSummary() }
+                  }
+                } else {
+                  3️⃣HStack {
+                    Menu("x") { Text("a") }
+                    if styles.isSearching { ProgressView() }
+                  }
+                }
+              }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: Self.message(["VStack", "HStack"]),
+                    notes: [
+                        NoteSpec("2️⃣", message: Self.note("VStack")),
+                        NoteSpec("3️⃣", message: Self.note("HStack")),
+                    ]
+                )
+            ]
+        )
+    }
 }

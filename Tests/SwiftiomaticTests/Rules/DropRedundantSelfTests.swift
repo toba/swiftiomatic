@@ -1373,4 +1373,119 @@ struct DropRedundantSelfTests: RuleTesting {
         FindingSpec("1️⃣", message: "remove redundant 'self.' prefix")
       ])
   }
+
+  // MARK: - Weak self unwrapped (SE-0365)
+
+  @Test func removeSelfAfterGuardLetSelfInWeakClosure() {
+    assertFormatting(
+      DropRedundantSelf.self,
+      input: """
+        final class ProjectSharing {
+            var isPreparing = false
+            func beginSharing() {
+                Task.immediate(name: "ProjectSharing") { [weak self] in
+                    self?.log()
+                    guard let self else { return }
+                    defer { 1️⃣self.isPreparing = false }
+                    2️⃣self.present()
+                }
+            }
+        }
+        """,
+      expected: """
+        final class ProjectSharing {
+            var isPreparing = false
+            func beginSharing() {
+                Task.immediate(name: "ProjectSharing") { [weak self] in
+                    self?.log()
+                    guard let self else { return }
+                    defer { isPreparing = false }
+                    present()
+                }
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove redundant 'self.' prefix"),
+        FindingSpec("2️⃣", message: "remove redundant 'self.' prefix"),
+      ])
+  }
+
+  @Test func removeSelfInsideIfLetSelfInWeakClosure() {
+    assertFormatting(
+      DropRedundantSelf.self,
+      input: """
+        class Foo {
+            var bar = 0
+            func baz() {
+                someFunc { [weak self] in
+                    if let self = self {
+                        1️⃣self.bar = 5
+                    }
+                }
+            }
+        }
+        """,
+      expected: """
+        class Foo {
+            var bar = 0
+            func baz() {
+                someFunc { [weak self] in
+                    if let self = self {
+                        bar = 5
+                    }
+                }
+            }
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "remove redundant 'self.' prefix")])
+  }
+
+  @Test func keepSelfWithoutUnwrapOrInNestedClosureOfWeakClosure() {
+    assertFormatting(
+      DropRedundantSelf.self,
+      input: """
+        class Foo {
+            var bar = 0
+            func baz() {
+                someFunc { [weak self] in
+                    guard let strong = self else { return }
+                    strong.bar = 1
+                }
+                someFunc { [weak self] in
+                    guard let self else { return }
+                    otherFunc {
+                        self.bar = 6
+                    }
+                }
+                someFunc { [weak self] in
+                    if let self { print(self) }
+                    self?.bar = 2
+                }
+            }
+        }
+        """,
+      expected: """
+        class Foo {
+            var bar = 0
+            func baz() {
+                someFunc { [weak self] in
+                    guard let strong = self else { return }
+                    strong.bar = 1
+                }
+                someFunc { [weak self] in
+                    guard let self else { return }
+                    otherFunc {
+                        self.bar = 6
+                    }
+                }
+                someFunc { [weak self] in
+                    if let self { print(self) }
+                    self?.bar = 2
+                }
+            }
+        }
+        """,
+      findings: [])
+  }
 }

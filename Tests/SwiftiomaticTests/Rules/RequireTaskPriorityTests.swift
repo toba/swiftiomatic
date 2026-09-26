@@ -73,101 +73,118 @@ struct RequireTaskPriorityTests: RuleTesting {
         )
     }
 
-    @Test func mainActorClosureNotFlagged() {
-        // From toba-ui `SubtleScroller`.
+    @Test func settingsInspectorHelperFlagged() {
+        // From Thesis `SettingsInspector`: a helper on a `View` that persists a setting.
         assertLint(
             RequireTaskPriority.self,
             """
+            struct SettingsInspector: View {
+              @State private var numbering = NumberingSettings()
+
+              var body: some View {
+                Button("Save") { saveNumbering(numbering) }
+              }
+
+              private func saveBibliography(_ settings: BibliographySettings) {
+                1️⃣Task(name: "SettingsInspector") { await project.saveBibliography(settings, using: sqlite) }
+              }
+
+              private func saveNumbering(_ settings: NumberingSettings) {
+                numbering = settings
+                2️⃣Task(name: "SettingsInspector") { await project.saveNumbering(settings, using: sqlite) }
+              }
+            }
+            """,
+            findings: [
+                FindingSpec("1️⃣", message: Self.initMessage),
+                FindingSpec("2️⃣", message: Self.initMessage),
+            ]
+        )
+    }
+
+    @Test func mainActorClosureFlagged() {
+        // From Thesis `View+windowFrameAutosave` and toba-ui `SubtleScroller`.
+        assertLint(
+            RequireTaskPriority.self,
+            """
+            private final class WindowFrameView: NSView {
+              private func restoreFrame() {
+                guard let frame = store.restore() else { return }
+                1️⃣Task(name: "restore-window-frame") { @MainActor [weak self] in
+                  self?.window?.setFrame(frame, display: true)
+                }
+              }
+            }
+
             private struct ScrollerCustomizer: NSViewRepresentable {
               func updateNSView(_ view: NSView, context: Context) {
-                Task(name: "SubtleScroller") { @MainActor [coordinator = context.coordinator] in
+                2️⃣Task(name: "SubtleScroller") { @MainActor [coordinator = context.coordinator] in
                   coordinator.isInstalled = false
                 }
               }
             }
             """,
-            findings: []
+            findings: [
+                FindingSpec("1️⃣", message: Self.initMessage),
+                FindingSpec("2️⃣", message: Self.initMessage),
+            ]
         )
     }
 
-    @Test func mainActorClosureOutsideUITypeNotFlagged() {
-        assertLint(
-            RequireTaskPriority.self,
-            """
-            func refresh() {
-              Task { @MainActor in
-                label.text = "done"
-              }
-            }
-            """,
-            findings: []
-        )
-    }
-
-    @Test func mainActorDeclarationNotFlagged() {
+    @Test func mainActorDeclarationFlagged() {
         assertLint(
             RequireTaskPriority.self,
             """
             @MainActor
             final class Controller {
               func buttonTapped() {
-                Task {
+                1️⃣Task {
                   await save()
                 }
               }
             }
             """,
-            findings: []
+            findings: [FindingSpec("1️⃣", message: Self.initMessage)]
         )
     }
 
-    @Test func viewCallbackNotFlagged() {
+    @Test func viewCallbacksFlagged() {
+        // From Thesis `OutlineView` and `GoalsInspector`: tasks started in `onChange` and actions.
         assertLint(
             RequireTaskPriority.self,
             """
-            struct Row: View {
+            struct OutlineView: View {
               var body: some View {
-                Button("Save") {
-                  Task {
-                    await save()
+                List(rows) { row in Text(row.title) }
+                  .onChange(of: project.numberingRevision) {
+                    1️⃣Task(name: "OutlineView.refreshNumbers") {
+                      await editor.document?.refreshResolvedNumbers()
+                    }
                   }
-                }
               }
             }
-            """,
-            findings: []
-        )
-    }
 
-    @Test func toolbarContentBodyNotFlagged() {
-        assertLint(
-            RequireTaskPriority.self,
-            """
             struct IssueListToolbar: ToolbarContent {
               var body: some ToolbarContent {
                 ToolbarItem {
-                  Button("Refresh") { Task { await refresh() } }
+                  Button("Refresh") { 2️⃣Task { await refresh() } }
                 }
               }
             }
-            """,
-            findings: []
-        )
-    }
 
-    @Test func viewExtensionModifierNotFlagged() {
-        assertLint(
-            RequireTaskPriority.self,
-            """
             extension View {
               func attachments(_ urls: [URL]) -> some View {
                 onChange(of: urls) { _, new in
-                  Task { for url in new { await load(url) } }
+                  Task.3️⃣immediate { for url in new { await load(url) } }
                 }
               }
             }
             """,
-            findings: []
+            findings: [
+                FindingSpec("1️⃣", message: Self.initMessage),
+                FindingSpec("2️⃣", message: Self.initMessage),
+                FindingSpec("3️⃣", message: Self.staticMessage("immediate")),
+            ]
         )
     }
 

@@ -175,4 +175,95 @@ struct FlagWholeValueModelViewInputTests: RuleTesting {
       """
     )
   }
+
+  @Test func deferredUseAndSameFileViewForwardDoNotCountAsWholeUse() {
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      private struct LintAlertRow: View {
+        1️⃣let alert: LintAlert
+
+        var body: some View {
+          HStack(spacing: 8) {
+            Button { Dispatcher.emit(RevealLintAlert(alert)) } label: {
+              Label {
+                Text(alert.message)
+              } icon: {
+                Image(systemName: alert.level.symbolName).foregroundStyle(alert.level.tint)
+              }
+            }
+            if !alert.suggestions.isEmpty { QuickFixControl(alert: alert) }
+          }
+        }
+      }
+
+      private struct QuickFixControl: View {
+        let alert: LintAlert
+
+        var body: some View {
+          if alert.suggestions.count == 1, let replacement = alert.suggestions.first {
+            Button {
+              Dispatcher.emit(ApplyLintFix(alert: alert, replacement: replacement))
+            } label: { Image(systemName: "wand.and.sparkles") }
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: Self.partialMessage("alert", "LintAlert", "'level', 'message', 'suggestions'"))
+      ]
+    )
+  }
+
+  @Test func wholeUseInLabelClosureStillCounts() {
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct Row: View {
+        let tag: TagJSON
+
+        var body: some View {
+          Button { open() } label: {
+            Text(tag.name); Text(tag.detail); Text(tag.owner)
+            TagBadge(tag: tag)
+          }
+        }
+      }
+      """
+    )
+  }
+  @Test func observableClassInputNotFlagged() {
+    // From Thesis `AskInspector.swift`. `AskState` is an `@Observable` class in another file. The
+    // `@Bindable` and `@Environment(AskState.self)` uses show that it is an observable reference.
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct QuestionField: View {
+        @Bindable var ask: AskState
+        var body: some View { TextField("", text: $ask.question) }
+      }
+
+      private struct StreamedAnswer: View {
+        let ask: AskState
+        var body: some View {
+          Text(ask.answer)
+          Text(ask.phase.title)
+          ForEach(ask.sources) { Text($0.title) }
+        }
+      }
+
+      private struct Sources: View {
+        @Environment(SourceStore.self) private var environmentStore
+        let store: SourceStore
+        var body: some View {
+          Text(store.first)
+          Text(store.second)
+          Text(store.third)
+        }
+      }
+      """
+    )
+  }
 }

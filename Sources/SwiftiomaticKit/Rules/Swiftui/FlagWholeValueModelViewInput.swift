@@ -12,8 +12,12 @@ import SwiftSyntax
 ///
 /// A type declared in another file has no property count the rule can see. The rule then reports
 /// the input when the view reads at least three of its properties and never uses the value as a
-/// whole: it does not pass it on, call a method on it, compare it or bind it. Standard library,
-/// Foundation and SwiftUI types are exempt, and so is a name that ends in `View` .
+/// whole: it does not pass it on, call a method on it, compare it or bind it. A use inside a closure
+/// that runs later, such as a `Button` action, does not count as a whole use, and neither does
+/// passing the value to a `View` declared in the same file. Standard library, Foundation and
+/// SwiftUI types are exempt, and so is a name that ends in `View` . A type that the file uses with
+/// `@Bindable` or `@Environment(Type.self)` is an `@Observable` class, which SwiftUI tracks by
+/// property, so it is exempt too.
 ///
 /// Lint: A stored input of a view type has the type of a same-file struct with five or more stored
 /// instance properties, or has a type from another file of which the view reads three or more
@@ -37,6 +41,13 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         "Binding", "Measurement", "PersonNameComponents", "ClosedRange", "Range", "Array",
         "Dictionary", "Set", "Optional", "Result",
     ]
+
+    /// The type names the file uses with `@Bindable` or `@Environment(Type.self)`
+    private lazy var observableTypeNames: Set<String> = {
+        let collector = ObservableUseCollector(viewMode: .sourceAccurate)
+        collector.walk(context.sourceFileSyntax)
+        return collector.names
+    }()
 
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         guard context.viewEntry(forMember: node) != nil else { return .skipChildren }
@@ -73,6 +84,7 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         in node: VariableDeclSyntax
     ) -> Set<String>? {
         guard !Self.frameworkTypes.contains(typeName), !typeName.hasSuffix("View"),
+              !observableTypeNames.contains(typeName),
               let viewEntry = context.viewEntry(forMember: node),
               let viewName = TypeMemberIndex.enclosingTypeName(of: node) else { return nil }
         var read = Set<String>()
@@ -82,12 +94,94 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
             for item in region.memberBlock.members where !item.decl.is(InitializerDeclSyntax.self) {
                 for reference in TypeMemberIndex.references(in: item.decl, of: viewEntry)
                 where reference.name == name {
-                    guard let property = Self.propertyRead(from: reference.node) else { return nil }
-                    read.insert(property)
+                    if let property = Self.propertyRead(from: reference.node) {
+                        read.insert(property)
+                    } else if !isTransparentWholeUse(reference.node, in: node) {
+                        return nil
+                    }
                 }
             }
         }
         return read.count >= Self.partialReadCount ? read : nil
+    }
+
+    /// Collects the types that stored properties use with `@Bindable` or `@Environment(Type.self)`
+    private final class ObservableUseCollector: SyntaxVisitor {
+        var names = Set<String>()
+
+        override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+            for element in node.attributes {
+                guard let attribute = element.as(AttributeSyntax.self) else { continue }
+
+                switch attribute.attributeName.trimmedDescription {
+                    case "Bindable":
+                        for binding in node.bindings {
+                            if let name = binding.typeAnnotation?.type.simpleTypeName { names.insert(name) }
+                        }
+                    case "Environment":
+                        guard case let .argumentList(arguments) = attribute.arguments,
+                              let member = arguments.first?.expression.as(MemberAccessExprSyntax.self),
+                              member.declName.baseName.text == "self",
+                              let base = member.base?.as(DeclReferenceExprSyntax.self) else { continue }
+                        names.insert(base.baseName.text)
+                    default: continue
+                }
+            }
+            return .skipChildren
+        }
+    }
+
+    /// Calls whose closures run in response to an event rather than during `body`
+    private static let deferredClosureCalls: Set<String> = [
+        "Task", "immediate", "detached", "onTapGesture", "onLongPressGesture", "onAppear",
+        "onDisappear", "task", "onChange", "onSubmit", "onReceive", "refreshable", "onHover",
+        "onEnded", "onChanged", "onDelete", "onMove", "onInsert", "onDrop", "onKeyPress",
+        "onOpenURL", "onCommand", "dropDestination", "onPreferenceChange", "withAnimation",
+    ]
+
+    /// Argument labels that pass a closure to run later
+    private static let deferredClosureLabels: Set<String> = ["action", "perform"]
+
+    /// Whether a use of the whole value leaves the view's `body` reading only properties
+    ///
+    /// A use inside a closure that runs later, such as a `Button` action, does not make `body`
+    /// depend on the value. A use that forwards the value to a `View` declared in the same file
+    /// hands the check to that view, which the rule reports on its own.
+    private func isTransparentWholeUse(
+        _ reference: DeclReferenceExprSyntax,
+        in node: VariableDeclSyntax
+    ) -> Bool {
+        let use = reference.selfQualifiedUse
+
+        if let argument = use.parent?.as(LabeledExprSyntax.self),
+           argument.expression.id == use.id,
+           let call = argument.parent?.parent?.as(FunctionCallExprSyntax.self),
+           let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text,
+           context.typeMembers(around: node).types[callee]?.isView == true { return true }
+
+        var current = use.parent
+
+        while let cur = current, !cur.is(MemberBlockItemSyntax.self) {
+            if let closure = cur.as(ClosureExprSyntax.self), Self.isDeferred(closure) {
+                return true
+            }
+            current = cur.parent
+        }
+        return false
+    }
+
+    /// Whether a closure runs later than the `body` evaluation that builds it
+    private static func isDeferred(_ closure: ClosureExprSyntax) -> Bool {
+        guard let call = closure.owningCall, let name = call.calleeBaseName else { return false }
+        let defers = name.hasSuffix("Button") || deferredClosureCalls.contains(name)
+
+        if let label = closure.parent?.as(LabeledExprSyntax.self)?.label?.text {
+            return deferredClosureLabels.contains(label) || defers
+        }
+        // `Button(action:label:)` takes its label as the trailing closure
+        if name.hasSuffix("Button"), call.arguments.contains(where: { $0.label?.text == "action" })
+        { return false }
+        return defers
     }
 
     /// The property name when `reference` is the base of a plain property read such as

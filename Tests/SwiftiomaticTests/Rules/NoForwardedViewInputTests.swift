@@ -76,4 +76,57 @@ struct NoForwardedViewInputTests: RuleTesting {
       """
     )
   }
+  @Test func inputPassedToNonViewOrFeedingDynamicPropertyNotFlagged() {
+    // From Thesis `WritingActivityHeatMap.swift`
+    assertLint(
+      NoForwardedViewInput.self,
+      """
+      struct WritingActivityHeatMap: View {
+        private let gridStart: Date
+        private let columns: Int
+        1️⃣private let label: String
+
+        @Fetch private var activity: [DailyActivity] = []
+
+        init(projectID: Node.ID?, label: String) {
+          let gridStart = Date.now
+          self.gridStart = gridStart
+          columns = 3
+          self.label = label
+          _activity = Fetch(wrappedValue: [], Request(projectID: projectID, since: gridStart))
+        }
+
+        var body: some View {
+          let grid = HeatMapGrid(activity, gridStart: gridStart, columns: columns)
+          Summary(label: label)
+        }
+      }
+
+      private struct HeatMapGrid {
+        let cells: [Int]
+        init(_ activity: [DailyActivity], gridStart: Date, columns: Int) { cells = [] }
+      }
+
+      private struct Summary: View {
+        let label: String
+        var body: some View { Text(label) }
+      }
+
+      struct Filtered: View {
+        private let start: String
+        @Fetch private var items: [Item] = []
+
+        init(start: String) {
+          self.start = start
+          _items = Fetch(wrappedValue: [], Request(since: start))
+        }
+
+        var body: some View { Summary(label: start) }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message("label", "Summary")),
+      ]
+    )
+  }
 }

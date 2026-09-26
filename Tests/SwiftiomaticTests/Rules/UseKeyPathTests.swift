@@ -264,4 +264,124 @@ struct UseKeyPathTests: RuleTesting {
       ]
     )
   }
+
+  // MARK: - Any (Root) -> Value closure argument
+
+  @Test func forEachContentClosureConverted() {
+    // From Thesis `ErrorAlert.swift`
+    assertFormatting(
+      UseKeyPath.self,
+      input: """
+        var actions: some View { ForEach(responses) 1️⃣{ $0.button } }
+        """,
+      expected: """
+        var actions: some View { ForEach(responses, content: \\.button) }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use keyPath expression instead of closure in 'ForEach'"),
+      ]
+    )
+  }
+
+  @Test func onGeometryChangeTransformConverted() {
+    // From Thesis `OutlineList.swift`
+    assertFormatting(
+      UseKeyPath.self,
+      input: """
+        let decorated = content
+          .onGeometryChange(for: CGFloat.self) 1️⃣{
+            $0.size.height
+          } action: {
+            height = $0
+          }
+        """,
+      expected: """
+        let decorated = content
+          .onGeometryChange(for: CGFloat.self, of: \\.size.height) {
+            height = $0
+          }
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣", message: "use keyPath expression instead of closure in 'onGeometryChange'"),
+      ]
+    )
+  }
+
+  @Test func labeledClosureArgumentConverted() {
+    // From Thesis `ExportView.swift`
+    assertFormatting(
+      UseKeyPath.self,
+      input: """
+        PreviewWindow(
+          selections: LocalFile.Exportable.allCases,
+          displayName: 1️⃣{ $0.name },
+          render: { format in renderPlaceholder(for: format) },
+        )
+        """,
+      expected: """
+        PreviewWindow(
+          selections: LocalFile.Exportable.allCases,
+          displayName: \\.name,
+          render: { format in renderPlaceholder(for: format) },
+        )
+        """,
+      findings: [
+        FindingSpec(
+          "1️⃣", message: "use keyPath expression instead of closure in 'PreviewWindow(displayName:)'"),
+      ]
+    )
+  }
+
+  @Test func actionLabelsAndUnknownTrailingClosuresNotConverted() {
+    // A `Void` result cannot take a key path, and an unknown call hides the trailing closure's label
+    assertFormatting(
+      UseKeyPath.self,
+      input: """
+        Toggle(isOn: binding, action: { $0.toggle })
+        Sheet(onDismiss: { $0.close }, perform: { $0.run })
+        Custom(items) { $0.name }
+        ForEach(items) { $0.name } footer: { Text("x") }
+        ForEach(items) {
+          let x = $0.name
+          x
+        }
+        """,
+      expected: """
+        Toggle(isOn: binding, action: { $0.toggle })
+        Sheet(onDismiss: { $0.close }, perform: { $0.run })
+        Custom(items) { $0.name }
+        ForEach(items) { $0.name } footer: { Text("x") }
+        ForEach(items) {
+          let x = $0.name
+          x
+        }
+        """,
+      findings: []
+    )
+  }
+  @Test func findingInRewrittenCallSitsOnOriginalClosure() {
+    // The inner conversion detaches the outer call, so the outer finding must use the original.
+    assertFormatting(
+      UseKeyPath.self,
+      input: """
+        struct Rows: View {
+          var body: some View {
+            ForEach(items.filter(1️⃣{ $0.isOn })) 2️⃣{ $0.row }
+          }
+        }
+        """,
+      expected: """
+        struct Rows: View {
+          var body: some View {
+            ForEach(items.filter(\\.isOn), content: \\.row)
+          }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "use keyPath expression instead of closure in 'filter'"),
+        FindingSpec("2️⃣", message: "use keyPath expression instead of closure in 'ForEach'"),
+      ]
+    )
+  }
 }
