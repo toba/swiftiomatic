@@ -41,7 +41,7 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
         let braceIsBlank = context.configuration[TreatClosingBraceAsBlankLine.self]
         let commentIsBlank = context.configuration[TreatCommentAsBlankLine.self]
 
-        for i in 0..<(original.count - 1) {
+        for i in original.indices.dropLast() {
             guard case let .decl(decl) = original[i].item,
                   hasDeclMultiLineBody(decl) else { continue }
             let nextIndex = i + 1
@@ -74,7 +74,7 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
         let braceIsBlank = context.configuration[TreatClosingBraceAsBlankLine.self]
         let commentIsBlank = context.configuration[TreatCommentAsBlankLine.self]
 
-        for i in 0..<(original.count - 1) where hasDeclMultiLineBody(original[i].decl) {
+        for i in original.indices.dropLast() where hasDeclMultiLineBody(original[i].decl) {
             let nextIndex = i + 1
             guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
             if braceIsBlank { continue }

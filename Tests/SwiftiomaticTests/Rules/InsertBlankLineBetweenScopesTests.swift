@@ -393,4 +393,34 @@ struct InsertBlankLineBetweenScopesTests: RuleTesting {
       findings: []
     )
   }
+
+  @Test func emptyMemberBlockDoesNotTrap() {
+    assertFormatting(
+      InsertBlankLineBetweenScopes.self,
+      input: """
+        struct Foo {
+            let id: Int
+        }
+
+        extension Foo: Identifiable {}
+        """,
+      expected: """
+        struct Foo {
+            let id: Int
+        }
+
+        extension Foo: Identifiable {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func emptySourceFileDoesNotTrap() {
+    assertFormatting(
+      InsertBlankLineBetweenScopes.self,
+      input: "",
+      expected: "",
+      findings: []
+    )
+  }
 }

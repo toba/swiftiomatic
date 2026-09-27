@@ -859,6 +859,15 @@
           ],
           "description" : "Convert types hosting only static members into enums.\n\nAn empty enum is the canonical way to create a namespace in Swift because it cannot be instantiated. Structs and classes that contain only static members serve the same purpose but can be accidentally instantiated.\n\nThis rule skips types with inheritance clauses, attributes, generic parameters, initializers, or any instance members.\n\nLint: A struct or final class containing only static members raises a warning.\n\nRewrite: The `struct` or `final class` keyword is replaced with `enum` ."
         },
+        "flagDiscardedResult" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a call site that discards a function result with `_ =`, when the function may need `@discardableResult`.\n\nA function whose result callers often ignore reads better with `@discardableResult`. The attribute states that the result is optional, and the call sites lose the `_ =` noise. A `mutating` reader such as `nextCharacter()` or `readCommand()` is the common case.\n\nThe rule sees one file at a time, so it reports a discard only with evidence from that file:\n\n- The file declares the function with a non-`Void` result and without `@discardableResult`.\n- The call is `self.name(...)`, so the function is a member of the author's own type.\n- The file discards the result of the bare call `name(...)` two or more times.\n\nA call on another receiver, a type initializer, and a function that already has `@discardableResult` do not count.\n\nLint: A discarded call result that matches one of the shapes above raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "flagObserverSkippedInInit" : {
           "allOf" : [
             {
@@ -1400,6 +1409,15 @@
         }
       ],
       "description" : "Flag a view `body` that nests three or more structural containers inside each other.\n\nSwiftUI evaluates the whole `body` of a view as one unit. A body that nests stacks, scroll views, lists and `ForEach` several levels deep rebuilds every level when any value it reads changes. An inner level extracted into its own `View` type gets its own inputs, and SwiftUI skips it when they do not change.\n\nA container counts toward the depth only when it sits inside the content of another container. Containers in sibling modifiers such as `.overlay { }` and `.background { }` do not add up.\n\nThe rule reports once per body, on the innermost container of the deepest path, because that level is the one to extract. When several paths reach the same depth, the last one counts.\n\nLint: The `body` of a `View` , or `body(content:)` of a `ViewModifier` , nests three or more structural containers.",
+      "unevaluatedProperties" : false
+    },
+    "flagDiscardedResult" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a call site that discards a function result with `_ =`, when the function may need `@discardableResult`.\n\nA function whose result callers often ignore reads better with `@discardableResult`. The attribute states that the result is optional, and the call sites lose the `_ =` noise. A `mutating` reader such as `nextCharacter()` or `readCommand()` is the common case.\n\nThe rule sees one file at a time, so it reports a discard only with evidence from that file:\n\n- The file declares the function with a non-`Void` result and without `@discardableResult`.\n- The call is `self.name(...)`, so the function is a member of the author's own type.\n- The file discards the result of the bare call `name(...)` two or more times.\n\nA call on another receiver, a type initializer, and a function that already has `@discardableResult` do not count.\n\nLint: A discarded call result that matches one of the shapes above raises a warning.",
       "unevaluatedProperties" : false
     },
     "flagEmptyCollectionLiteral" : {
