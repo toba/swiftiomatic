@@ -8,7 +8,30 @@ import Foundation
 package final class RewritePipelineGenerator: FileGenerator {
     let collector: RewriteHookCollector
 
-    package init(collector: RewriteHookCollector) { self.collector = collector }
+    /// The dense rule index of each rule, keyed by type name. See `RuleCollector` .
+    let ruleIndices: [String: Int]
+
+    package init(collector: RewriteHookCollector, ruleIndices: [String: Int]) {
+        self.collector = collector
+        self.ruleIndices = ruleIndices
+    }
+
+    /// The dense index of `rule` . A hook on a type that is not a registered rule is a generator
+    /// bug, so it stops the build.
+    private func index(of rule: String) -> Int {
+        guard let index = ruleIndices[rule] else {
+            fatalError("rewrite hook on '\(rule)', which is not a registered rule")
+        }
+        return index
+    }
+
+    /// The node kinds whose override checks the per-kind switch. A kind with a tail runs its own
+    /// gates in hand-written code, and `TokenSyntax` has its own override.
+    private var switchedNodes: [String] {
+        collector.hooksByNode.keys.sorted().filter {
+            $0 != "TokenSyntax" && Self.externalTails[$0] == nil
+        }
+    }
 
     /// Node kinds whose `SyntaxRewriter.visit` returns the concrete type even though the name ends
     /// in a base-type suffix. `LabeledExprSyntax` is a tuple or argument element, not an
@@ -56,19 +79,36 @@ package final class RewritePipelineGenerator: FileGenerator {
             final class RewritePipeline: SyntaxRewriter {
                 let context: Context
 
+                /// Whether any rule that hooks a node kind is enabled, indexed by the ordinal of
+                /// the kind in `nodeRules` . A kind with no enabled rule skips the gate.
+                private let active: ContiguousArray<Bool>
+
                 init(context: Context) {
                     self.context = context
+                    let enabled = context.rewriteEnabledRules
+                    active = ContiguousArray(Self.nodeRules.map { enabled.containsAny($0) })
                     super.init()
                 }
 
 
             """
+        let switched = switchedNodes
+        result += "    /// The indices of the rules that hook each node kind, in the order of the\n"
+        result += "    /// `visit` overrides below.\n"
+        result += "    private static let nodeRules: [[Int]] = [\n"
+        for node in switched {
+            let indices = (collector.hooksByNode[node] ?? []).map { index(of: $0.rule) }
+            result += "        [\(indices.map(String.init).joined(separator: ", "))],  // \(node)\n"
+        }
+        result += "    ]\n\n"
+        let ordinals = Dictionary(uniqueKeysWithValues: switched.enumerated().map { ($1, $0) })
 
         // `TokenSyntax` is skipped here because its override is emitted verbatim below. Emitting it
         // twice would not compile, and `RewriteDispatchAudit` already proves `rewriteToken` names
         // every token rule.
         for node in collector.hooksByNode.keys.sorted() where node != "TokenSyntax" {
-            result += render(node: node, hooks: collector.hooksByNode[node] ?? [])
+            result += render(
+                node: node, hooks: collector.hooksByNode[node] ?? [], ordinal: ordinals[node])
         }
         result += """
                 // Token-level rules run inside `rewriteToken` , which owns their order because they
@@ -97,21 +137,23 @@ package final class RewritePipelineGenerator: FileGenerator {
     ///
     /// A long rule name and a long node kind can both appear in one call, so one wrapped form is
     /// not enough. Each tier moves one more argument down a line.
-    private static func narrowingArguments(rule: String, node: String) -> String {
+    private static func narrowingArguments(rule: String, index: Int, node: String) -> String {
         let indent = String(repeating: " ", count: 12)
-        let all = "\(rule).self, to: &result, as: \(node).self, original: node, gate: gate"
+        let all =
+            "\(rule).self, index: \(index), to: &result, as: \(node).self, original: node, "
+            + "gate: gate"
         if indent.count + all.count <= columnLimit { return indent + all + "\n" }
 
-        let head = "\(rule).self, to: &result, as: \(node).self,"
+        let head = "\(rule).self, index: \(index), to: &result, as: \(node).self,"
         return indent.count + head.count <= columnLimit
             ? indent + head + "\n" + indent + "original: node, gate: gate\n"
-            : indent + "\(rule).self, to: &result,\n"
+            : indent + "\(rule).self, index: \(index), to: &result,\n"
                 + indent + "as: \(node).self, original: node, gate: gate\n"
     }
 
     // MARK: - One override
 
-    private func render(node: String, hooks: [RewriteHookCollector.Hook]) -> String {
+    private func render(node: String, hooks: [RewriteHookCollector.Hook], ordinal: Int?) -> String {
         let resultType = Self.resultType(for: node)
         let tail = Self.externalTails[node]
         // A node kind with a tail hands its whole transform chain to that function, so the override
@@ -121,8 +163,13 @@ package final class RewritePipelineGenerator: FileGenerator {
         var body = ""
 
         body += "    override func visit(_ node: \(node)) -> \(resultType) {\n"
-        body += "        guard let gate = context.gate(for: node)"
-            + " else { return super.visit(node) }\n"
+        body += ordinal.map {
+            fitted(
+                "        guard active[\($0)], let gate = context.gate(for: node)"
+                    + " else { return super.visit(node) }\n",
+                else: "        guard active[\($0)], let gate = context.gate(for: node) else {\n"
+                    + "            return super.visit(node)\n        }\n")
+        } ?? "        guard let gate = context.gate(for: node) else { return super.visit(node) }\n"
         if !transforms.isEmpty || tail != nil {
             body += "        let parent = Syntax(node).parent\n"
         }
@@ -132,9 +179,9 @@ package final class RewritePipelineGenerator: FileGenerator {
         for hook in scoped where hook.hasDidExit {
             body += fitted(
                 "        let run\(hook.rule) = "
-                    + "context.shouldRewrite(\(hook.rule).self, gate: gate)\n",
+                    + "context.shouldRewrite(\(index(of: hook.rule)), gate: gate)\n",
                 else: "        let run\(hook.rule) = context.shouldRewrite(\n"
-                    + "            \(hook.rule).self, gate: gate)\n"
+                    + "            \(index(of: hook.rule)), gate: gate)\n"
             )
         }
         for hook in scoped where hook.hasWillEnter {
@@ -147,7 +194,7 @@ package final class RewritePipelineGenerator: FileGenerator {
                         + "        }\n"
                 )
                 : """
-                        if context.shouldRewrite(\(hook.rule).self, gate: gate) {
+                        if context.shouldRewrite(\(index(of: hook.rule)), gate: gate) {
                             \(hook.rule).willEnter(node, context: context)
                         }
 
@@ -192,14 +239,18 @@ package final class RewritePipelineGenerator: FileGenerator {
             body += resultType == node
                 ? fitted(
                     """
-                            apply(\(hook.rule).self, to: &result, original: node, gate: gate) {
+                            apply(
+                                \(hook.rule).self, index: \(index(of: hook.rule)), to: &result,
+                                original: node, gate: gate
+                            ) {
                                 \(hook.rule).transform($0, original: $1, parent: parent, context: $2)
                             }
 
                     """,
                     else: """
                                 apply(
-                                    \(hook.rule).self, to: &result, original: node, gate: gate
+                                    \(hook.rule).self, index: \(index(of: hook.rule)), to: &result,
+                                    original: node, gate: gate
                                 ) {
                                     \(hook.rule).transform(
                                         $0, original: $1, parent: parent, context: $2)
@@ -207,7 +258,8 @@ package final class RewritePipelineGenerator: FileGenerator {
 
                         """)
                 : "        applyNarrowing(\n"
-                    + Self.narrowingArguments(rule: hook.rule, node: node)
+                    + Self.narrowingArguments(
+                        rule: hook.rule, index: index(of: hook.rule), node: node)
                     + "        ) {\n"
                     + fitted(
                         "            \(hook.rule)"

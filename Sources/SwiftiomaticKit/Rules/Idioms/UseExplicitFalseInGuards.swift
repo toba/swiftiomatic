@@ -28,7 +28,7 @@ final class UseExplicitFalseInGuards: StaticFormatRule<BasicRuleValue>, @uncheck
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
-        guard node.operator.text == "!" else { return ExprSyntax(node) }
+        guard node.operator.hasText("!") else { return ExprSyntax(node) }
 
         // Skip double negation: !!x (outer !)
         if node.expression.as(PrefixOperatorExprSyntax.self)?.operator.text == "!" {

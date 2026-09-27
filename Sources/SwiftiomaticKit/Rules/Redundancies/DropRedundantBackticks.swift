@@ -194,7 +194,7 @@ final class DropRedundantBackticks: StaticFormatRule<BasicRuleValue>, @unchecked
     private static func isAfterModuleSelector(_ token: TokenSyntax) -> Bool {
         guard let prevToken = token.previousToken(viewMode: .sourceAccurate) else { return false }
         return prevToken.tokenKind == .colonColon
-            || prevToken.text == "::"
+            || prevToken.hasText("::")
     }
 
     /// Token is a function/init/subscript parameter label (firstName or secondName with a following

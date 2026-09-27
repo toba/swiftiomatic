@@ -12,6 +12,14 @@ import SwiftSyntax
 final class SortTypeAliases: StructuralFormatRule<BasicRuleValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .sort }
 
+    /// Tells if `source` can hold a typealias for this rule to sort.
+    ///
+    /// The rule acts only on a `typealias` whose value is a composition with `&` , so a source
+    /// without both byte sequences has nothing to sort, and the format pipeline skips the walk.
+    static func sourceCanMatch(_ source: String) -> Bool {
+        source.containsBytes("&") && source.containsBytes("typealias")
+    }
+
     override func visit(_ node: TypeAliasDeclSyntax) -> DeclSyntax {
         let initializer = node.initializer
 

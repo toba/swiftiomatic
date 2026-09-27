@@ -151,7 +151,7 @@ final class UseAtEntryNotEnvironmentKey: StaticFormatRule<BasicRuleValue>, @unch
         for (index, item) in items.enumerated() {
             guard case let .decl(decl) = item.item,
                   let extDecl = decl.as(ExtensionDeclSyntax.self),
-                  extDecl.extendedType.trimmedDescription == "EnvironmentValues" else { continue }
+                  extDecl.extendedType.trimmedDescriptionEquals("EnvironmentValues") else { continue }
 
             let rewritten = rewriteEnvironmentValuesExtension(
                 extDecl,

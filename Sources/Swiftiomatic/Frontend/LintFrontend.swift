@@ -67,7 +67,10 @@ final class LintFrontend: Frontend, @unchecked Sendable {
         if cacheEligible, let cache {
             let absolutePath = url.standardizedFileURL.path
             let contentHash = LintCache.contentHash(of: source)
-            let fingerprint = cache.fingerprint(for: fileToProcess.configuration)
+            let fingerprint = cache.fingerprint(
+                for: fileToProcess.configuration,
+                key: fileToProcess.configurationKey
+            )
 
             if let record = cache.lookup(
                 absolutePath: absolutePath,

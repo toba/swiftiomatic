@@ -10,7 +10,7 @@ final class UseLastWhere: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .collections }
 
     override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
-        guard node.declName.baseName.text == "last",
+        guard node.declName.baseName.hasText("last"),
               let call = node.base?.as(FunctionCallExprSyntax.self),
               let calledMember = call.calledExpression.as(MemberAccessExprSyntax.self),
               calledMember.declName.baseName.text == "filter",

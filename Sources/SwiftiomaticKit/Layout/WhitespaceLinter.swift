@@ -19,16 +19,17 @@ private let utf8Tab = UTF8.CodeUnit(ascii: "\t")
 /// code with formatted text.
 package final class WhitespaceLinter {
     /// The text of the input source code to be linted.
-    private let userText: [UTF8.CodeUnit]
+    private let userText: String
 
     /// The formatted version of `userText` .
-    private let formattedText: [UTF8.CodeUnit]
+    private let formattedText: String
 
     /// The Context object containing the DiagnosticEngine.
     private let context: Context
 
-    /// Is the current line too long?
-    private var isLineTooLong: Bool
+    /// The line length limit. It is read once, because each whitespace run at the start of a line
+    /// uses it.
+    private let lineLength: Int
 
     /// Creates a new WhitespaceLinter with the given context.
     ///
@@ -37,31 +38,81 @@ package final class WhitespaceLinter {
     ///   - formatted: The formatted text to compare to `user` .
     ///   - context: The context object containing the DiagnosticEngine instance we wish to use.
     package init(user: String, formatted: String, context: Context) {
-        userText = Array(user.utf8)
-        formattedText = Array(formatted.utf8)
+        userText = user
+        formattedText = formatted
         self.context = context
-        isLineTooLong = false
+        lineLength = context.configuration[LineLength.self]
     }
 
     /// Perform whitespace linting.
+    ///
+    /// The scanner reads the UTF-8 bytes of both texts through borrowed spans. A native string
+    /// gives its bytes in place, so no text is copied into an array.
     package func lint() {
+        var user = userText
+        var formatted = formattedText
+        // No-ops for native strings. A bridged string gets contiguous UTF-8 storage once.
+        user.makeContiguousUTF8()
+        formatted.makeContiguousUTF8()
+        let userBytes = user.utf8
+        let formattedBytes = formatted.utf8
+
+        var scanner = WhitespaceScanner(
+            user: userBytes.span,
+            formatted: formattedBytes.span,
+            lineLength: lineLength,
+            context: context
+        )
+        scanner.scan()
+    }
+}
+
+/// Compares the whitespace of the user text with the whitespace of the formatted text.
+///
+/// The scanner borrows the bytes of both texts. It cannot outlive them, so it is `~Escapable` . A
+/// whitespace run is a `Range<Int>` of byte offsets into one of the two spans.
+private struct WhitespaceScanner: ~Copyable, ~Escapable {
+    /// The UTF-8 bytes of the user text.
+    let user: Span<UInt8>
+
+    /// The UTF-8 bytes of the formatted text.
+    let formatted: Span<UInt8>
+
+    /// The line length limit.
+    let lineLength: Int
+
+    /// The Context object containing the DiagnosticEngine.
+    let context: Context
+
+    /// Is the current line too long?
+    private var isLineTooLong = false
+
+    @_lifetime(copy user, copy formatted)
+    init(user: Span<UInt8>, formatted: Span<UInt8>, lineLength: Int, context: Context) {
+        self.user = user
+        self.formatted = formatted
+        self.lineLength = lineLength
+        self.context = context
+    }
+
+    /// Compares each whitespace run of the user text with the matching run of the formatted text.
+    @_lifetime(self: copy self)
+    mutating func scan() {
         var userIndex = 0
         var formattedIndex = 0
-        var userWhitespace: ArraySlice<UTF8.CodeUnit>
+        var userWhitespace: Range<Int>
 
         repeat {
-            userWhitespace = contiguousWhitespace(startingAt: userIndex, in: userText)
-
+            userWhitespace = contiguousWhitespace(startingAt: userIndex, in: user)
             let formattedWhitespace = contiguousWhitespace(
                 startingAt: formattedIndex,
-                in: formattedText
+                in: formatted
             )
 
-            // `userText` and `formattedText` should only differ in their whitespace characters.
+            // `user` and `formatted` should only differ in their whitespace characters.
             assert(
-                safeCodeUnit(
-                    at: userWhitespace.endIndex, in: userText)
-                    == safeCodeUnit(at: formattedWhitespace.endIndex, in: formattedText),
+                safeCodeUnit(at: userWhitespace.upperBound, in: user)
+                    == safeCodeUnit(at: formattedWhitespace.upperBound, in: formatted),
                 "Non-whitespace characters do not match"
             )
 
@@ -70,9 +121,9 @@ package final class WhitespaceLinter {
                 formattedWhitespace: formattedWhitespace
             )
 
-            userIndex = userWhitespace.endIndex + 1
-            formattedIndex = formattedWhitespace.endIndex + 1
-        } while userWhitespace.endIndex != userText.endIndex
+            userIndex = userWhitespace.upperBound + 1
+            formattedIndex = formattedWhitespace.upperBound + 1
+        } while userWhitespace.upperBound != user.count
     }
 
     /// Compare the whitespace buffers between the user text and formatted text, and emit linter
@@ -84,44 +135,41 @@ package final class WhitespaceLinter {
     /// spaces and newlines in any order. e.g. " \n ", " \n", etc.
     ///
     /// - Parameters:
-    ///   - userWhitespace: A slice of user text representing the current span of contiguous
-    ///     whitespace.
-    ///   - formattedWhitespace: A slice of formatted text representing the current span of
-    ///     contiguous whitespace that will be compared to the user whitespace.
-    private func compareWhitespace(
-        userWhitespace: ArraySlice<UTF8.CodeUnit>,
-        formattedWhitespace: ArraySlice<UTF8.CodeUnit>
+    ///   - userWhitespace: The byte range of the current span of contiguous whitespace in the user
+    ///     text.
+    ///   - formattedWhitespace: The byte range of the matching span of contiguous whitespace in the
+    ///     formatted text.
+    @_lifetime(self: copy self)
+    private mutating func compareWhitespace(
+        userWhitespace: Range<Int>,
+        formattedWhitespace: Range<Int>
     ) {
-        // We use a custom-crafted lazy-splitting iterator here instead of the standard
-        // `Collection.split` function because Time Profiler indicated that a very large proportion
-        // of the runtime of this function was spent allocating arrays inside `split` and then
-        // subsequently deallocating those arrays. For the sizes of whitespace runs we're likely to
-        // work with, it is much faster to pre-scan to count the number of runs and then do a single
-        // pass again over the whitespace without allocating any intermediate storage.
-        let userRuns = userWhitespace.lazilySplit(separator: utf8Newline)
-        let formattedRuns = formattedWhitespace.lazilySplit(separator: utf8Newline)
+        // The runs are the newline-separated parts of each whitespace span. `RunIterator` finds
+        // them lazily and allocates no storage. The counts are computed first, in one pass.
+        let userRunCount = runCount(of: userWhitespace, in: user)
+        let formattedRunCount = runCount(of: formattedWhitespace, in: formatted)
 
         checkForLineLengthErrors(
-            userIndex: userWhitespace.startIndex,
-            formattedIndex: formattedWhitespace.startIndex,
-            userRuns: userRuns,
-            formattedRuns: formattedRuns
+            userWhitespace: userWhitespace,
+            formattedWhitespace: formattedWhitespace,
+            userRunCount: userRunCount,
+            formattedRunCount: formattedRunCount
         )
 
         // No need to perform any further checks if the whitespace is identical.
-        guard userWhitespace != formattedWhitespace else { return }
+        guard !bytesEqual(userWhitespace, formattedWhitespace) else { return }
 
-        var userIndex = userWhitespace.startIndex
-        var userRunsIterator = RememberingIterator(userRuns.makeIterator())
-        var formattedRunsIterator = RememberingIterator(formattedRuns.makeIterator())
+        var userIndex = userWhitespace.lowerBound
+        var userRuns = RunIterator(userWhitespace)
+        var formattedRuns = RunIterator(formattedWhitespace)
 
-        if userRuns.count == 1, formattedRuns.count == 1 {
+        if userRunCount == 1, formattedRunCount == 1 {
             // If there was only a single whitespace run in each input, then that means there
             // weren't any newlines. Therefore, we're looking at inter-token spacing, unless the
             // whitespace runs preceded the first token in the file (i.e., offset == 0), in which
             // case we ignore it here and handle it as an indentation check below.
-            if let userRun = userRunsIterator.next(),
-               let formattedRun = formattedRunsIterator.next(),
+            if let userRun = userRuns.next(in: user),
+               let formattedRun = formattedRuns.next(in: formatted),
                userIndex > 0
             {
                 checkForSpacingErrors(
@@ -132,10 +180,10 @@ package final class WhitespaceLinter {
             }
         } else {
             var runIndex = 0
-            let excessUserLines = userRuns.count - formattedRuns.count
+            let excessUserLines = userRunCount - formattedRunCount
 
-            while let userRun = userRunsIterator.next() {
-                let possibleFormattedRun = formattedRunsIterator.next()
+            while let userRun = userRuns.next(in: user) {
+                let possibleFormattedRun = formattedRuns.next(in: formatted)
 
                 if runIndex < excessUserLines {
                     // If there were excess newlines in the user input, tell the user to remove
@@ -144,7 +192,7 @@ package final class WhitespaceLinter {
                     // telling them to delete.
                     diagnose(.removeLineError, category: .removeLine, utf8Offset: userIndex)
                     userIndex += userRun.count + 1
-                } else if runIndex != userRuns.count - 1 {
+                } else if runIndex != userRunCount - 1 {
                     if let formattedRun = possibleFormattedRun {
                         // If this isn't the last whitespace run, then it must precede a newline, so
                         // we check for trailing whitespace violations.
@@ -160,13 +208,13 @@ package final class WhitespaceLinter {
             }
         }
 
-        if userIndex == 0 || (userRuns.count > 1 && formattedRuns.count > 1) {
+        if userIndex == 0 || (userRunCount > 1 && formattedRunCount > 1) {
             // Advance to the last formatted whitespace run if we haven't already. This run precedes
             // a token, so we check it for leading indentation violations.
-            while formattedRunsIterator.next() != nil {}
+            while formattedRuns.next(in: formatted) != nil {}
 
-            if let lastFormattedRun = formattedRunsIterator.latestElement,
-               let lastUserRun = userRunsIterator.latestElement
+            if let lastFormattedRun = formattedRuns.latestRun,
+               let lastUserRun = userRuns.latestRun
             {
                 checkForIndentationErrors(
                     userIndex: userIndex,
@@ -178,13 +226,13 @@ package final class WhitespaceLinter {
 
         // If there were more lines in the formatted output and the user's line did not exceed the
         // line length limit, tell the user to add the necessary blank lines.
-        let excessFormattedLines = formattedRuns.count - userRuns.count
+        let excessFormattedLines = formattedRunCount - userRunCount
 
         if excessFormattedLines > 0, !isLineTooLong {
             diagnose(
                 .addLinesError(excessFormattedLines),
                 category: .addLines,
-                utf8Offset: userWhitespace.startIndex
+                utf8Offset: userWhitespace.lowerBound
             )
         }
     }
@@ -192,69 +240,43 @@ package final class WhitespaceLinter {
     /// Check the user text for line length violations.
     ///
     /// - Parameters:
-    ///   - userIndex The current character offset within the user text.
-    ///   - formattedIndex: The current character offset within the formatted text.
-    ///   - userRuns: The current newline-separated runs of whitespace in the user text.
-    ///   - formattedRuns: The current newline-separated runs of whitespace in the formatted text.
-    private func checkForLineLengthErrors(
-        userIndex: Int,
-        formattedIndex: Int,
-        userRuns: LazySplitSequence<ArraySlice<UTF8.CodeUnit>>,
-        formattedRuns: LazySplitSequence<ArraySlice<UTF8.CodeUnit>>
+    ///   - userWhitespace: The byte range of the current whitespace span in the user text.
+    ///   - formattedWhitespace: The byte range of the current whitespace span in the formatted
+    ///     text.
+    ///   - userRunCount: The number of newline-separated runs in `userWhitespace` .
+    ///   - formattedRunCount: The number of newline-separated runs in `formattedWhitespace` .
+    @_lifetime(self: copy self)
+    private mutating func checkForLineLengthErrors(
+        userWhitespace: Range<Int>,
+        formattedWhitespace: Range<Int>,
+        userRunCount: Int,
+        formattedRunCount: Int
     ) {
         // Only run this check at the start of a line.
-        guard (userRuns.count > 1 && formattedRuns.count > 1)
-            || (userRuns.count == 1 && formattedRuns.count == 1 && userIndex == 0)
+        guard (userRunCount > 1 && formattedRunCount > 1)
+            || (userRunCount == 1 && formattedRunCount == 1 && userWhitespace.lowerBound == 0)
         else { return }
 
-        let lengthLimit = context.configuration[LineLength.self]
-
-        // Move the offset to the first non-whitespace character.
-        var adjustedUserIndex = userIndex
-        var lastUserRun: ArraySlice<UTF8.CodeUnit>?
-
-        for (index, userRun) in userRuns.enumerated() {
-            lastUserRun = userRun
-            if index < userRuns.count - 1 { adjustedUserIndex += userRun.count + 1 }
-        }
+        // Move the offset to the first byte of the last run, which is the indentation of the line.
+        let lastUserRun = lastRun(of: userWhitespace, in: user)
+        let adjustedUserIndex = lastUserRun.lowerBound
 
         // Calculate the length of the user's line.
-        let userIndent = lastUserRun?.count ?? 0
-        var userLength = userIndent
-
-        for index in adjustedUserIndex..<userText.count {
-            // Count characters up to the newline.
-            if userText[index] == utf8Newline { break }
-            userLength += 1
-        }
+        let userLength = lastUserRun.count + distanceToNewline(from: adjustedUserIndex, in: user)
 
         // Exit if the user's line is within limits
-        if userLength <= lengthLimit {
+        if userLength <= lineLength {
             isLineTooLong = false
             return
         }
 
-        // Move the offset to the first non-whitespace character.
-        var adjustedFormattedIndex = formattedIndex
-        var lastFormattedRun: ArraySlice<UTF8.CodeUnit>?
-
-        for (index, formattedRun) in formattedRuns.enumerated() {
-            lastFormattedRun = formattedRun
-            if index < formattedRuns.count - 1 { adjustedFormattedIndex += formattedRun.count + 1 }
-        }
-
         // Calculate the length of the formatted line.
-        let formattedIndent = lastFormattedRun?.count ?? 0
-        var formattedLength = formattedIndent
-
-        for index in adjustedFormattedIndex..<formattedText.count {
-            // Count characters up to the newline.
-            if formattedText[index] == utf8Newline { break }
-            formattedLength += 1
-        }
+        let lastFormattedRun = lastRun(of: formattedWhitespace, in: formatted)
+        let formattedLength = lastFormattedRun.count
+            + distanceToNewline(from: lastFormattedRun.lowerBound, in: formatted)
 
         // If the formatted text produces a line that is too long, don't raise an error.
-        if formattedLength > lengthLimit {
+        if formattedLength > lineLength {
             isLineTooLong = false
             return
         }
@@ -275,13 +297,13 @@ package final class WhitespaceLinter {
     ///   - formattedRun: A run of whitespace from the formatted text.
     private func checkForIndentationErrors(
         userIndex: Int,
-        userRun: ArraySlice<UTF8.CodeUnit>,
-        formattedRun: ArraySlice<UTF8.CodeUnit>
+        userRun: Range<Int>,
+        formattedRun: Range<Int>
     ) {
-        guard userRun != formattedRun else { return }
+        guard !bytesEqual(userRun, formattedRun) else { return }
 
-        let actual = indentation(of: userRun)
-        let expected = indentation(of: formattedRun)
+        let actual = indentation(of: userRun, in: user)
+        let expected = indentation(of: formattedRun, in: formatted)
         diagnose(
             .indentationError(expected: expected, actual: actual),
             category: .indentation,
@@ -297,10 +319,10 @@ package final class WhitespaceLinter {
     ///   - formattedRun: The tokenized formatted whitespace buffer.
     private func checkForTrailingWhitespaceErrors(
         userIndex: Int,
-        userRun: ArraySlice<UTF8.CodeUnit>,
-        formattedRun: ArraySlice<UTF8.CodeUnit>
+        userRun: Range<Int>,
+        formattedRun: Range<Int>
     ) {
-        if userRun != formattedRun {
+        if !bytesEqual(userRun, formattedRun) {
             diagnose(.trailingWhitespaceError, category: .trailingWhitespace, utf8Offset: userIndex)
         }
     }
@@ -317,14 +339,14 @@ package final class WhitespaceLinter {
     ///   - formattedRun: The tokenized formatted whitespace buffer.
     private func checkForSpacingErrors(
         userIndex: Int,
-        userRun: ArraySlice<UTF8.CodeUnit>,
-        formattedRun: ArraySlice<UTF8.CodeUnit>
+        userRun: Range<Int>,
+        formattedRun: Range<Int>
     ) {
-        guard userRun != formattedRun else { return }
+        guard !bytesEqual(userRun, formattedRun) else { return }
 
         // This assumes tabs will always be forbidden for inter-token spacing (but not for leading
         // indentation).
-        if userRun.contains(utf8Tab) {
+        if contains(utf8Tab, in: userRun, of: user) {
             diagnose(.spacingCharError, category: .spacingCharacter, utf8Offset: userIndex)
         } else if formattedRun.count != userRun.count {
             let delta = formattedRun.count - userRun.count
@@ -332,38 +354,21 @@ package final class WhitespaceLinter {
         }
     }
 
-    /// Find the next non-whitespace character in a given string, and any leading whitespace before
-    /// the character.
-    ///
-    /// If the character at `offset` is whitespace, we scan forward until we find a non-whitespace
-    /// character. We then return the new offset, the character we landed on, and a string
-    /// containing the character's leading whitespace.
-    ///
-    /// - Parameters:
-    ///   - offset: The printable character offset within the string.
-    ///   - data: The input string.
-    /// - Returns: A slice of `data` that covers the contiguous whitespace starting at the given
-    ///   index.
-    private func contiguousWhitespace(
-        startingAt offset: Int,
-        in data: [UTF8.CodeUnit]
-    ) -> ArraySlice<UTF8.CodeUnit> {
-        guard let whitespaceEnd = data[offset...].firstIndex(where: { !$0.isWhitespace }) else {
-            return data[offset..<data.endIndex]
-        }
-        return data[offset..<whitespaceEnd]
-    }
+    /// Returns `true` when the user bytes in `userRange` equal the formatted bytes in
+    /// `formattedRange` .
+    private func bytesEqual(_ userRange: Range<Int>, _ formattedRange: Range<Int>) -> Bool {
+        guard userRange.count == formattedRange.count else { return false }
+        var formattedIndex = formattedRange.lowerBound
 
-    /// Returns the code unit at the given index, or nil if the index is the end of the data.
-    ///
-    /// This helper is only used in an assertion that verifies that the non-whitespace code units in
-    /// the text are identical, but is not evaluated in release builds.
-    private func safeCodeUnit(at index: Int, in data: [UTF8.CodeUnit]) -> UTF8.CodeUnit? {
-        index != data.endIndex ? data[index] : nil
+        for userIndex in userRange {
+            if user[userIndex] != formatted[formattedIndex] { return false }
+            formattedIndex += 1
+        }
+        return true
     }
 
     /// Emits a finding with the given message and category. The message will correspond to a
-    /// specific location (line and column number) in the input Swift source file ( `userText` ).
+    /// specific location (line and column number) in the input Swift source file.
     ///
     /// - Parameters:
     ///   - message: The message we wish to emit.
@@ -383,32 +388,127 @@ package final class WhitespaceLinter {
             location: Finding.Location(sourceLocation)
         )
     }
+}
 
-    /// Returns the indentation that represents the indentation of the given whitespace, which is
-    /// the leading spacing for a line.
-    private func indentation(of whitespace: ArraySlice<UTF8.CodeUnit>) -> WhitespaceIndentation {
-        if whitespace.isEmpty { return .none }
+/// Finds the newline-separated runs of one whitespace range, one run for each call.
+///
+/// The iterator holds only byte offsets. Each call takes the bytes as an argument, so the iterator
+/// does not borrow them and needs no lifetime.
+private struct RunIterator {
+    /// The start offset of the current run.
+    private var runStart: Int
 
-        var orderedRuns: [(char: UTF8.CodeUnit, count: Int)] = []
+    /// The offset that the search has reached.
+    private var position: Int
 
-        for char in whitespace {
-            let lastRun = orderedRuns.last
+    /// The end offset of the whitespace range.
+    private let end: Int
 
-            if lastRun?.char == char {
-                orderedRuns[orderedRuns.endIndex - 1].count += 1
-            } else {
-                orderedRuns.append((char, 1))
-            }
-        }
+    /// Indicates whether the last run has been returned.
+    private var done = false
 
-        let indents = orderedRuns.map { run in
-            // Assumes any non-tab whitespace character is some type of space.
-            run.char == utf8Tab ? Indent.tabs(run.count) : Indent.spaces(run.count)
-        }
-        if indents.count == 1, let onlyIndent = indents.first { return .homogeneous(onlyIndent) }
+    /// The run most recently returned by `next(in:)` . It keeps its value after the iterator is
+    /// exhausted. It is `nil` only if `next(in:)` has returned no run.
+    private(set) var latestRun: Range<Int>?
 
-        return .heterogeneous(indents)
+    init(_ range: Range<Int>) {
+        runStart = range.lowerBound
+        position = range.lowerBound
+        end = range.upperBound
     }
+
+    /// Returns the next run of the range, or `nil` after the last run.
+    mutating func next(in bytes: Span<UInt8>) -> Range<Int>? {
+        while position != end {
+            if bytes[position] == utf8Newline {
+                let run = runStart..<position
+                position += 1
+                runStart = position
+                latestRun = run
+                return run
+            }
+            position += 1
+        }
+
+        guard !done else { return nil }
+        done = true
+        let run = runStart..<end
+        latestRun = run
+        return run
+    }
+}
+
+/// Returns the byte range of the contiguous whitespace that starts at the given offset.
+///
+/// - Parameters:
+///   - offset: The byte offset where the whitespace starts.
+///   - bytes: The UTF-8 bytes of the text.
+private func contiguousWhitespace(startingAt offset: Int, in bytes: Span<UInt8>) -> Range<Int> {
+    var end = offset
+    while end < bytes.count, bytes[end].isWhitespace { end += 1 }
+    return offset..<end
+}
+
+/// Returns the number of newline-separated runs in the range. The count is one more than the
+/// number of newlines.
+private func runCount(of range: Range<Int>, in bytes: Span<UInt8>) -> Int {
+    var count = 1
+    for index in range where bytes[index] == utf8Newline { count += 1 }
+    return count
+}
+
+/// Returns the last newline-separated run of the range.
+private func lastRun(of range: Range<Int>, in bytes: Span<UInt8>) -> Range<Int> {
+    var start = range.upperBound
+    while start > range.lowerBound, bytes[start - 1] != utf8Newline { start -= 1 }
+    return start..<range.upperBound
+}
+
+/// Returns the number of bytes from the offset to the next newline or to the end of the text.
+private func distanceToNewline(from offset: Int, in bytes: Span<UInt8>) -> Int {
+    var index = offset
+    while index < bytes.count, bytes[index] != utf8Newline { index += 1 }
+    return index - offset
+}
+
+/// Returns `true` when the range of the bytes contains the given code unit.
+private func contains(_ codeUnit: UInt8, in range: Range<Int>, of bytes: Span<UInt8>) -> Bool {
+    for index in range where bytes[index] == codeUnit { return true }
+    return false
+}
+
+/// Returns the code unit at the given index, or nil if the index is the end of the data.
+///
+/// This helper is only used in an assertion that verifies that the non-whitespace code units in
+/// the text are identical, but is not evaluated in release builds.
+private func safeCodeUnit(at index: Int, in bytes: Span<UInt8>) -> UTF8.CodeUnit? {
+    index != bytes.count ? bytes[index] : nil
+}
+
+/// Returns the indentation that represents the indentation of the given whitespace, which is the
+/// leading spacing for a line.
+private func indentation(of whitespace: Range<Int>, in bytes: Span<UInt8>) -> WhitespaceIndentation {
+    if whitespace.isEmpty { return .none }
+
+    var orderedRuns: [(char: UTF8.CodeUnit, count: Int)] = []
+
+    for index in whitespace {
+        let char = bytes[index]
+
+        if orderedRuns.last?.char == char {
+            orderedRuns[orderedRuns.endIndex - 1].count += 1
+        } else {
+            orderedRuns.append((char, 1))
+        }
+    }
+
+    let indents = orderedRuns.map { run in
+        // Assumes any non-tab whitespace character is some type of space.
+        run.char == utf8Tab ? Indent.tabs(run.count) : Indent.spaces(run.count)
+    }
+    if indents.count == 1, let onlyIndent = indents.first { return .homogeneous(onlyIndent) }
+
+    return .heterogeneous(indents)
 }
 
 // MARK: - Support

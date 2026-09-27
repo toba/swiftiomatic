@@ -16,7 +16,7 @@ extension TokenStream {
     func visitVariableDecl(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         arrangeAttributeList(
             node.attributes,
-            separateByLineBreaks: config[BreakBetweenDeclAttributes.self]
+            separateByLineBreaks: breakBetweenDeclAttributes
         )
 
         if node.bindings.count == 1 {
@@ -170,7 +170,7 @@ extension TokenStream {
     func visitTypeAliasDecl(_ node: TypeAliasDeclSyntax) -> SyntaxVisitorContinueKind {
         arrangeAttributeList(
             node.attributes,
-            separateByLineBreaks: config[BreakBetweenDeclAttributes.self]
+            separateByLineBreaks: breakBetweenDeclAttributes
         )
 
         after(node.typealiasKeyword, tokens: .break)

@@ -16,3 +16,22 @@ extension TypeSyntax {
         return nil
     }
 }
+
+extension TypeSyntax {
+    /// Tells if `trimmedDescription == text` is true.
+    ///
+    /// For a plain identifier type with no generic arguments, the compare reads the name token and
+    /// builds no description. Other types fall back to `trimmedDescription` . Thus a qualified
+    /// type such as `Foundation.XCTestCase` matches only the full text `"Foundation.XCTestCase"` .
+    func trimmedDescriptionEquals(_ text: String) -> Bool {
+        if let identifier = self.as(IdentifierTypeSyntax.self),
+           identifier.genericArgumentClause == nil,
+           identifier.unexpectedBeforeName == nil,
+           identifier.unexpectedBetweenNameAndGenericArgumentClause == nil,
+           identifier.unexpectedAfterGenericArgumentClause == nil
+        {
+            return identifier.name.text == text
+        }
+        return trimmedDescription == text
+    }
+}

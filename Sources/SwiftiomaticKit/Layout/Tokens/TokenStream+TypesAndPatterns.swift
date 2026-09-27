@@ -474,7 +474,7 @@ extension TokenStream {
         let wherePrecedingBreak: Token
         let whereTrailingBreak: Token
 
-        if !config[PlaceElseCatchOnNewLine.self],
+        if !placeElseCatchOnNewLine,
            let parent = node.parent,
            parent.is(CatchItemSyntax.self)
         {
@@ -516,7 +516,7 @@ extension TokenStream {
         // When KeepReturnTypeWithSignature is enabled, the rule's purpose is to keep the return
         // clause attached to the closing paren / effect specifiers. Ignore any pre-existing
         // discretionary newline before `->` so a previously-broken signature gets re-attached.
-        let newlines: NewlineBehavior = config[KeepReturnTypeWithSignature.self]
+        let newlines: NewlineBehavior = keepReturnTypeWithSignature
             ? .elective(ignoresDiscretionary: true)
             : .elective
         before(

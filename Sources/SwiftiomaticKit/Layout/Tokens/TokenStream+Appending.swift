@@ -16,19 +16,30 @@ import SwiftOperators
 extension TokenStream {
     func extractLeadingTrivia(_ token: TokenSyntax) {
         var isStartOfFile: Bool
-        let trivia: Trivia
+        var trivia: Trivia
         var position = token.position
+        let prevTrailingComments: Slice<Trivia>
 
-        if let previousToken = token.previousToken(viewMode: .sourceAccurate) {
+        if let carried = carriedTrivia, carried.tokenID == token.id {
+            // `afterTokensForTrailingComment` read this trivia for the previous token.
+            carriedTrivia = nil
+            isStartOfFile = false
+            prevTrailingComments = carried.previousTrailingComments
+            trivia = carried.leadingTrivia
+        } else if let previousToken = token.previousToken(viewMode: .sourceAccurate) {
             isStartOfFile = false
             // Find the first non-whitespace in the previous token's trailing and peel those off.
-            let (_, prevTrailingComments) = partitionTrailingTrivia(previousToken.trailingTrivia)
-            let prevTrivia = Trivia(pieces: prevTrailingComments)
-            trivia = prevTrivia + token.leadingTrivia
-            position -= prevTrivia.sourceLength
+            prevTrailingComments = partitionTrailingTrivia(previousToken.trailingTrivia).1
+            trivia = token.leadingTrivia
         } else {
             isStartOfFile = true
+            prevTrailingComments = Trivia(pieces: [])[...]
             trivia = token.leadingTrivia
+        }
+
+        if !prevTrailingComments.isEmpty {
+            trivia = Trivia(pieces: prevTrailingComments) + trivia
+            for piece in prevTrailingComments { position -= piece.sourceLength }
         }
 
         // If we're at the end of the file, determine at which index to stop checking trivia pieces
@@ -126,7 +137,7 @@ extension TokenStream {
                 case let .newlines(count),
                      let .carriageReturns(count),
                      let .carriageReturnLineFeeds(count):
-                    if config[IndentBlankLines.self],
+                    if indentBlankLines,
                        let leadingIndent,
                        leadingIndent.count > 0 { requiresNextNewline = true }
 
@@ -134,7 +145,7 @@ extension TokenStream {
                     guard !isStartOfFile else { break }
 
                     if requiresNextNewline
-                        || (config[RespectExistingLineBreaks.self]
+                        || (respectExistingLineBreaks
                             && isDiscretionaryNewlineAllowed(before: token))
                     {
                         appendNewlines(.soft(count: count, discretionary: true))
@@ -235,18 +246,26 @@ extension TokenStream {
                 case (.break(let breakKind, _, .soft(1, _, _)), .comment(let c2, let wasEndOfLine))
                     where breakAllowsCommentMerge(breakKind)
                     && (c2.kind == .docLine || c2.kind == .line):
-                    if let nextToLast = tokens.dropLast().last,
-                       case .comment(let c1, false) = nextToLast
+                    // Read only the kind of the earlier comment. A binding of the comment itself
+                    // would hold a second reference to its line storage during the merge.
+                    if tokens.count >= 2,
+                       let c1Kind = tokens[tokens.count - 2].leadingCommentKind
                     {
                         // we are search for the pattern of [line comment] - [soft break 1] - [line
                         // comment] where the comment type is the same; these can be merged into a
                         // single comment
-                        if c1.kind == c2.kind {
-                            var mergedComment = c1
-                            mergedComment.addText(c2.text)
+                        if c1Kind == c2.kind {
                             tokens.removeLast()  // remove the soft break
+                            // Take the comment out of the token array before the merge, so that the
+                            // array holds no second reference to its line storage and the append
+                            // does not copy it.
+                            let commentIndex = tokens.count - 1
+                            guard case .comment(var mergedComment, _) = tokens[commentIndex]
+                            else { return }
+                            tokens[commentIndex] = .close
+                            mergedComment.addLines(of: c2)
                             // replace the original comment with the merged one
-                            tokens[tokens.count - 1] = .comment(mergedComment, wasEndOfLine: false)
+                            tokens[commentIndex] = .comment(mergedComment, wasEndOfLine: false)
 
                             // need to fix lastBreakIndex because we just removed the last break
                             lastBreakIndex = tokens.lastIndex(where: {
@@ -262,9 +281,9 @@ extension TokenStream {
 
                         // A regular `//` comment directly following a `///` doc comment is indented
                         // one extra space so its body aligns with the doc comment body.
-                        if c1.kind == .docLine,
+                        if c1Kind == .docLine,
                            c2.kind == .line,
-                           config[AlignCommentWithAdjacentDocComment.self]
+                           alignCommentWithAdjacentDocComment
                         {
                             var aligned = c2
                             aligned.alignsWithPrecedingDocLine = true

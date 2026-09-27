@@ -201,7 +201,7 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
             if property.attributes.count == 1,
                let wrapper = propertyAttributes.first,
                wrapper.arguments == nil,
-               wrapper.attributeName.trimmedDescription == "Binding"
+               wrapper.attributeName.trimmedDescriptionEquals("Binding")
             {
                 guard parameterType == "Binding<\(propertyType.trimmedDescription)>" else {
                     return nil

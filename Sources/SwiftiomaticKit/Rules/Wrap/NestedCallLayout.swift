@@ -170,7 +170,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         guard let inner = only.expression.as(FunctionCallExprSyntax.self) else { return nil }
         return inner.trailingClosure != nil || !inner.additionalTrailingClosures.isEmpty
             ? nil
-            : inner.calledExpression.trimmedDescription.contains("\n")
+            : inner.calledExpression.trimmedDescriptionContainsLineFeed()
                 ? nil
                 : inner
     }
@@ -186,7 +186,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         _ node: FunctionCallExprSyntax,
         original: FunctionCallExprSyntax
     ) -> Bool {
-        guard node.description.contains("\n") else { return true }
+        guard node.descriptionContainsLineFeed() else { return true }
         guard let firstArg = node.arguments.first else { return true }
         if !firstArg.leadingTrivia.containsNewlines { return true }
         let baseIndent = lineIndentation(of: original)
@@ -223,7 +223,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
         let maxLength = context.configuration[LineLength.self]
 
         // Already fully inline.
-        if !node.description.contains("\n") { return ExprSyntax(node) }
+        if !node.descriptionContainsLineFeed() { return ExprSyntax(node) }
 
         let linePrefix = columnOffset(of: original)
 
@@ -463,7 +463,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
     /// assume a single-line callee, so such calls are routed through
     /// `tryInlineModifierCallArgument` instead. (prs-zf4)
     private static func calleeSpansMultipleLines(_ node: FunctionCallExprSyntax) -> Bool {
-        node.calledExpression.trimmedDescription.contains("\n")
+        node.calledExpression.trimmedDescriptionContainsLineFeed()
     }
 
     /// Collapses a modifier-chain call's argument list inline (`.method(a, b)`) when the modifier
@@ -530,7 +530,7 @@ final class NestedCallLayout: StaticFormatRule<NestedCallLayoutConfiguration>, @
               node.leftParen != nil,
               let rightParen = node.rightParen,
               arg.leadingTrivia.containsNewlines,
-              arg.description.contains("\n") else { return nil }
+              arg.descriptionContainsLineFeed() else { return nil }
 
         let baseIndent = lineIndentation(of: original)
         let argFirstLineIndent = arg.leadingTrivia.indentation

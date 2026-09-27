@@ -29,6 +29,24 @@ class TokenStreamBase: SyntaxVisitor {
     let maxLineLength: Int
     let selection: Selection
 
+    // Layout settings read once in `init` . The visit methods read these per node and per token, so
+    // the stream does not look up the configuration each time.
+    let keepReturnTypeWithSignature: Bool
+    let breakBetweenDeclAttributes: Bool
+    let breakBeforeEachArgument: Bool
+    let breakAroundMultilineChainParts: Bool
+    let indentConditionalCompilationBlocks: Bool
+    let respectExistingLineBreaks: Bool
+    let placeElseCatchOnNewLine: Bool
+    let indentBlankLines: Bool
+    let alignCommentWithAdjacentDocComment: Bool
+    let spacesBeforeEndOfLineComments: Int
+    let indentsSwitchCases: Bool
+    let alignWrappedConditions: Bool
+
+    /// The column width of one indentation unit.
+    let indentationUnitWidth: Int
+
     /// The index of the most recently appended break, or nil when no break has been appended.
     var lastBreakIndex: Int?
 
@@ -70,11 +88,31 @@ class TokenStreamBase: SyntaxVisitor {
     /// Tracks whether we last considered ourselves inside the selection
     var isInsideSelection = true
 
+    /// The trivia around the next token, read while looking for a trailing comment. The visit of
+    /// that token reuses it, so the stream reads each token's leading trivia once.
+    var carriedTrivia: CarriedTrivia?
+
     init(configuration: Configuration, selection: Selection, operatorTable: OperatorTable) {
         config = configuration
         self.selection = selection
         self.operatorTable = operatorTable
-        maxLineLength = config[LineLength.self]
+        maxLineLength = configuration[LineLength.self]
+        keepReturnTypeWithSignature = configuration[KeepReturnTypeWithSignature.self]
+        breakBetweenDeclAttributes = configuration[BreakBetweenDeclAttributes.self]
+        breakBeforeEachArgument = configuration[BreakBeforeEachArgument.self]
+        breakAroundMultilineChainParts = configuration[BreakAroundMultilineChainParts.self]
+        indentConditionalCompilationBlocks = configuration[IndentConditionalCompilationBlocks.self]
+        respectExistingLineBreaks = configuration[RespectExistingLineBreaks.self]
+        placeElseCatchOnNewLine = configuration[PlaceElseCatchOnNewLine.self]
+        indentBlankLines = configuration[IndentBlankLines.self]
+        alignCommentWithAdjacentDocComment = configuration[AlignCommentWithAdjacentDocComment.self]
+        spacesBeforeEndOfLineComments = configuration[SpacesBeforeEndOfLineComments.self]
+        indentsSwitchCases = configuration[IndentSwitchCases.self].style == .indented
+        alignWrappedConditions = configuration[AlignWrappedConditions.self]
+        indentationUnitWidth = switch configuration[IndentationSetting.self] {
+            case let .spaces(n): n
+            case let .tabs(n): n * configuration[TabWidth.self]
+        }
         super.init(viewMode: .all)
     }
 
@@ -152,6 +190,18 @@ extension TokenStream {
 }
 
 // MARK: - Support
+
+/// The trivia around a token, read before the visit of that token.
+struct CarriedTrivia {
+    /// The token whose leading trivia this is.
+    let tokenID: SyntaxIdentifier
+
+    /// The comments and the trivia after them in the trailing trivia of the previous token.
+    let previousTrailingComments: Slice<Trivia>
+
+    /// The leading trivia of the token.
+    let leadingTrivia: Trivia
+}
 
 extension AccessorBlockSyntax {
     /// Assuming that the accessor only contains an implicit getter (i.e. no `get` or `set` ),

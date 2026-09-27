@@ -52,7 +52,7 @@ fileprivate extension TypeSyntax {
             return identifier.name.text == "Bool" && identifier.genericArgumentClause == nil
         }
         guard let member = self.as(MemberTypeSyntax.self) else { return false }
-        return member.name.text == "Bool" && member.baseType.trimmedDescription == "Swift"
+        return member.name.text == "Bool" && member.baseType.trimmedDescriptionEquals("Swift")
     }
 }
 

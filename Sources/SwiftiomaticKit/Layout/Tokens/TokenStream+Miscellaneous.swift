@@ -16,7 +16,7 @@ extension TokenStream {
     func visitAssociatedTypeDecl(_ node: AssociatedTypeDeclSyntax) -> SyntaxVisitorContinueKind {
         arrangeAttributeList(
             node.attributes,
-            separateByLineBreaks: config[BreakBetweenDeclAttributes.self]
+            separateByLineBreaks: breakBetweenDeclAttributes
         )
 
         after(node.associatedtypeKeyword, tokens: .break)
@@ -102,12 +102,7 @@ extension TokenStream {
     private func shouldForceMultiLineWhereClause(_ clause: GenericWhereClauseSyntax) -> Bool {
         let requirementsText = clause.requirements.trimmedDescription
         let whereWidth = "where ".count + requirementsText.count
-        let indentWidth: Int =
-            switch config[IndentationSetting.self] {
-                case let .spaces(n): n
-                case let .tabs(n): n * config[TabWidth.self]
-            }
-        let available = max(0, maxLineLength - indentWidth)
+        let available = max(0, maxLineLength - indentationUnitWidth)
         return whereWidth > available
     }
 

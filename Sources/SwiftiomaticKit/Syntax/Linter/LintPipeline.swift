@@ -2,113 +2,83 @@ import SwiftSyntax
 
 /// A syntax visitor that delegates to individual rules for linting.
 ///
-/// This file will be extended with `visit` methods in Pipelines+Generated.swift.
+/// The class and its `visit` overrides live in `Pipelines+Generated.swift` . Each override passes
+/// the rule's dense index as a literal, so the helpers here hash nothing on the per-node path.
 extension LintPipeline {
-    /// Calls the `visit` method of a rule for the given node if that rule is enabled for the node.
+    /// The instance of the rule at `index` , when the rule should visit the node the gate
+    /// describes.
     ///
-    /// - Parameter gate: The per-node gate built once by the caller. Every rule registered against
-    ///   the node shares it, so the selection test and the source-location lookup happen once per
-    ///   node rather than once per rule.
-    func visitIfEnabled<V: SyntaxRuleValue, Rule: LintSyntaxRule<V>, Node: SyntaxProtocol>(
-        _ visitor: (Rule) -> (Node) -> SyntaxVisitorContinueKind,
-        for node: Node,
+    /// Returns `nil` when the rule is disabled, when a `// sm:ignore` directive masks it, or when
+    /// it skips the children of an enclosing node.
+    @inline(__always)
+    func lintRule<R: InstanceSyntaxRule & AnyObject>(
+        _: R.Type,
+        _ index: Int,
         gate: Context.Gate
-    ) {
-        guard context.shouldFormat(Rule.self, gate: gate) else { return }
-        let ruleID = ObjectIdentifier(Rule.self)
-        if !shouldSkipChildren.isEmpty, shouldSkipChildren[ruleID] != nil { return }
-        let rule = self.rule(Rule.self)
-        let continueKind = visitor(rule)(node)
-        if case .skipChildren = continueKind { shouldSkipChildren[ruleID] = node }
+    ) -> R? {
+        guard context.shouldFormat(index, gate: gate) else { return nil }
+        if skipCount > 0, skipUntil[index] != nil { return nil }
+        return rule(R.self, at: index)
     }
 
-    /// Calls the `visit` method of a rewrite rule for the given node if that rule is enabled.
+    /// Records the result of a lint rule's `visit` . A rule that answers `.skipChildren` skips
+    /// every node below `node` .
+    @inline(__always)
+    func didVisit(_ index: Int, _ node: some SyntaxProtocol, _ kind: SyntaxVisitorContinueKind) {
+        guard case .skipChildren = kind else { return }
+        if skipUntil[index] == nil { skipCount += 1 }
+        skipUntil[index] = node.id
+    }
+
+    /// Ends the skip of the rule at `index` when the walk leaves the node that started it.
+    @inline(__always)
+    func endSkip(_ index: Int, _ node: some SyntaxProtocol) {
+        guard let skipNode = skipUntil[index], skipNode == node.id else { return }
+        skipUntil[index] = nil
+        skipCount -= 1
+    }
+
+    /// The instance of the rule at `index` , if the walk created one.
     ///
-    /// - Parameter gate: The per-node gate built once by the caller, as in the `LintSyntaxRule`
-    ///   overload.
-    func visitIfEnabled<V: SyntaxRuleValue, Rule: StructuralFormatRule<V>, Node: SyntaxProtocol>(
-        _ visitor: (Rule) -> (Node) -> Any,
-        for node: Node,
-        gate: Context.Gate
-    ) {
-        guard context.shouldFormat(Rule.self, gate: gate) else { return }
-
-        if !shouldSkipChildren.isEmpty,
-           shouldSkipChildren[ObjectIdentifier(Rule.self)] != nil { return }
-
-        let rule = self.rule(Rule.self)
-        _ = visitor(rule)(node)
+    /// `visitPost` goes to an existing instance only. Lint rules with stateful visitors rely on
+    /// this to balance their `visit` and `visitPost` pairs.
+    @inline(__always)
+    func existingRule<R: InstanceSyntaxRule & AnyObject>(_: R.Type, _ index: Int) -> R? {
+        rules[index].map { unsafeDowncast($0, to: R.self) }
     }
 
-    /// Node-taking counterpart used for `SourceFileSyntax` alone.
+    /// The instance of the rule at `index` , created on first use.
     ///
-    /// The generated dispatchers call this shape for the file node. It resolves the same location a
-    /// `Context.Gate` would, so the two paths agree.
-    func visitIfEnabled<V: SyntaxRuleValue, Rule: LintSyntaxRule<V>>(
-        _ visitor: (Rule) -> (SourceFileSyntax) -> SyntaxVisitorContinueKind,
-        for node: SourceFileSyntax
-    ) {
-        guard context.shouldFormat(Rule.self, node: Syntax(node)) else { return }
-        let ruleID = ObjectIdentifier(Rule.self)
-        if !shouldSkipChildren.isEmpty, shouldSkipChildren[ruleID] != nil { return }
-        let rule = self.rule(Rule.self)
-        let continueKind = visitor(rule)(node)
-        if case .skipChildren = continueKind { shouldSkipChildren[ruleID] = node }
-    }
-
-    /// Node-taking counterpart for a `StructuralFormatRule` on `SourceFileSyntax` .
-    func visitIfEnabled<V: SyntaxRuleValue, Rule: StructuralFormatRule<V>>(
-        _ visitor: (Rule) -> (SourceFileSyntax) -> Any,
-        for node: SourceFileSyntax
-    ) {
-        guard context.shouldFormat(Rule.self, node: Syntax(node)) else { return }
-
-        if !shouldSkipChildren.isEmpty,
-           shouldSkipChildren[ObjectIdentifier(Rule.self)] != nil { return }
-
-        let rule = self.rule(Rule.self)
-        _ = visitor(rule)(node)
-    }
-
-    /// Cleans up any state associated with `rule` when we leave syntax node `node`
-    func onVisitPost<R: SyntaxRule, Node: SyntaxProtocol>(
-        rule: R.Type,
-        for node: Node
-    ) {
-        guard !shouldSkipChildren.isEmpty else { return }
-        let rule = ObjectIdentifier(rule)
-
-        if case let .some(skipNode) = shouldSkipChildren[rule] {
-            if node.id == skipNode.id { shouldSkipChildren.removeValue(forKey: rule) }
-        }
-    }
-
-    /// Dispatches `visitPost` to a cached lint rule instance and cleans up `shouldSkipChildren`
-    /// bookkeeping. Lint rules with stateful visitors rely on this to balance their `visit` /
-    /// `visitPost` enter/leave pairs.
-    func onVisitPost<V: SyntaxRuleValue, Rule: LintSyntaxRule<V>, Node: SyntaxProtocol>(
-        _ visitor: (Rule) -> (Node) -> Void,
-        for node: Node
-    ) {
-        let ruleID = ObjectIdentifier(Rule.self)
-
-        if !shouldSkipChildren.isEmpty,
-           case let .some(skipNode) = shouldSkipChildren[ruleID],
-           node.id == skipNode.id { shouldSkipChildren.removeValue(forKey: ruleID) }
-
-        if let cached = ruleCache[ruleID] as? Rule { visitor(cached)(node) }
-    }
-
-    /// Retrieves an instance of a lint or format rule based on its type
-    ///
-    /// The cache is keyed by `ObjectIdentifier(R.self)` , so a stored value is an `R` by
-    /// construction. The conditional cast reads that invariant without a trap. A mismatched entry
-    /// is replaced with a fresh instance of the requested type.
-    func rule<R: InstanceSyntaxRule>(_ type: R.Type) -> R {
-        let identifier = ObjectIdentifier(type)
-        if let cachedRule = ruleCache[identifier] as? R { return cachedRule }
+    /// The generated code passes the index of `R` , so a slot only ever holds an `R` and the
+    /// downcast is unchecked in release builds.
+    @inline(__always)
+    func rule<R: InstanceSyntaxRule & AnyObject>(_: R.Type, at index: Int) -> R {
+        if let cached = rules[index] { return unsafeDowncast(cached, to: R.self) }
         let rule = R(context: context)
-        ruleCache[identifier] = rule
+        rules[index] = rule
         return rule
+    }
+
+    /// The instance of `type` , created on first use. Looks the index up by type, for callers
+    /// outside the generated code.
+    func rule<R: InstanceSyntaxRule & AnyObject>(_ type: R.Type) -> R {
+        guard let index = ConfigurationRegistry.ruleIndex(of: type) else {
+            preconditionFailure("\(type) is not a registered rule")
+        }
+        return rule(type, at: index)
+    }
+}
+
+extension LintPipeline {
+    /// The rule instances the walk created, keyed by rule type.
+    ///
+    /// A copy built on each read, for tests and benchmarks. The walk itself reads `rules` .
+    var ruleCache: [ObjectIdentifier: any SyntaxRule] {
+        var cache: [ObjectIdentifier: any SyntaxRule] = [:]
+
+        for case let object? in rules {
+            if let rule = object as? any SyntaxRule { cache[ObjectIdentifier(type(of: rule))] = rule }
+        }
+        return cache
     }
 }

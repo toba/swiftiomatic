@@ -23,6 +23,11 @@ final class PairAcquireWithDefer: LintSyntaxRule<PairAcquireWithDeferConfigurati
 {
     override class var group: ConfigurationGroup? { .unsafety }
 
+    /// The release name of each acquire name in the configured `pairs` , built once per rule
+    /// instance rather than once per code block. The first pair wins when two name one acquire.
+    private lazy var acquireByName: [String: String] = Dictionary(
+        ruleConfig.pairs.map { ($0.acquire, $0.release) }, uniquingKeysWith: { first, _ in first })
+
     override func visit(_ node: CodeBlockItemListSyntax) -> SyntaxVisitorContinueKind {
         checkScope(node)
         return .visitChildren
@@ -32,17 +37,14 @@ final class PairAcquireWithDefer: LintSyntaxRule<PairAcquireWithDeferConfigurati
     /// or nested block). For each acquire call, decide whether the rest of the scope satisfies the
     /// pairing rule.
     private func checkScope(_ items: CodeBlockItemListSyntax) {
-        let pairs = ruleConfig.pairs
-        guard !pairs.isEmpty else { return }
-        let acquireByName = Dictionary(uniqueKeysWithValues: pairs.map { ($0.acquire, $0.release) })
+        let acquireByName = acquireByName
+        guard !acquireByName.isEmpty else { return }
 
-        let elements = Array(items)
-
-        for (idx, item) in elements.enumerated() {
+        for (idx, item) in items.enumerated() {
             guard let call = extractCall(item),
-                  let match = matchedAcquireName(call, in: acquireByName) else { continue }
-            let releaseName = acquireByName[match.name]!
-            let remainder = elements.dropFirst(idx + 1)
+                  let match = matchedAcquireName(call, in: acquireByName),
+                  let releaseName = acquireByName[match.name] else { continue }
+            let remainder = items.dropFirst(idx + 1)
 
             if scopeHasMatchingDefer(remainder, releaseName: releaseName) { continue }
             guard scopeHasEarlyExit(remainder) else { continue }
@@ -80,7 +82,7 @@ final class PairAcquireWithDefer: LintSyntaxRule<PairAcquireWithDeferConfigurati
     /// named release function (member or free). Base matching is intentionally relaxed — the same
     /// release name reaching the same scope is taken as evidence of a paired cleanup.
     private func scopeHasMatchingDefer(
-        _ remainder: ArraySlice<CodeBlockItemSyntax>,
+        _ remainder: some Sequence<CodeBlockItemSyntax>,
         releaseName: String
     ) -> Bool {
         for item in remainder {
@@ -103,7 +105,7 @@ final class PairAcquireWithDefer: LintSyntaxRule<PairAcquireWithDeferConfigurati
     /// True if the trailing slice contains any statement-level early exit at the *same scope*.
     /// Nested functions and closure bodies don't count — those exits leave the inner scope, not the
     /// scope the acquire is in.
-    private func scopeHasEarlyExit(_ remainder: ArraySlice<CodeBlockItemSyntax>) -> Bool {
+    private func scopeHasEarlyExit(_ remainder: some Sequence<CodeBlockItemSyntax>) -> Bool {
         for item in remainder {
             let finder = EarlyExitFinder(viewMode: .sourceAccurate)
             finder.walk(item)

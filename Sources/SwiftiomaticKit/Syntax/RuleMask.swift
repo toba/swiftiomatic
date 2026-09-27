@@ -69,8 +69,8 @@ package final class IgnoreDirective {
     /// Source location of the `// sm:ignore` comment itself, used as the anchor for findings
     /// emitted about the directive (e.g. unused-directive warnings).
     package let location: SourceLocation
-    /// The source range over which this directive suppresses rules.
-    package let range: SourceRange
+    /// The UTF-8 offsets over which this directive suppresses rules. Both bounds are inclusive.
+    package let offsets: ClosedRange<Int>
     /// Whether the directive applies to all rules or to a named subset.
     package let scope: Scope
     /// Number of times this directive matched a `ruleState` lookup whose result was `.disabled`.
@@ -79,9 +79,9 @@ package final class IgnoreDirective {
     /// Per-rule hit counts. Only populated for `.subset` directives.
     package private(set) var hitsPerRule: [String: Int] = [:]
 
-    init(location: SourceLocation, range: SourceRange, scope: Scope) {
+    init(location: SourceLocation, offsets: ClosedRange<Int>, scope: Scope) {
         self.location = location
-        self.range = range
+        self.offsets = offsets
         self.scope = scope
     }
 
@@ -95,44 +95,97 @@ package final class RuleMask {
     /// All directives in source order.
     package private(set) var directives: [IgnoreDirective] = []
 
-    /// Rule keys that were queried via `ruleState` at least once during this run. A rule the
-    /// configuration disables does not appear here, and neither does one whose visited node kinds
-    /// are absent from the file. `FlagUnusedIgnoreDirective` reads the set as proof that a rule
-    /// ran, and asks `Context.dispatches(_:)` about the rules it does not find here.
-    package private(set) var queriedRules: Set<String> = []
+    /// The rules that were queried via `ruleState` at least once during this run, one bit per rule
+    /// index. A rule the configuration disables does not appear here, and neither does one whose
+    /// visited node kinds are absent from the file.
+    private var queried = RuleSet()
 
     /// Indices into `directives` for bare `// sm:ignore` (all-rules) directives.
     private var allDirectiveIndices: [Int] = []
 
-    /// Indices into `directives` keyed by rule name, for subset directives that name that rule.
-    private var subsetIndicesByRule: [String: [Int]] = [:]
+    /// Indices into `directives` for subset directives, indexed by the rule index they name. Empty
+    /// when the file has no subset directive.
+    private var subsetIndicesByRuleIndex: [[Int]] = []
 
-    /// Used to compute line numbers of syntax nodes.
-    private let sourceLocationConverter: SourceLocationConverter
+    /// Indices into `directives` keyed by rule name, for subset directives. Serves the name-based
+    /// lookup, which also answers for a name that no registered rule has.
+    private var subsetIndicesByName: [String: [Int]] = [:]
 
     /// Creates a `RuleMask` that can specify whether a given rule's status is explicitly modified
     /// at a location obtained from the `SourceLocationConverter` .
     ///
     /// Ranges in the source where rules' statuses are modified are pre-computed during init so that
     /// lookups later don't require parsing the source.
-    package init(syntaxNode: Syntax, sourceLocationConverter: SourceLocationConverter) {
-        self.sourceLocationConverter = sourceLocationConverter
-        computeIgnoredRanges(in: syntaxNode)
+    ///
+    /// - Parameter sourceText: The text of `syntaxNode` , when the caller has it. A text without
+    ///   `sm:ignore` holds no directive, so the tree walk does not run.
+    package init(
+        syntaxNode: Syntax,
+        sourceLocationConverter: SourceLocationConverter,
+        sourceText: String? = nil
+    ) {
+        if let sourceText, !IgnoreMarker.occurs(in: sourceText.utf8.span) { return }
+        computeIgnoredRanges(in: syntaxNode, converter: sourceLocationConverter)
+    }
+
+    /// The short keys of the rules that were queried via `ruleState` at least once during this
+    /// run. `FlagUnusedIgnoreDirective` reads the set as proof that a rule ran, and asks
+    /// `Context.dispatches(_:)` about the rules it does not find here.
+    package var queriedRules: Set<String> {
+        Set(queried.indices.map { ConfigurationRegistry.ruleKeys[$0] })
     }
 
     /// Computes the ranges in the given node where the status of rules are explicitly modified.
-    private func computeIgnoredRanges(in node: Syntax) {
-        let visitor = RuleStatusCollectionVisitor(sourceLocationConverter: sourceLocationConverter)
+    private func computeIgnoredRanges(in node: Syntax, converter: SourceLocationConverter) {
+        let visitor = RuleStatusCollectionVisitor(sourceLocationConverter: converter)
         visitor.walk(node)
-        directives = visitor.directives
+        directives = visitor.orderedDirectives
 
         for (index, directive) in directives.enumerated() {
             switch directive.scope {
                 case .all: allDirectiveIndices.append(index)
                 case let .subset(ruleNames):
-                    for name in ruleNames { subsetIndicesByRule[name, default: []].append(index) }
+                    if subsetIndicesByRuleIndex.isEmpty {
+                        subsetIndicesByRuleIndex = Array(
+                            repeating: [], count: ConfigurationRegistry.ruleCount)
+                    }
+                    for name in ruleNames {
+                        subsetIndicesByName[name, default: []].append(index)
+
+                        if let ruleIndex = ConfigurationRegistry.ruleIndexByKey[name] {
+                            subsetIndicesByRuleIndex[ruleIndex].append(index)
+                        }
+                    }
             }
         }
+    }
+
+    /// Returns the `RuleState` for the rule at `ruleIndex` at the given UTF-8 offset.
+    ///
+    /// This is the hot path. It reads no dictionary, and it returns at once when the file holds no
+    /// directive. As a side effect, it records the query and increments the hit counter on the
+    /// directive responsible for any `.disabled` result.
+    @inline(__always)
+    func ruleState(_ ruleIndex: Int, atOffset offset: Int) -> RuleState {
+        queried[ruleIndex] = true
+        guard !directives.isEmpty else { return .default }
+        return lookUp(ruleIndex, atOffset: offset)
+    }
+
+    private func lookUp(_ ruleIndex: Int, atOffset offset: Int) -> RuleState {
+        for index in allDirectiveIndices where directives[index].offsets.contains(offset) {
+            directives[index].recordHit(forRule: ConfigurationRegistry.ruleKeys[ruleIndex])
+            return .disabled
+        }
+        guard ruleIndex < subsetIndicesByRuleIndex.count else { return .default }
+
+        for index in subsetIndicesByRuleIndex[ruleIndex]
+            where directives[index].offsets.contains(offset)
+        {
+            directives[index].recordHit(forRule: ConfigurationRegistry.ruleKeys[ruleIndex])
+            return .disabled
+        }
+        return .default
     }
 
     /// Returns the `RuleState` for the given rule at the provided location.
@@ -140,36 +193,58 @@ package final class RuleMask {
     /// As a side effect, increments the hit counter on the directive responsible for any
     /// `.disabled` result. This drives unused-directive detection (see `IgnoreDirective`).
     package func ruleState(_ rule: String, at location: SourceLocation) -> RuleState {
-        queriedRules.insert(rule)
+        if let ruleIndex = ConfigurationRegistry.ruleIndexByKey[rule] {
+            return ruleState(ruleIndex, atOffset: location.offset)
+        }
+        let offset = location.offset
 
-        for index in allDirectiveIndices where directives[index].range.contains(location) {
+        for index in allDirectiveIndices where directives[index].offsets.contains(offset) {
             directives[index].recordHit(forRule: rule)
             return .disabled
         }
-        if let candidates = subsetIndicesByRule[rule] {
-            for index in candidates where directives[index].range.contains(location) {
-                directives[index].recordHit(forRule: rule)
-                return .disabled
-            }
+        for index in subsetIndicesByName[rule] ?? [] where directives[index].offsets.contains(offset) {
+            directives[index].recordHit(forRule: rule)
+            return .disabled
         }
         return .default
     }
 }
 
-fileprivate extension SourceRange {
-    /// Returns whether the range includes the given location.
-    func contains(_ location: SourceLocation) -> Bool {
-        start.offset <= location.offset && end.offset >= location.offset
+/// Finds the `sm:ignore` marker in UTF-8 text without decoding it.
+enum IgnoreMarker {
+    private static let marker: [UInt8] = Array("sm:ignore".utf8)
+
+    /// Whether `bytes` contains `sm:ignore` .
+    static func occurs(in bytes: Span<UInt8>) -> Bool {
+        let count = marker.count
+        guard bytes.count >= count else { return false }
+        let first = marker[0]
+        var start = 0
+        let last = bytes.count - count
+
+        while start <= last {
+            if bytes[start] == first {
+                var matched = 1
+                while matched < count, bytes[start + matched] == marker[matched] { matched += 1 }
+                if matched == count { return true }
+            }
+            start += 1
+        }
+        return false
     }
 }
 
-/// A syntax visitor that finds `SourceRange` s of nodes that have rule status modifying comment
+/// A syntax visitor that finds the ranges of nodes that have rule status modifying comment
 /// directives. The changes requested in each comment is parsed and collected into a map to support
 /// status lookup per rule name.
 ///
 /// The rule status comment directives implementation intentionally supports exactly the same nodes
 /// as `TokenStream` to disable pretty printing. This ensures ignore comments for pretty printing
 /// and for rules are as consistent as possible.
+///
+/// The visitor walks each token once. It keeps a stack of the enclosing `CodeBlockItemSyntax` and
+/// `MemberBlockItemSyntax` nodes, and the top of the stack owns the token. A directive on a struct
+/// member therefore belongs to the member and does not leak up to the enclosing type.
 private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     /// Describes the possible matches for ignore directives, in comments.
     enum RuleStatusDirectiveMatch {
@@ -192,15 +267,39 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         return try! Regex(pattern).matchingSemantics(.unicodeScalar)
     }()
 
-    /// Computes source locations and ranges for syntax nodes in a source file.
+    /// An enclosing item and its place in a pre-order walk of the items.
+    private struct Item {
+        let node: Syntax
+        let order: Int
+    }
+
+    /// Computes source locations for the directives that match.
     private let sourceLocationConverter: SourceLocationConverter
 
-    /// End-of-file location, captured at `SourceFileSyntax` visit. Used as the upper bound for
+    /// End-of-file UTF-8 offset, captured at `SourceFileSyntax` visit. Used as the upper bound for
     /// lone-line `sm:ignore` directives, which extend from their position to EOF.
-    private var sourceFileEnd: SourceLocation?
+    private var sourceFileEnd: Int?
 
-    /// Collected directives, in source-discovery order.
-    var directives: [IgnoreDirective] = []
+    /// The items that enclose the current token, innermost last.
+    private var items: [Item] = []
+
+    /// The number of items entered so far, which orders the directives the way a walk per item
+    /// would find them.
+    private var itemCount = 0
+
+    /// Whether the walk has reached a token yet. The first token of the file has no newline before
+    /// its first comment.
+    private var sawToken = false
+
+    /// Collected directives, each with the order of the item that owns it.
+    private var found: [(order: Int, directive: IgnoreDirective)] = []
+
+    /// The directives, grouped by owning item in pre-order and in source order within an item.
+    var orderedDirectives: [IgnoreDirective] {
+        found.enumerated()
+            .sorted { ($0.element.order, $0.offset) < ($1.element.order, $1.offset) }
+            .map(\.element.directive)
+    }
 
     init(sourceLocationConverter: SourceLocationConverter) {
         self.sourceLocationConverter = sourceLocationConverter
@@ -210,117 +309,118 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     // MARK: - Syntax Visitation Methods
 
     override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
-        sourceFileEnd = sourceLocationConverter.location(for: node.endPosition)
+        sourceFileEnd = node.endPosition.utf8Offset
         return .visitChildren
     }
 
     override func visit(_ node: CodeBlockItemSyntax) -> SyntaxVisitorContinueKind {
-        applyDirectives(to: Syntax(node))
+        enter(Syntax(node))
         return .visitChildren
     }
 
+    override func visitPost(_: CodeBlockItemSyntax) { items.removeLast() }
+
     override func visit(_ node: MemberBlockItemSyntax) -> SyntaxVisitorContinueKind {
-        applyDirectives(to: Syntax(node))
+        enter(Syntax(node))
+        return .visitChildren
+    }
+
+    override func visitPost(_: MemberBlockItemSyntax) { items.removeLast() }
+
+    override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
+        let isFirstInFile = !sawToken
+        sawToken = true
+        guard let owner = items.last, sourceFileEnd != nil else { return .visitChildren }
+        scanLeadingTrivia(of: token, owner: owner, isFirstInFile: isFirstInFile)
+        scanTrailingTrivia(of: token, owner: owner)
         return .visitChildren
     }
 
     // MARK: - Helper Methods
 
-    /// Scans the leading trivia of the node's first token and the trailing trivia of every token in
-    /// the node for `// sm:ignore` directives, and records the appropriate source ranges.
+    private func enter(_ node: Syntax) {
+        items.append(Item(node: node, order: itemCount))
+        itemCount += 1
+    }
+
+    /// Scans the lone-line comments in the leading trivia of `token` .
     ///
     /// Scoping:
-    /// - Lone-line `// sm:ignore` (bare or with rule names) → from the comment's position through
-    ///   end of file.
-    /// - Trailing `// sm:ignore` on any line of the statement (or member) → that statement only.
-    ///   Multi-line nodes accept the directive on any line — first line, last line, or any interior
-    ///   line — to give users a natural placement next to a diagnosed expression.
+    /// - Lone-line `// sm:ignore` (bare or with rule names) before the item's first token → from
+    ///   the item's position through end of file.
+    /// - `// sm:ignore:next` , or a lone-line directive inside the item's trivia → that item only.
+    ///   A bare directive *inside* the item's trivia is treated as scoped to the item, since "rest
+    ///   of file" would accidentally cover sibling nodes the user didn't target.
     ///
-    /// `FileLength` (and any other `SourceFileSyntax`-level rule) is gated at the file's end
-    /// location in `Context.shouldFormat`, so a directive anywhere in the file correctly suppresses
-    /// it.
-    private func applyDirectives(to node: Syntax) {
-        guard let firstToken = node.firstToken(viewMode: .sourceAccurate),
-              let sourceFileEnd else { return }
+    /// Directives may sit on their own line anywhere within the item's trivia (e.g. between an
+    /// attribute and the modifier list of a function decl), not just before the first token.
+    private func scanLeadingTrivia(of token: TokenSyntax, owner: Item, isFirstInFile: Bool) {
+        var offset = token.position.utf8Offset
+        // The first token of the file may carry a comment with no newline before it.
+        var atLineStart = isFirstInFile
 
-        let nodeStart = sourceLocationConverter.location(for: node.position)
-        let nodeRange = node.sourceRange(converter: sourceLocationConverter)
-        let restOfFileRange = SourceRange(start: nodeStart, end: sourceFileEnd)
-
-        let isFirstInFile = firstToken.previousToken(viewMode: .sourceAccurate) == nil
-
-        for token in node.tokens(viewMode: .sourceAccurate) {
-            // Skip tokens that belong to a nested code-block / member-block item — those are
-            // handled when that nested item is visited. Without this, a directive on a struct
-            // member would leak up to the enclosing type, etc.
-            if isInsideDescendantItem(token, of: node) { continue }
-
-            // Scan lone-line comments in this token's leading trivia. Directives may sit on their
-            // own line anywhere within the node's trivia (e.g. between an attribute and the
-            // modifier list of a function decl), not just before the first token.
-            let isFirstTokenOfNode = token == firstToken
-
-            for (comment, position)
-                in loneLineComments(
-                    in: token.leadingTrivia,
-                    anchor: token.position,
-                    isFirstToken: isFirstTokenOfNode && isFirstInFile
-                )
-            {
-                guard let (match, scope) = ruleStatusDirectiveMatch(in: comment) else { continue }
-                let location = sourceLocationConverter.location(for: position)
-                // `:next` scopes the directive to this node; bare lone-line extends to EOF (only
-                // when the directive is in the firstToken's leading trivia, where it legitimately
-                // precedes the node — a bare directive *inside* the node's trivia is treated as
-                // scoped to the node, since "rest of file" would accidentally cover sibling nodes
-                // the user didn't target).
-                let range: SourceRange
-
-                if scope == .next {
-                    range = nodeRange
-                } else if isFirstTokenOfNode {
-                    range = restOfFileRange
-                } else {
-                    range = nodeRange
-                }
-                record(match, range: range, at: location)
+        for piece in token.leadingTrivia {
+            switch piece {
+                case let .lineComment(text):
+                    if atLineStart, let (match, scope) = ruleStatusDirectiveMatch(in: text) {
+                        let isFirstTokenOfItem =
+                            owner.node.firstToken(viewMode: .sourceAccurate)?.id == token.id
+                        let offsets =
+                            scope == .eof && isFirstTokenOfItem
+                            ? restOfFileOffsets(of: owner.node)
+                            : itemOffsets(of: owner.node)
+                        record(match, offsets: offsets, at: offset, owner: owner)
+                    }
+                    atLineStart = false
+                case .spaces, .tabs: break
+                case .carriageReturnLineFeeds, .carriageReturns, .newlines: atLineStart = true
+                default: atLineStart = false
             }
-
-            let trailingAnchor = token.endPositionBeforeTrailingTrivia
-
-            for (comment, position)
-                in trailingLineComments(in: token.trailingTrivia, anchor: trailingAnchor)
-            {
-                guard let (match, _) = ruleStatusDirectiveMatch(in: comment) else { continue }
-                let location = sourceLocationConverter.location(for: position)
-                record(match, range: nodeRange, at: location)
-            }
+            offset += piece.sourceLength.utf8Length
         }
     }
 
-    /// True if `token` is contained in a descendant `CodeBlockItemSyntax` or
-    /// `MemberBlockItemSyntax` of `node`.
-    private func isInsideDescendantItem(_ token: TokenSyntax, of node: Syntax) -> Bool {
-        var current = Syntax(token).parent
+    /// Scans the trailing trivia of `token` for line comments. Trailing trivia never holds a
+    /// newline, so each one sits on the same line as the code, like `let x = 1 // sm:ignore`. A
+    /// trailing directive on any line of a multi-line item covers that item.
+    private func scanTrailingTrivia(of token: TokenSyntax, owner: Item) {
+        var offset = token.endPositionBeforeTrailingTrivia.utf8Offset
 
-        while let n = current, n != node {
-            if n.is(CodeBlockItemSyntax.self) || n.is(MemberBlockItemSyntax.self) { return true }
-            current = n.parent
+        for piece in token.trailingTrivia {
+            if case let .lineComment(text) = piece,
+               let (match, _) = ruleStatusDirectiveMatch(in: text)
+            {
+                record(match, offsets: itemOffsets(of: owner.node), at: offset, owner: owner)
+            }
+            offset += piece.sourceLength.utf8Length
         }
-        return false
+    }
+
+    /// The offsets of an item's own text, without its leading and trailing trivia.
+    private func itemOffsets(of node: Syntax) -> ClosedRange<Int> {
+        node.positionAfterSkippingLeadingTrivia.utf8Offset...node.endPositionBeforeTrailingTrivia
+            .utf8Offset
+    }
+
+    /// The offsets from an item's position through the end of the file.
+    private func restOfFileOffsets(of node: Syntax) -> ClosedRange<Int> {
+        node.position.utf8Offset...max(node.position.utf8Offset, sourceFileEnd ?? 0)
     }
 
     private func record(
         _ match: RuleStatusDirectiveMatch,
-        range: SourceRange,
-        at location: SourceLocation
+        offsets: ClosedRange<Int>,
+        at offset: Int,
+        owner: Item
     ) {
         let scope: IgnoreDirective.Scope =
             switch match {
                 case .all: .all
                 case let .subset(ruleNames): .subset(ruleNames: ruleNames)
             }
-        directives.append(IgnoreDirective(location: location, range: range, scope: scope))
+        let location = sourceLocationConverter.location(for: AbsolutePosition(utf8Offset: offset))
+        found.append(
+            (owner.order, IgnoreDirective(location: location, offsets: offsets, scope: scope)))
     }
 
     /// Scope of a matched directive.
@@ -331,7 +431,9 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     private func ruleStatusDirectiveMatch(
         in text: String
     ) -> (match: RuleStatusDirectiveMatch, scope: DirectiveScope)? {
-        guard let match = text.firstMatch(of: Self.ignoreRegex) else { return nil }
+        // Most comments are not directives. The byte search is cheaper than the regex.
+        guard IgnoreMarker.occurs(in: text.utf8.span),
+              let match = text.firstMatch(of: Self.ignoreRegex) else { return nil }
         let scope: DirectiveScope = match.output.scope != nil ? .next : .eof
         guard let matchedRuleNames = match.output.ruleNames else { return (.all, scope) }
 
@@ -390,79 +492,5 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
         guard let first = token.first else { return false }
         guard first.isLetter || first == "_" else { return false }
         return token.dropFirst().allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
-    }
-
-    /// Returns each trivia piece paired with its absolute source position, computed by walking from
-    /// the supplied trivia anchor and accumulating piece source lengths.
-    private func piecesWithPositions(
-        in trivia: Trivia,
-        anchor: AbsolutePosition
-    ) -> [(piece: TriviaPiece, position: AbsolutePosition)] {
-        var out: [(TriviaPiece, AbsolutePosition)] = []
-        out.reserveCapacity(trivia.count)
-        var pos = anchor
-
-        for piece in trivia {
-            out.append((piece, pos))
-            pos = AbsolutePosition(utf8Offset: pos.utf8Offset + piece.sourceLength.utf8Length)
-        }
-        return out
-    }
-
-    /// Returns the list of line comments in the given trivia that are on a line by themselves
-    /// (excluding leading whitespace), each paired with its absolute source position.
-    ///
-    /// - Parameters:
-    ///   - trivia: The trivia collection to scan for comments.
-    ///   - anchor: Absolute position where the trivia begins (i.e. token's leading-trivia start).
-    ///   - isFirstToken: True if the trivia came from the first token in the file.
-    /// - Returns: Lone line comments paired with their absolute source positions, in source order.
-    private func loneLineComments(
-        in trivia: Trivia,
-        anchor: AbsolutePosition,
-        isFirstToken: Bool
-    ) -> [(text: String, position: AbsolutePosition)] {
-        let pieces = piecesWithPositions(in: trivia, anchor: anchor)
-        var current: (text: String, position: AbsolutePosition)?
-        var lineComments: [(String, AbsolutePosition)] = []
-
-        for (piece, position) in pieces.reversed() {
-            switch piece {
-                case let .lineComment(text): current = (text, position)
-                case .spaces, .tabs: break
-                case .carriageReturnLineFeeds, .carriageReturns, .newlines:
-                    if let entry = current {
-                        lineComments.append(entry)
-                        current = nil
-                    }
-                default: current = nil
-            }
-        }
-
-        // For the first token in the file, there may not be a newline preceding the first line
-        // comment, so check for that here.
-        if isFirstToken, let entry = current { lineComments.append(entry) }
-
-        lineComments.reverse()
-        return lineComments
-    }
-
-    /// Returns line comments in trailing trivia that appear on the same line as the code (i.e.,
-    /// before any newline), each paired with its absolute source position. These are "trailing"
-    /// line comments like `let x = 1 // sm:ignore`.
-    private func trailingLineComments(
-        in trivia: Trivia,
-        anchor: AbsolutePosition
-    ) -> [(text: String, position: AbsolutePosition)] {
-        var comments: [(String, AbsolutePosition)] = []
-
-        for (piece, position) in piecesWithPositions(in: trivia, anchor: anchor) {
-            switch piece {
-                case let .lineComment(text): comments.append((text, position))
-                case .carriageReturnLineFeeds, .carriageReturns, .newlines: return comments
-                default: continue
-            }
-        }
-        return comments
     }
 }

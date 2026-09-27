@@ -39,8 +39,13 @@ package struct FileIterator: Sequence, IteratorProtocol {
     /// found during iteration.
     private let workingDirectory: URL
 
-    /// Keep track of the current directory we're recursing through.
-    private var currentDirectory = URL(fileURLWithPath: "")
+    /// The standardized path of `workingDirectory` . It is computed once in `init` , because each
+    /// exclude test uses it.
+    private let workingDirectoryBasePath: String
+
+    /// The standardized path of the current directory that the walk recurses through. It is
+    /// computed once for each input directory, because each exclude test uses it.
+    private var currentDirectoryBasePath = URL(fileURLWithPath: "").standardizedFileURL.path
 
     /// Keep track of files we have visited to prevent duplicates.
     private var visited: Set<String> = []
@@ -64,6 +69,7 @@ package struct FileIterator: Sequence, IteratorProtocol {
         workingDirectory: URL = .init(fileURLWithPath: ".")
     ) {
         self.workingDirectory = workingDirectory
+        workingDirectoryBasePath = workingDirectory.standardizedFileURL.path
         self.urls = urls
         urlIterator = self.urls.makeIterator()
         self.followSymlinks = followSymlinks
@@ -78,8 +84,7 @@ package struct FileIterator: Sequence, IteratorProtocol {
         let path = url.standardizedFileURL.path
         var out: [String] = []
 
-        for base in [currentDirectory.standardizedFileURL, workingDirectory.standardizedFileURL] {
-            let basePath = base.path
+        for basePath in [currentDirectoryBasePath, workingDirectoryBasePath] {
             guard !basePath.isEmpty, basePath != "/", path.hasPrefix(basePath) else { continue }
             let trimmed = String(
                 path.dropFirst(basePath.count).drop(
@@ -130,7 +135,7 @@ package struct FileIterator: Sequence, IteratorProtocol {
                             includingPropertiesForKeys: nil,
                             options: [.skipsHiddenFiles]
                         )
-                        currentDirectory = next
+                        currentDirectoryBasePath = next.standardizedFileURL.path
 
                     default: output = next
                 }

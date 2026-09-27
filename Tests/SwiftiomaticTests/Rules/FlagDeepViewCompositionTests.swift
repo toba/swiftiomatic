@@ -81,23 +81,55 @@ struct FlagDeepViewCompositionTests: RuleTesting {
     )
   }
 
-  // From jig `MilestonesSheet.swift`: a background layer that holds no container adds no level.
-  @Test func leafBackgroundLayerNotFlagged() {
+  // From jig `MilestonesSheet.swift`: a background layer that fills a shape (`in:`) composes a
+  // shape view, so it adds a level. SwiftFairy reports this place.
+  @Test func shapeBackgroundLayerCountsAsLevel() {
     assertLint(
       FlagDeepViewComposition.self,
       """
       struct MilestoneRow: View {
-        var body: some View {
+        var 1️⃣body: some View {
           VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
               Text(milestone.shortName)
                 .font(.caption.monospaced())
                 .padding(.horizontal, 5)
-                .background(.quaternary, in: .capsule)
+                .2️⃣background(.quaternary, in: .capsule)
               Text(milestone.name).font(.headline)
             }
             Text(subtitle)
           }
+        }
+      }
+      """,
+      findings: [Self.spec("VStack > HStack > background", 3, deepest: "background")]
+    )
+  }
+
+  @Test func shapeOverlayLayerCountsAsLevel() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct Ring: View {
+        var 1️⃣body: some View {
+          VStack {
+            HStack { Text("a").2️⃣overlay(.red, in: Circle()) }
+          }
+        }
+      }
+      """,
+      findings: [Self.spec("VStack > HStack > overlay", 3, deepest: "overlay")]
+    )
+  }
+
+  /// A layer with a leaf view and no shape adds no level.
+  @Test func leafViewBackgroundAddsNoLevel() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct Swatch: View {
+        var body: some View {
+          VStack { HStack { Text("a").background(Color.red).overlay { Image("x") } } }
         }
       }
       """

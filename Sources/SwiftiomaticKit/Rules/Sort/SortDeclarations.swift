@@ -13,6 +13,14 @@ final class SortDeclarations: StructuralFormatRule<BasicRuleValue>, @unchecked S
     private static let beginMarker = "swiftiomatic:sort:begin"
     private static let endMarker = "swiftiomatic:sort:end"
 
+    /// Tells if `source` can hold a region for this rule to sort.
+    ///
+    /// A region starts at a comment with the begin marker, so a source without the marker bytes
+    /// has nothing to sort, and the format pipeline skips the walk.
+    static func sourceCanMatch(_ source: String) -> Bool {
+        source.containsBytes("swiftiomatic:sort:begin")
+    }
+
     // MARK: - Member blocks (type bodies)
 
     override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {

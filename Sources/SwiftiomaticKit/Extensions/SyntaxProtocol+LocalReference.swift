@@ -7,8 +7,10 @@ extension SyntaxProtocol {
     /// `AppError.error`, does not count.
     func referencesLocal(named names: Set<String>) -> Bool {
         tokens(viewMode: .sourceAccurate).contains { token in
-            guard names.contains(token.text),
-                  let reference = token.parent?.as(DeclReferenceExprSyntax.self)
+            // Check the parent kind first. The check builds no `String` , and most tokens fail
+            // it, so few tokens build their text.
+            guard let reference = token.parent?.as(DeclReferenceExprSyntax.self),
+                  names.contains(token.text)
             else { return false }
 
             if let member = reference.parent?.as(MemberAccessExprSyntax.self),

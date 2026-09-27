@@ -72,7 +72,7 @@ final class RequireRetainOfNotificationObserver: LintSyntaxRule<LintOnlyValue>, 
             if let funcDecl = curr.as(FunctionDeclSyntax.self) {
                 return funcDecl.attributes.contains(where: { element in
                     guard let attribute = element.as(AttributeSyntax.self) else { return false }
-                    return attribute.attributeName.trimmedDescription == "discardableResult"
+                    return attribute.attributeName.trimmedDescriptionEquals("discardableResult")
                 })
             }
             current = curr.parent

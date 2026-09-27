@@ -26,7 +26,7 @@ package final class ConfigurationGenerator: FileGenerator {
     }
 
     package func generateContent() -> String {
-        let sortedRules = collector.lintingSyntaxRules.sorted(by: { $0.typeName < $1.typeName })
+        let sortedRules = collector.sortedSyntaxRules
         let sortedSettings = collector.layoutRules.sorted(by: { $0.typeName < $1.typeName })
         let dispatched = dispatchedRuleTypeNames(in: sortedRules)
 
@@ -39,8 +39,16 @@ package final class ConfigurationGenerator: FileGenerator {
         for setting in sortedSettings { result += "        \(setting.typeName).self,\n" }
         result += "    ]\n\n"
 
+        // The dense rule index is the position in `allRuleTypes` . The pipelines embed it as a
+        // literal, so a set of rules is a bit set of this many bits.
+        let wordCount = max(1, (sortedRules.count + 63) / 64)
+        result += "    /// The number of rule types. A rule's index is its position in `allRuleTypes` .\n"
+        result += "    static let ruleCount = \(sortedRules.count)\n\n"
+        result += "    /// The inline storage of a `RuleSet` , one bit per rule.\n"
+        result += "    typealias RuleSetWords = InlineArray<\(wordCount), UInt64>\n\n"
+
         // Rule types (internal because Rule is internal)
-        result += "    /// All known rule types.\n"
+        result += "    /// All known rule types, in rule-index order.\n"
         result += "    static let allRuleTypes: [any SyntaxRule.Type] = [\n"
         for rule in sortedRules { result += "        \(rule.typeName).self,\n" }
         result += "    ]\n\n"

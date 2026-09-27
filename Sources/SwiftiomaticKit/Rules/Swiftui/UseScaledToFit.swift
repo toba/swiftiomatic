@@ -30,11 +30,11 @@ final class UseScaledToFit: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         let calledToken: TokenSyntax
 
         if let member = node.calledExpression.as(MemberAccessExprSyntax.self) {
-            guard member.declName.baseName.text == "aspectRatio" else { return ExprSyntax(node) }
+            guard member.declName.baseName.hasText("aspectRatio") else { return ExprSyntax(node) }
             base = member.base
             calledToken = member.declName.baseName
         } else if let declRef = node.calledExpression.as(DeclReferenceExprSyntax.self) {
-            guard declRef.baseName.text == "aspectRatio" else { return ExprSyntax(node) }
+            guard declRef.baseName.hasText("aspectRatio") else { return ExprSyntax(node) }
             base = nil
             calledToken = declRef.baseName
         } else {

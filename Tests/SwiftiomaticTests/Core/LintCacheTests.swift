@@ -35,6 +35,84 @@ private final class TemporaryPackage {
         #expect(hash.allSatisfy { "0123456789abcdef".contains($0) })
     }
 
+    /// The digest must stay the same as the digest of the earlier `Data(source.utf8)` path, so
+    /// that the records on disk stay valid.
+    @Test func contentHashMatchesKnownDigest() {
+        let expected = "a6d869f64914396740b41915370a7accd650a69d77fc76f82e37f415531fe3a8"
+        #expect(LintCache.contentHash(of: "let x = 1\n") == expected)
+    }
+
+    /// A string that is not native UTF-8 storage must give the same digest as a native string.
+    @Test func contentHashOfBridgedStringMatchesNativeString() {
+        let native = "let caf\u{E9} = \"\u{1F600}\"\n"
+        let bridged = NSString(string: native) as String
+        #expect(LintCache.contentHash(of: bridged) == LintCache.contentHash(of: native))
+    }
+
+    /// The byte form hashes the bytes as they are, also when they are not valid UTF-8.
+    @Test func contentHashOfInvalidUTF8Bytes() {
+        let bytes: [UInt8] = [0xFF, 0xFE]
+        let expected = "b3d510ef04275ca8e698e5b3cbb0ece3949ef9252f0cdc839e9ee347409a2209"
+        let digest = LintCache.contentHash(of: bytes.span)
+        #expect(digest == expected)
+    }
+
+    /// The byte form and the string form agree for valid UTF-8.
+    @Test func contentHashOfBytesMatchesStringForm() {
+        let source = "struct S {}\n"
+        let bytes = Array(source.utf8)
+        let digest = LintCache.contentHash(of: bytes.span)
+        #expect(digest == LintCache.contentHash(of: source))
+    }
+
+    /// The source decoder rejects bytes that are not valid UTF-8.
+    @Test func sourceTextRejectsInvalidUTF8() {
+        #expect(SourceText.decode(Data([0xFF, 0x61])) == nil)
+    }
+
+    /// The source decoder removes a leading byte order mark, as `String(data:encoding:)` does.
+    @Test func sourceTextRemovesByteOrderMark() throws {
+        let data = Data([0xEF, 0xBB, 0xBF, 0x61, 0x62])
+        let decoded = try #require(SourceText.decode(data))
+        #expect(decoded == "ab")
+        #expect(decoded == String(data: data, encoding: .utf8))
+    }
+
+    /// The source decoder keeps valid UTF-8 text without a change.
+    @Test func sourceTextDecodesValidUTF8() {
+        let text = "let caf\u{E9} = 1\n"
+        #expect(SourceText.decode(Data(text.utf8)) == text)
+    }
+
+    /// A fingerprint that uses a memo key has the same value as a fingerprint without a key.
+    @Test func keyedFingerprintMatchesUnkeyedFingerprint() {
+        let cache = LintCache(root: FileManager.default.temporaryDirectory)
+        let configuration = Configuration()
+        let keyed = cache.fingerprint(for: configuration, key: "/a/swiftiomatic.json")
+        #expect(keyed == cache.fingerprint(for: configuration))
+    }
+
+    /// Different configurations under different keys give different fingerprints.
+    @Test func keyedFingerprintSeparatesConfigurations() {
+        let cache = LintCache(root: FileManager.default.temporaryDirectory)
+        var other = Configuration()
+        other[LineLength.self] = Configuration()[LineLength.self] + 7
+        let first = cache.fingerprint(for: Configuration(), key: "/a/swiftiomatic.json")
+        let second = cache.fingerprint(for: other, key: "/b/swiftiomatic.json")
+        #expect(first != second)
+        #expect(second == cache.fingerprint(for: other))
+    }
+
+    /// The memo uses the key only. A second call with the same key does not encode the
+    /// configuration again, so it returns the first value.
+    @Test func keyedFingerprintReusesMemoForSameKey() {
+        let cache = LintCache(root: FileManager.default.temporaryDirectory)
+        var other = Configuration()
+        other[LineLength.self] = Configuration()[LineLength.self] + 7
+        let first = cache.fingerprint(for: Configuration(), key: "/a/swiftiomatic.json")
+        #expect(cache.fingerprint(for: other, key: "/a/swiftiomatic.json") == first)
+    }
+
     @Test func cacheEligibleRejectsNonFileURL() {
         let url = URL(string: "https://example.com/foo.swift")!
         #expect(

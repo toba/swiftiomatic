@@ -172,4 +172,70 @@ struct SortDeclarationsTests: RuleTesting {
       findings: []
     )
   }
+
+  /// A marker inside a nested type still sorts, when the full pipeline runs with its source
+  /// precheck.
+  @Test func sortsMarkedRegionInNestedType() {
+    assertFormatting(
+      SortDeclarations.self,
+      input: """
+        struct Outer {
+          enum Inner {
+            // swiftiomatic:sort:begin
+            1️⃣case b
+            case a
+            // swiftiomatic:sort:end
+            case c
+          }
+        }
+        """,
+      expected: """
+        struct Outer {
+          enum Inner {
+            // swiftiomatic:sort:begin
+            case a
+            case b
+            // swiftiomatic:sort:end
+            case c
+          }
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
+    )
+  }
+
+  @Test func sortsRegionMarkedByBlockComment() {
+    assertFormatting(
+      SortDeclarations.self,
+      input: """
+        enum E {
+          /* swiftiomatic:sort:begin */
+          1️⃣case b
+          case a
+          /* swiftiomatic:sort:end */
+          case c
+        }
+        """,
+      expected: """
+        enum E {
+          /* swiftiomatic:sort:begin */
+          case a
+          case b
+          /* swiftiomatic:sort:end */
+          case c
+        }
+        """,
+      findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
+    )
+  }
+
+  // MARK: - Source precheck
+
+  @Test func precheckNeedsBeginMarker() {
+    #expect(SortDeclarations.sourceCanMatch("enum E {\n  // swiftiomatic:sort:begin\n}"))
+    #expect(SortDeclarations.sourceCanMatch("/* swiftiomatic:sort:begin */"))
+    #expect(!SortDeclarations.sourceCanMatch("enum E { case b, a }"))
+    #expect(!SortDeclarations.sourceCanMatch("// swiftiomatic:sort:end"))
+    #expect(!SortDeclarations.sourceCanMatch(""))
+  }
 }

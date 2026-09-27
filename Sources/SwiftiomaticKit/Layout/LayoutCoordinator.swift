@@ -48,6 +48,11 @@ package final class LayoutCoordinator {
     /// Keep track of the token lengths.
     private var lengths = [Int]()
 
+    /// Whether the `SM_DUMP_TOKENS` environment variable asks for the token stream dump. The
+    /// process reads the environment once, not once per file.
+    private static let dumpTokensFromEnvironment =
+        ProcessInfo.processInfo.environment["SM_DUMP_TOKENS"] == "1"
+
     /// Did the previous token create a new line? This is used to determine if a group needs to
     /// consistently break.
     private var lastBreak = false
@@ -64,10 +69,9 @@ package final class LayoutCoordinator {
     private let whitespaceOnly: Bool
 
     /// Keeps track of the line numbers and indentation states of the open (and unclosed) breaks
-    /// seen so far.
-    private var activeOpenBreaks: [ActiveOpenBreak] = [] {
-        didSet { outputBuffer.currentIndentation = currentIndentation }
-    }
+    /// seen so far. Change it only through `pushOpenBreak` , `popOpenBreak` and
+    /// `setLastOpenBreakContributesBlockIndent` , which keep `outputBuffer.indentation` in step.
+    private var activeOpenBreaks: [ActiveOpenBreak] = []
 
     /// Stack of the active breaking contexts.
     private var activeBreakingContexts: [ActiveBreakingContext] = []
@@ -78,11 +82,7 @@ package final class LayoutCoordinator {
 
     /// Indicates whether or not the current line being printed is a continuation line.
     private var currentLineIsContinuation = false {
-        didSet {
-            if oldValue != currentLineIsContinuation {
-                outputBuffer.currentIndentation = currentIndentation
-            }
-        }
+        didSet { outputBuffer.indentation.isContinuation = currentLineIsContinuation }
     }
 
     /// Keeps track of the continuation line state as you go into and out of open-close break
@@ -128,19 +128,25 @@ package final class LayoutCoordinator {
     /// it fit. Reset after the next break is evaluated. (lof-zqn)
     private var keepInlineIfWrapPointless = false
 
-    /// The computed indentation level, as a number of spaces, based on the state of any unclosed
-    /// delimiters and whether or not the current line is a continuation line.
-    private var currentIndentation: [Indent] {
-        var totalIndentation: [Indent] = activeOpenBreaks.flatMap { open -> [Indent] in
-            if case let .alignment(spaces) = open.kind, open.contributesContinuationIndent {
-                return [.spaces(spaces)]
-            }
-            let count = (open.contributesBlockIndent ? 1 : 0)
-                + (open.contributesContinuationIndent ? 1 : 0)
-            return Array(repeating: indentation, count: count)
-        }
-        if currentLineIsContinuation { totalIndentation.append(indentation) }
-        return totalIndentation
+    /// Pushes an open break and its indentation segment.
+    private func pushOpenBreak(_ openBreak: ActiveOpenBreak) {
+        activeOpenBreaks.append(openBreak)
+        outputBuffer.indentation.push(openBreak.indentSegment)
+    }
+
+    /// Pops the innermost open break and its indentation segment.
+    private func popOpenBreak() -> ActiveOpenBreak? {
+        guard let openBreak = activeOpenBreaks.popLast() else { return nil }
+        outputBuffer.indentation.pop()
+        return openBreak
+    }
+
+    /// Sets whether the innermost open break contributes a block indent, and updates its
+    /// indentation segment.
+    private func setLastOpenBreakContributesBlockIndent(_ contributes: Bool) {
+        let index = activeOpenBreaks.count - 1
+        activeOpenBreaks[index].contributesBlockIndent = contributes
+        outputBuffer.indentation.replaceLast(with: activeOpenBreaks[index].indentSegment)
     }
 
     /// The current line number being printed, with adjustments made for open/close break
@@ -166,6 +172,80 @@ package final class LayoutCoordinator {
     /// continuation level. Matches the user-visible rule "closing brace alone on a line followed by
     /// a `.`". (m2x-4bl)
     private func baseEndsAloneOnLine() -> Bool {
+        // Non-ASCII text near the end of the output uses the `Character` scan, which handles
+        // grapheme clusters and Unicode whitespace.
+        Self.lastContentLineIsLoneClose(in: outputBuffer.output.utf8.span)
+            ?? baseEndsAloneOnLineByCharacter()
+    }
+
+    /// Scans the ASCII bytes of `output` backwards for the last line that holds content, and
+    /// returns whether that line is `#endif` or only closing delimiters, after its leading spaces
+    /// and tabs. Returns nil when the scan meets a non-ASCII byte, because a grapheme cluster or
+    /// Unicode whitespace can change the answer. The scan treats a CR LF pair as one whitespace
+    /// character and not as a line end, as `Character` does.
+    private static func lastContentLineIsLoneClose(in bytes: Span<UInt8>) -> Bool? {
+        var index = bytes.count
+
+        // Skip trailing whitespace and blank lines.
+        while index > 0 {
+            let byte = bytes[index - 1]
+            if byte >= 0x80 { return nil }
+            if !isASCIIWhitespace(byte) { break }
+            index -= 1
+        }
+        guard index > 0 else { return false }
+        let contentEnd = index
+
+        // Find the start of the line. A LF that follows a CR is part of one `Character` and does
+        // not end the line.
+        while index > 0 {
+            let byte = bytes[index - 1]
+            if byte >= 0x80 { return nil }
+            if byte == UInt8(ascii: "\n"), index < 2 || bytes[index - 2] != UInt8(ascii: "\r") {
+                break
+            }
+            index -= 1
+        }
+
+        // Trim the leading spaces and tabs.
+        while index < contentEnd,
+              bytes[index] == UInt8(ascii: " ") || bytes[index] == UInt8(ascii: "\t")
+        {
+            index += 1
+        }
+
+        let endif: StaticString = "#endif"
+
+        if contentEnd - index == endif.utf8CodeUnitCount {
+            var matches = true
+
+            for offset in 0..<endif.utf8CodeUnitCount
+            where bytes[index + offset] != endif.utf8Start[offset] {
+                matches = false
+                break
+            }
+            if matches { return true }
+        }
+        for offset in index..<contentEnd {
+            switch bytes[offset] {
+                case UInt8(ascii: ")"), UInt8(ascii: "]"), UInt8(ascii: "}"): continue
+                default: return false
+            }
+        }
+        return true
+    }
+
+    /// Whether the byte is an ASCII character that `Character.isWhitespace` accepts.
+    private static func isASCIIWhitespace(_ byte: UInt8) -> Bool {
+        switch byte {
+            case UInt8(ascii: " "), UInt8(ascii: "\t"), UInt8(ascii: "\n"), UInt8(ascii: "\r"),
+                 0x0B, 0x0C: true
+            default: false
+        }
+    }
+
+    /// The `Character` form of `baseEndsAloneOnLine` . It handles non-ASCII output.
+    private func baseEndsAloneOnLineByCharacter() -> Bool {
         let out = outputBuffer.output
         var lineChars: [Character] = []
         var foundContent = false
@@ -225,12 +305,12 @@ package final class LayoutCoordinator {
         breakAroundMultilineChainParts = configuration[BreakAroundMultilineChainParts.self]
         trailingCommaBehavior = configuration[MultilineTrailingCommaBehaviorSetting.self]
         collectionTrailingCommas = configuration[MultiElementCollectionTrailingCommas.self]
-        self.printTokenStream = printTokenStream
-            || ProcessInfo.processInfo.environment["SM_DUMP_TOKENS"] == "1"
+        self.printTokenStream = printTokenStream || Self.dumpTokensFromEnvironment
         self.whitespaceOnly = whitespaceOnly
         outputBuffer = LayoutBuffer(
             maximumBlankLines: configuration[MaximumBlankLines.self],
-            tabWidth: configuration[TabWidth.self]
+            indentation: LayoutIndentation(unit: indentation, tabWidth: tabWidth),
+            reservingCapacity: source.utf8.count
         )
     }
 
@@ -313,8 +393,7 @@ package final class LayoutCoordinator {
                             // breaks are closed, this ensures that indentation is popped evenly
                             // (and also popped in an order that causes everything to line up
                             // properly).
-                            activeOpenBreaks[activeOpenBreaks.count - 1].contributesBlockIndent =
-                                false
+                            setLastOpenBreakContributesBlockIndent(false)
                         }
 
                         // If an open break occurs on a continuation line, we must push that
@@ -328,7 +407,7 @@ package final class LayoutCoordinator {
                         let contributesContinuationIndent = currentLineIsContinuation
                             || continuationBreakWillFire
 
-                        activeOpenBreaks.append(ActiveOpenBreak(
+                        pushOpenBreak(ActiveOpenBreak(
                             index: idx, kind: openKind, lineNumber: currentLineNumber,
                             contributesContinuationIndent: contributesContinuationIndent,
                             contributesBlockIndent: openKind == .block))
@@ -341,7 +420,7 @@ package final class LayoutCoordinator {
                         currentLineIsContinuation = false
 
                     case let .close(closeMustBreak):
-                        guard let matchingOpenBreak = activeOpenBreaks.popLast() else {
+                        guard let matchingOpenBreak = popOpenBreak() else {
                             assertionFailure("Unmatched closing break")
                             return
                         }
@@ -364,8 +443,7 @@ package final class LayoutCoordinator {
                                lastActiveOpenBreak.kind == .block,
                                !lastActiveOpenBreak.contributesBlockIndent
                             {
-                                activeOpenBreaks[activeOpenBreaks.count - 1]
-                                    .contributesBlockIndent = true
+                                setLastOpenBreakContributesBlockIndent(true)
                             }
                         }
 
@@ -537,7 +615,7 @@ package final class LayoutCoordinator {
                     breakSavesEnough = true
                 } else if case .continue = kind {
                     let chunkAfterBreak = max(0, length - size)
-                    let indentColumns = currentIndentation.length(tabWidth: tabWidth)
+                    let indentColumns = outputBuffer.indentation.width
                     let postWrapEndColumn = indentColumns + chunkAfterBreak
 
                     if chunkAfterBreak > maxLineLength {
@@ -591,13 +669,12 @@ package final class LayoutCoordinator {
                        !baseEndsAloneOnLine(),
                        !multilineChainBoostScopes.isEmpty
                     {
-                        activeOpenBreaks.append(ActiveOpenBreak(
+                        pushOpenBreak(ActiveOpenBreak(
                             index: idx, kind: .continuation,
                             lineNumber: openCloseBreakCompensatingLineNumber,
                             contributesContinuationIndent: true, contributesBlockIndent: false,
                             isMultilineChainBoost: true))
                         multilineChainBoostScopes[multilineChainBoostScopes.count - 1].pushed = true
-                        outputBuffer.currentIndentation = currentIndentation
                     }
                     pendingMultilineChainBoostPush = false
 
@@ -626,10 +703,10 @@ package final class LayoutCoordinator {
                 outputBuffer.enqueueSpaces(size)
 
             // Print any indentation required, followed by the text content of the syntax token.
-            case let .syntax(text):
+            case let .syntax(text, width):
                 guard !text.isEmpty else { break }
                 lastBreak = false
-                outputBuffer.write(text)
+                outputBuffer.write(text, width: width)
 
             case let .comment(comment, wasEndOfLine):
                 lastBreak = false
@@ -647,21 +724,18 @@ package final class LayoutCoordinator {
                 // typically has multiple leading spaces after `//` (matching the original code's
                 // indentation) and is left at the author's column. Prose comments ("// note:", "//
                 // TODO: ") have one space and should be re-indented to scope.
-                let looksLikeCommentedOutCode = comment.text.first?.hasPrefix("    ") ?? false
+                let looksLikeCommentedOutCode = comment.firstLine?.hasPrefix("    ") ?? false
                 let preserveColumn = comment.kind == .line && !wasEndOfLine
                     && outputBuffer.isAtStartOfLine
                     && comment.leadingIndent == .spaces(0)
-                    && currentIndentation.length(tabWidth: tabWidth) > 0
+                    && outputBuffer.indentation.width > 0
                     && looksLikeCommentedOutCode
-                let savedIndent = outputBuffer.currentIndentation
-                if preserveColumn { outputBuffer.currentIndentation = [] }
-                let printIndent: [Indent] = preserveColumn ? [] : currentIndentation
-                outputBuffer.write(comment.print(
-                    indent: printIndent, shouldIndentBlankLines: indentBlankLines))
-                if preserveColumn { outputBuffer.currentIndentation = savedIndent }
+                if preserveColumn { outputBuffer.indentation.isSuppressed = true }
+                outputBuffer.write(comment, shouldIndentBlankLines: indentBlankLines)
+                if preserveColumn { outputBuffer.indentation.isSuppressed = false }
 
             case let .verbatim(verbatim):
-                outputBuffer.writeVerbatim(verbatim.print(indent: currentIndentation), length)
+                outputBuffer.write(verbatim, length: length)
                 lastBreak = false
 
             case let .printerControl(kind):
@@ -697,7 +771,7 @@ package final class LayoutCoordinator {
                 // If this scope pushed an extra continuation-indent break, remove it. By now the
                 // chain's own open breaks have all been closed, so the boost entry is back on top.
                 if scope?.pushed == true, activeOpenBreaks.last?.isMultilineChainBoost == true {
-                    activeOpenBreaks.removeLast()
+                    _ = popOpenBreak()
                 }
                 pendingMultilineChainBoostPush = false
 
@@ -759,12 +833,12 @@ package final class LayoutCoordinator {
                 } else {
                     end = source.endIndex
                 }
-                var text = String(source[start..<end])
+                var text = source[start..<end]
                 // strip trailing whitespace so that the next formatting can add the right amount
                 if let nonWhitespace = text.rangeOfCharacter(
                     from: CharacterSet.whitespaces.inverted,
                     options: .backwards
-                ) { text = String(text[..<nonWhitespace.upperBound]) }
+                ) { text = text[..<nonWhitespace.upperBound] }
 
                 self.disabledPosition = nil
                 outputBuffer.writeVerbatimAfterEnablingFormatting(text)
@@ -793,6 +867,8 @@ package final class LayoutCoordinator {
         var delimiterIndices = [Int]()
         // Keep a running total of the token lengths.
         var total = 0
+
+        lengths.reserveCapacity(tokens.count)
 
         // Calculate token lengths
         for (i, token) in tokens.enumerated() {
@@ -877,9 +953,9 @@ package final class LayoutCoordinator {
 
                 // Syntax tokens have a length equal to the number of columns needed to print its
                 // contents.
-                case let .syntax(text):
-                    lengths.append(text.count)
-                    total += text.count
+                case let .syntax(_, width):
+                    lengths.append(width)
+                    total += width
 
                 case let .comment(comment, wasEndOfLine):
                     lengths.append(comment.length)
@@ -944,16 +1020,20 @@ package final class LayoutCoordinator {
     }
 
     /// Used to track the indentation level for the debug token stream output.
-    var debugIndent: [Indent] = []
+    var debugIndent = LayoutIndentation(unit: .spaces(2), tabWidth: 1)
 
     /// Print out the token stream to the console for debugging.
     ///
     /// Indentation is applied to make identification of groups easier.
     private func printDebugToken(token: Token, length: Int, idx: Int) {
-        func printDebugIndent() { print(debugIndent.indentation(), terminator: "") }
+        func printDebugIndent() {
+            var text = ""
+            debugIndent.append(to: &text)
+            print(text, terminator: "")
+        }
 
         switch token {
-            case let .syntax(syntax):
+            case let .syntax(syntax, _):
                 printDebugIndent()
                 print("[SYNTAX \"\(syntax)\" Length: \(length) Idx: \(idx)]")
 
@@ -970,10 +1050,10 @@ package final class LayoutCoordinator {
                     case .consistent: print("[OPEN Consistent Length: \(length) Idx: \(idx)]")
                     case .inconsistent: print("[OPEN Inconsistent Length: \(length) Idx: \(idx)]")
                 }
-                debugIndent.append(.spaces(2))
+                debugIndent.push(.units(1))
 
             case .close:
-                debugIndent.removeLast()
+                debugIndent.pop()
                 printDebugIndent()
                 print("[CLOSE Idx: \(idx)]")
 
@@ -997,12 +1077,12 @@ package final class LayoutCoordinator {
                             "[COMMENT DocBlock Length: \(length) EOL: \(wasEndOfLine) Idx: \(idx)]")
                 }
                 printDebugIndent()
-                print(comment.print(indent: debugIndent))
+                print(comment.print(indentation: debugIndent))
 
             case let .verbatim(verbatim):
                 printDebugIndent()
                 print("[VERBATIM Length: \(length) Idx: \(idx)]")
-                print(verbatim.print(indent: debugIndent))
+                print(verbatim.print(indentation: debugIndent))
 
             case let .printerControl(kind):
                 printDebugIndent()
@@ -1097,6 +1177,14 @@ fileprivate extension LayoutCoordinator {
         /// break token, so it is removed explicitly at `multilineChainBoostEnd` rather than by a
         /// matching `.close` .
         var isMultilineChainBoost = false
+
+        /// The indentation this open break adds to the lines in its scope.
+        var indentSegment: LayoutIndentation.Segment {
+            if case let .alignment(spaces) = kind, contributesContinuationIndent {
+                return .spaces(spaces)
+            }
+            return .units((contributesBlockIndent ? 1 : 0) + (contributesContinuationIndent ? 1 : 0))
+        }
     }
 
     /// Tracks one binding-operand member-access-chain boost scope (on8-mme).

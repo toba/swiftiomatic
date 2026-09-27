@@ -27,7 +27,7 @@ extension FunctionCallExprSyntax {
     /// `Task.yield()` are legitimate matches for a rule that wants them. Filter on `factory` .
     var taskCall: TaskCall? {
         if let reference = calledExpression.as(DeclReferenceExprSyntax.self) {
-            guard reference.baseName.text == "Task" else { return nil }
+            guard reference.baseName.hasText("Task") else { return nil }
             return TaskCall(
                 anchor: reference.baseName,
                 factory: nil,

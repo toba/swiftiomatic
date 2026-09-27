@@ -136,7 +136,7 @@ extension TokenStream {
                 calledExpression, isTopLevel: false)
 
             let shouldGroup = hasMemberAccess && (hasCompoundExpression || !isTopLevel)
-                && config[BreakAroundMultilineChainParts.self]
+                && breakAroundMultilineChainParts
             let beforeTokens: [Token] = shouldGroup
                 ? [.contextualBreakingStart, .open]
                 : [.contextualBreakingStart]
@@ -150,7 +150,7 @@ extension TokenStream {
                     // own open break already supplies the level. Every other chain element carries
                     // its own continuation indentation, or the modifier drops to the enclosing
                     // statement's column.
-                    let clauseSuppliesIndent = config[IndentConditionalCompilationBlocks.self]
+                    let clauseSuppliesIndent = indentConditionalCompilationBlocks
                         && isNestedInPostfixIfConfig(node: Syntax(calledMemberAccessExpr))
 
                     before(

@@ -356,21 +356,38 @@ extension TokenStream {
         )
     }
 
+    /// Returns the tokens for a comment that trails the given token, if there is one.
+    ///
+    /// The function reads the leading trivia of the next token and keeps it in `carriedTrivia` ,
+    /// so that the visit of the next token does not read it again. `trailingTrivia` is the
+    /// trailing trivia of `token` when the caller already has it.
     func afterTokensForTrailingComment(
-        _ token: TokenSyntax
+        _ token: TokenSyntax,
+        trailingTrivia: Trivia? = nil
     ) -> (isLineComment: Bool, tokens: [Token]) {
-        let (_, trailingComments) = partitionTrailingTrivia(token.trailingTrivia)
-        let trivia = Trivia(pieces: trailingComments)
-            + (token.nextToken(viewMode: .sourceAccurate)?.leadingTrivia ?? [])
+        let (_, trailingComments) = partitionTrailingTrivia(trailingTrivia ?? token.trailingTrivia)
+        let firstPiece: TriviaPiece?
 
-        guard let firstPiece = trivia.first else { return (false, []) }
+        if let next = token.nextToken(viewMode: .sourceAccurate) {
+            let nextLeadingTrivia = next.leadingTrivia
+            carriedTrivia = CarriedTrivia(
+                tokenID: next.id,
+                previousTrailingComments: trailingComments,
+                leadingTrivia: nextLeadingTrivia
+            )
+            firstPiece = trailingComments.first ?? nextLeadingTrivia.first
+        } else {
+            firstPiece = trailingComments.first
+        }
+
+        guard let firstPiece else { return (false, []) }
 
         switch firstPiece {
             case let .lineComment(text):
                 return (
                     true,
                     [
-                        .space(size: config[SpacesBeforeEndOfLineComments.self], flexible: true),
+                        .space(size: spacesBeforeEndOfLineComments, flexible: true),
                         .comment(
                             Comment(kind: .line, leadingIndent: nil, text: text),
                             wasEndOfLine: true

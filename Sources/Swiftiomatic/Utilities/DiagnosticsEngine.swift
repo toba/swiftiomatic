@@ -149,16 +149,21 @@ final class DiagnosticsEngine: Sendable {
     ///
     /// - Parameter finding: The finding that should be emitted.
     func consumeFinding(_ finding: Finding) {
+        let category = finding.category.description
+        let diagnostic = diagnosticMessage(for: finding, category: category)
+        // The notes of a dropped finding go with it, so build them only for a finding that stays.
+        if onlyChanged, changeStatus(of: diagnostic) == .existing { return }
+
         let notes = finding.notes.map { note in
             Diagnostic(
                 severity: .note,
                 location: note.location.map(Diagnostic.Location.init),
-                message: "\(note.message)",
-                origin: .ruleNote("\(finding.category)"),
+                message: note.message.text,
+                origin: .ruleNote(category),
                 role: note.role
             )
         }
-        emit(diagnosticMessage(for: finding), notes: notes)
+        emitAttaching(notes, to: diagnostic)
     }
 
     /// Replays a previously cached finding (and its notes) through the same emit path
@@ -193,10 +198,16 @@ final class DiagnosticsEngine: Sendable {
     /// Emits a finding with its notes attached, then emits each note on its own for the handlers
     /// that print notes as separate lines.
     private func emit(_ finding: Diagnostic, notes: [Diagnostic]) {
-        var finding = finding
-        finding.notes = notes
         // The notes of a dropped finding go with it.
         if onlyChanged, changeStatus(of: finding) == .existing { return }
+        emitAttaching(notes, to: finding)
+    }
+
+    /// Emits a finding with its notes attached, then each note on its own. The caller has already
+    /// decided to keep the finding.
+    private func emitAttaching(_ notes: [Diagnostic], to finding: Diagnostic) {
+        var finding = finding
+        finding.notes = notes
         emit(finding)
         for note in notes { emit(note) }
     }
@@ -234,7 +245,7 @@ final class DiagnosticsEngine: Sendable {
 
     /// Converts a lint finding into a diagnostic message that can be used by the `TSCBasic`
     /// diagnostics engine and returns it.
-    private func diagnosticMessage(for finding: Finding) -> Diagnostic {
+    private func diagnosticMessage(for finding: Finding, category: String) -> Diagnostic {
         let severity: Diagnostic.Severity =
             switch finding.severity {
                 case .error: .error
@@ -243,8 +254,8 @@ final class DiagnosticsEngine: Sendable {
         return .init(
             severity: severity,
             location: finding.location.map(Diagnostic.Location.init),
-            category: "\(finding.category)",
-            message: "\(finding.message.text)"
+            category: category,
+            message: finding.message.text
         )
     }
 }

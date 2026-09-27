@@ -43,51 +43,81 @@ package final class PipelineGenerator: FileGenerator {
 
             /// A syntax visitor that delegates to individual rules for linting.
             ///
-            /// This file will be extended with `visit` methods in Pipelines+Generated.swift.
-            class LintPipeline: SyntaxVisitor {
+            /// The helpers the overrides call live in `LintPipeline.swift` .
+            final class LintPipeline: SyntaxVisitor {
 
               /// The formatter context.
               let context: Context
 
-              /// Stores lint and format rule instances, indexed by the `ObjectIdentifier` of a rule's
-              /// class type.
-              var ruleCache = [ObjectIdentifier: any SyntaxRule]()
+              /// Rule instances, indexed by rule index. A slot holds an instance of the rule at
+              /// that index, created on first use.
+              var rules: ContiguousArray<AnyObject?>
 
-              /// Rules present in this dictionary skip visiting children until they leave the
-              /// syntax node stored as their value
-              var shouldSkipChildren = [ObjectIdentifier: SyntaxProtocol]()
+              /// For each rule index, the node whose children the rule skips, until the walk
+              /// leaves that node.
+              var skipUntil: ContiguousArray<SyntaxIdentifier?>
+
+              /// The number of non-nil entries in `skipUntil` .
+              var skipCount = 0
+
+              /// Whether any rule that visits a node kind is enabled, indexed by the ordinal of
+              /// the kind in `nodeRules` . A kind with no enabled rule skips the gate.
+              private let active: ContiguousArray<Bool>
 
               /// Creates a new lint pipeline.
               init(context: Context) {
                 self.context = context
+                rules = ContiguousArray(repeating: nil, count: ConfigurationRegistry.ruleCount)
+                skipUntil = ContiguousArray(repeating: nil, count: ConfigurationRegistry.ruleCount)
+                let enabled = context.enabledRules
+                active = ContiguousArray(Self.nodeRules.map { enabled.containsAny($0) })
                 super.init(viewMode: .sourceAccurate)
               }
 
             """
 
         let rewriterNames = Set(collector.rewritingSyntaxRules.map(\.typeName))
+        let indices = collector.ruleIndexByTypeName
+        let rulesByName = Dictionary(
+            uniqueKeysWithValues: collector.lintingSyntaxRules.map { ($0.typeName, $0) })
+        let nodes = collector.syntaxNodeLinters.sorted(by: { $0.key < $1.key })
 
-        for (nodeType, lintRules) in collector.syntaxNodeLinters.sorted(by: { $0.key < $1.key }) {
-            // A file-wide rule gates at the end of the file, and a gate caches the start location,
-            // so SourceFileSyntax keeps the node-taking overload.
-            let usesGate = nodeType != "SourceFileSyntax"
+        func index(of rule: String) -> Int {
+            guard let index = indices[rule] else { fatalError("unregistered rule '\(rule)'") }
+            return index
+        }
+
+        result += "\n  /// The indices of the rules that visit each node kind, in the order of the\n"
+        result += "  /// `visit` overrides below.\n"
+        result += "  private static let nodeRules: [[Int]] = [\n"
+        for (nodeType, lintRules) in nodes {
+            let list = lintRules.sorted().map { String(index(of: $0)) }.joined(separator: ", ")
+            result += "    [\(list)],  // \(nodeType)\n"
+        }
+        result += "  ]\n"
+
+        for (ordinal, (nodeType, lintRules)) in nodes.enumerated() {
             let sortedRules = lintRules.sorted()
             result += """
 
                   override func visit(_ node: \(nodeType)) -> SyntaxVisitorContinueKind {
+                    guard active[\(ordinal)], let gate = context.gate(for: node) else {
+                      return .visitChildren
+                    }
 
                 """
 
-            if usesGate {
-                result += """
-                        guard let gate = context.gate(for: node) else { return .visitChildren }
-
-                    """
-            }
-
             for ruleName in sortedRules {
+                let ruleIndex = index(of: ruleName)
+                // A structural rule builds a new tree. Lint mode wants only its findings, so the
+                // typed result is dropped here and never boxed.
+                let call = rewriterNames.contains(ruleName)
+                    ? "_ = rule.visit(node)"
+                    : "didVisit(\(ruleIndex), node, rule.visit(node))"
                 result += """
-                        visitIfEnabled(\(ruleName).visit, for: node\(usesGate ? ", gate: gate" : ""))
+                        if let rule = lintRule(\(ruleName).self, \(ruleIndex), gate: gate) {
+                          \(call)
+                        }
 
                     """
             }
@@ -95,24 +125,28 @@ package final class PipelineGenerator: FileGenerator {
                     return .visitChildren
                   }
 
-                """
-            result += """
                   override func visitPost(_ node: \(nodeType)) {
+                    guard active[\(ordinal)] else { return }
 
                 """
 
-            for ruleName in sortedRules {
-                if rewriterNames.contains(ruleName) {
-                    result += """
-                            onVisitPost(rule: \(ruleName).self, for: node)
+            // Only a lint rule can return `.skipChildren` , so only a lint rule needs the reset.
+            let skipping = sortedRules.filter { !rewriterNames.contains($0) }.map(index(of:))
+            if !skipping.isEmpty {
+                result += "    if skipCount > 0 {\n"
+                for ruleIndex in skipping { result += "      endSkip(\(ruleIndex), node)\n" }
+                result += "    }\n"
+            }
+            for ruleName in sortedRules
+                where !rewriterNames.contains(ruleName)
+                    && rulesByName[ruleName]?.postVisitedNodes.contains(nodeType) == true
+            {
+                result += """
+                        if let rule = existingRule(\(ruleName).self, \(index(of: ruleName))) {
+                          rule.visitPost(node)
+                        }
 
-                        """
-                } else {
-                    result += """
-                            onVisitPost(\(ruleName).visitPost, for: node)
-
-                        """
-                }
+                    """
             }
             result += """
                   }

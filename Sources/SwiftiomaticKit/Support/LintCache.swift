@@ -146,27 +146,11 @@ package final class LintCache: Sendable {
         return hexEncode(hasher.finalize())
     }()
 
-    /// Memoized fingerprint for the most recently seen configuration. The vast majority of runs see
-    /// one configuration applied to many files; caching the encode + hash makes the per-file path a
-    /// pointer comparison + memcmp.
-    private struct FingerprintEntry: Sendable {
-        var configuration: Configuration
-        var fingerprint: String
-    }
-    private let lastFingerprint = Mutex<FingerprintEntry?>(nil)
-
-    /// Shared encoder/decoder protected by a Mutex. Avoids the per-call init cost (date strategies,
-    /// userInfo, output formatting) on the hot lookup/store path.
-    private let coders = Mutex<Coders>(Coders())
-    private struct Coders {
-        var fingerprintEncoder: JSONEncoder = {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.sortedKeys]
-            return encoder
-        }()
-        var recordEncoder = JSONEncoder()
-        var recordDecoder = JSONDecoder()
-    }
+    /// Fingerprints memoized by a caller key, such as the path of the configuration file.
+    ///
+    /// Most runs apply one configuration to many files. A key lookup costs one hash of a short
+    /// string. The earlier memo compared whole `Configuration` values for each file.
+    private let fingerprints = Mutex<[String: String]>([:])
 
     /// Root of the cache tree. Created lazily on first write.
     package let root: URL
@@ -221,9 +205,20 @@ package final class LintCache: Sendable {
         return caches.appendingPathComponent("sm/lint-cache", isDirectory: true)
     }()
 
-    /// SHA-256 of file content, hex-encoded.
+    /// SHA-256 of the UTF-8 bytes of the source, hex-encoded.
+    ///
+    /// A native string gives its bytes through a borrowed span, so the hash makes no copy. Only a
+    /// bridged string that has no contiguous UTF-8 storage is copied.
     package static func contentHash(of source: String) -> String {
-        hexEncode(SHA256.hash(data: Data(source.utf8)))
+        if source.isContiguousUTF8 { return contentHash(of: source.utf8.span) }
+        var copy = source
+        copy.makeContiguousUTF8()
+        return contentHash(of: copy.utf8.span)
+    }
+
+    /// SHA-256 of the given bytes, hex-encoded. The bytes do not have to be valid UTF-8.
+    package static func contentHash(of bytes: Span<UInt8>) -> String {
+        bytes.withUnsafeBytes { hexEncode(SHA256.hash(data: $0)) }
     }
 
     /// Returns `true` if the `SM_LINT_NO_CACHE` environment variable disables caching. Any
@@ -253,24 +248,38 @@ package final class LintCache: Sendable {
 
     /// Combined fingerprint of `(rule set + configuration + cache schema version)` .
     ///
-    /// Memoizes the result for the most recently seen `Configuration` . A different value triggers
-    /// a re-encode + re-hash; a repeated value returns the cached string.
+    /// This form does not use the memo. It encodes and hashes the configuration on each call.
     package func fingerprint(for configuration: Configuration) -> String {
-        if let memo = lastFingerprint(get: \.self), memo.configuration == configuration {
-            return memo.fingerprint
-        }
-
         var hasher = SHA256()
         hasher.update(data: Data("sm-lint-cache.v\(Record.currentVersion)\n".utf8))
         hasher.update(data: Data(Self.ruleSetIdentifier.utf8))
         hasher.update(data: Data([0]))
 
-        let encoded = coders.withLock { try? $0.fingerprintEncoder.encode(configuration) }
-        if let json = encoded { hasher.update(data: json) }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        if let json = try? encoder.encode(configuration) { hasher.update(data: json) }
 
-        let fp = Self.hexEncode(hasher.finalize())
-        lastFingerprint(set: FingerprintEntry(configuration: configuration, fingerprint: fp))
-        return fp
+        return Self.hexEncode(hasher.finalize())
+    }
+
+    /// Combined fingerprint of `(rule set + configuration + cache schema version)` , memoized by
+    /// the given key.
+    ///
+    /// The caller must give the same configuration for the same key during the life of this
+    /// cache. The path of the loaded configuration file, or a fixed name for the default
+    /// configuration, satisfies this rule, because the configuration loader keeps one value for
+    /// each path.
+    ///
+    /// - Parameters:
+    ///   - configuration: The configuration to fingerprint on a memo miss.
+    ///   - key: The memo key.
+    package func fingerprint(for configuration: Configuration, key: String) -> String {
+        if let memo = fingerprints.withLock({ $0[key] }) { return memo }
+        // The encode runs outside the lock. Two workers can compute the same value one time
+        // each. Both values are equal, so the second write is harmless.
+        let fingerprint = fingerprint(for: configuration)
+        fingerprints.withLock { $0[key] = fingerprint }
+        return fingerprint
     }
 
     /// Returns the on-disk path for the cached record of the given file, under the given
@@ -301,9 +310,12 @@ package final class LintCache: Sendable {
             fingerprint: fingerprint,
             fileKey: fileKey(absolutePath: absolutePath, contentHash: contentHash)
         )
-        guard let data = try? Data(contentsOf: url) else { return nil }
-        let decoded = coders.withLock { try? $0.recordDecoder.decode(Record.self, from: data) }
-        guard let record = decoded, record.version == Record.currentVersion else { return nil }
+        guard let data = try? Data(contentsOf: url),
+              // A decoder for each call. A shared decoder needs a lock, and then all the workers
+              // of a parallel run wait on that one lock.
+              let record = try? JSONDecoder().decode(Record.self, from: data),
+              record.version == Record.currentVersion
+        else { return nil }
         return record
     }
 
@@ -322,8 +334,8 @@ package final class LintCache: Sendable {
         let directory = url.deletingLastPathComponent()
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
-        let encoded = coders.withLock { try? $0.recordEncoder.encode(record) }
-        guard let data = encoded else { return }
+        // An encoder for each call, for the same reason as the decoder in `lookup` .
+        guard let data = try? JSONEncoder().encode(record) else { return }
         try? data.write(to: url, options: [.atomic])
     }
 

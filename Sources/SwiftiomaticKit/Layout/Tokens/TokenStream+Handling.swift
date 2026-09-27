@@ -34,8 +34,9 @@ extension TokenStream {
 
         generateDisableFormattingIfNecessary(token.endPositionBeforeTrailingTrivia)
 
-        appendTrailingTrivia(token)
-        appendAfterTokensAndTrailingComments(token)
+        let trailingTrivia = token.trailingTrivia
+        appendTrailingTrivia(token, trailingTrivia: trailingTrivia)
+        appendAfterTokensAndTrailingComments(token, trailingTrivia: trailingTrivia)
 
         // It doesn't matter what we return here, tokens do not have children.
         return .skipChildren
@@ -79,21 +80,20 @@ extension TokenStream {
     /// trivia represents a malformed input (as opposed to garbage text in leading trivia, which has
     /// some legitimate uses), this is a reasonable compromise to keep the garbage text roughly in
     /// the same place but still let surrounding formatting occur somewhat as expected.
-    func appendTrailingTrivia(_ token: TokenSyntax, forced: Bool = false) {
-        let trailingTrivia = Array(partitionTrailingTrivia(token.trailingTrivia).0)
-        let lastIndex: Array<Trivia>.Index
+    ///
+    /// `trailingTrivia` is the trailing trivia of `token` when the caller already has it.
+    func appendTrailingTrivia(_ token: TokenSyntax, trailingTrivia allTrailingTrivia: Trivia? = nil) {
+        let trailingTrivia = partitionTrailingTrivia(allTrailingTrivia ?? token.trailingTrivia).0
+        var lastUnexpectedIndex: Slice<Trivia>.Index?
 
-        if forced {
-            lastIndex = trailingTrivia.index(before: trailingTrivia.endIndex)
-        } else {
-            guard let lastUnexpectedIndex = trailingTrivia.lastIndex(where: { $0.isUnexpectedText })
-            else { return }
-            lastIndex = lastUnexpectedIndex
+        for index in trailingTrivia.indices where trailingTrivia[index].isUnexpectedText {
+            lastUnexpectedIndex = index
         }
+        guard let lastUnexpectedIndex else { return }
 
         var verbatimText = ""
 
-        for piece in trailingTrivia[...lastIndex] {
+        for piece in trailingTrivia[...lastUnexpectedIndex] {
             switch piece {
                 case .unexpectedText, .spaces, .tabs, .formfeeds, .verticalTabs:
                     piece.write(to: &verbatimText)
@@ -121,8 +121,11 @@ extension TokenStream {
     ///   append the comment, and then the remaining after-tokens. Due to visitation ordering, this
     ///   ensures that a trailing line comment is not incorrectly inserted into the token stream
     ///   *after* a break or newline.
-    func appendAfterTokensAndTrailingComments(_ token: TokenSyntax) {
-        let (wasLineComment, trailingCommentTokens) = afterTokensForTrailingComment(token)
+    ///
+    /// `trailingTrivia` is the trailing trivia of `token` when the caller already has it.
+    func appendAfterTokensAndTrailingComments(_ token: TokenSyntax, trailingTrivia: Trivia? = nil) {
+        let (wasLineComment, trailingCommentTokens) = afterTokensForTrailingComment(
+            token, trailingTrivia: trailingTrivia)
         let afterGroups = afterMap.removeValue(forKey: token) ?? []
         var hasAppendedTrailingComment = false
 

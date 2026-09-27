@@ -23,7 +23,7 @@ extension TokenStream {
         if node.parent?.is(AttributeListSyntax.self) == true {
             newlines = .elective
         } else if isNestedInPostfixIfConfig(node: Syntax(node)) {
-            newlines = config[RespectExistingLineBreaks.self] ? .elective : .soft
+            newlines = respectExistingLineBreaks ? .elective : .soft
         } else {
             newlines = .soft
         }
@@ -77,7 +77,7 @@ extension TokenStream {
 
         arrangeAttributeList(
             node.attributes,
-            separateByLineBreaks: config[BreakBetweenDeclAttributes.self]
+            separateByLineBreaks: breakBetweenDeclAttributes
         )
 
         after(node.caseKeyword, tokens: .break)

@@ -12,7 +12,7 @@ final class UseDraggableNotOnDrag: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         if let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-            member.declName.baseName.text == "onDrag"
+            member.declName.baseName.hasText("onDrag")
         {
             diagnose(.onDrag, on: member.declName)
         }
@@ -30,7 +30,7 @@ final class UseDraggableNotOnDrag: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
     }
 
     private func flagItemProvider(_ token: TokenSyntax) {
-        guard token.text == "NSItemProvider" else { return }
+        guard token.hasText("NSItemProvider") else { return }
         diagnose(.itemProvider, on: token)
     }
 }

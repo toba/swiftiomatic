@@ -77,7 +77,8 @@ if !dispatchGaps.isEmpty {
 }
 
 // Generate the node-local rewrite stage from the hooks each rule declares.
-let rewriteGenerator = RewritePipelineGenerator(collector: rewriteHooks)
+let rewriteGenerator = RewritePipelineGenerator(
+    collector: rewriteHooks, ruleIndices: collector.ruleIndexByTypeName)
 try rewriteGenerator.generateFile(at: paths.rewritePipelineFile)
 
 // Generate a file with extensions for the lint and format pipelines.

@@ -55,6 +55,10 @@ extension RuleCollector {
         /// The syntax node types visited by the rule type.
         let visitedNodes: [String]
 
+        /// The syntax node types for which the rule overrides `visitPost` . The lint pipeline
+        /// calls `visitPost` only for these.
+        let postVisitedNodes: Set<String>
+
         /// Whether this rule is disabled by default (opt-in).
         let isOptIn: Bool
 

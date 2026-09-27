@@ -57,22 +57,24 @@ func parseAndEmitDiagnostics(
             source: sourceBytes, experimentalFeatures: experimentalFeaturesSet)) { _ in }
             .as(SourceFileSyntax.self)!
     }
+    // The generator walks only the nodes that carry an error or a warning flag, and the flags
+    // propagate to the root. A clean tree has no diagnostics, so skip the walk and the converter.
+    guard let parsingDiagnosticHandler, sourceFile.hasError || sourceFile.hasWarning else {
+        return sourceFile
+    }
     let diagnostics = ParseDiagnosticsGenerator.diagnostics(for: sourceFile)
     var hasErrors = false
+    let expectedConverter = SourceLocationConverter(
+        fileName: url?.path ?? "<unknown>", tree: sourceFile)
 
-    if let parsingDiagnosticHandler {
-        let expectedConverter = SourceLocationConverter(
-            fileName: url?.path ?? "<unknown>", tree: sourceFile)
+    for diagnostic in diagnostics {
+        let location = diagnostic.location(converter: expectedConverter)
 
-        for diagnostic in diagnostics {
-            let location = diagnostic.location(converter: expectedConverter)
-
-            // Ignore editor placeholders, because it is useful to support formatting in-progress
-            // files that contain those.
-            if diagnostic.diagnosticID != StaticTokenError.editorPlaceholder.diagnosticID {
-                parsingDiagnosticHandler(diagnostic, location)
-                hasErrors = true
-            }
+        // Ignore editor placeholders, because it is useful to support formatting in-progress
+        // files that contain those.
+        if diagnostic.diagnosticID != StaticTokenError.editorPlaceholder.diagnosticID {
+            parsingDiagnosticHandler(diagnostic, location)
+            hasErrors = true
         }
     }
 

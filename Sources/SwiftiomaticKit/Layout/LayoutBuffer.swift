@@ -19,9 +19,6 @@ struct LayoutBuffer {
     /// The maximum number of consecutive blank lines that may appear in a file.
     let maximumBlankLines: Int
 
-    /// The width of the horizontal tab in spaces.
-    let tabWidth: Int
-
     /// If true, output is generated as normal. If false, the various state variables are updated as
     /// normal but nothing is appended to the output (used by selection formatting).
     var isEnabled = true
@@ -45,17 +42,26 @@ struct LayoutBuffer {
     /// will still point to the position of the previous line.
     private(set) var column: Int
 
-    /// The current indentation level to be used when text is appended to a new line.
-    var currentIndentation: [Indent]
+    /// The indentation to be used when text is appended to a new line.
+    var indentation: LayoutIndentation
 
     /// The accumulated output of the pretty printer.
     private(set) var output = ""
 
-    init(maximumBlankLines: Int, tabWidth: Int, column: Int = 0) {
+    /// A reusable buffer that holds the text of one comment while it is written. The buffer keeps
+    /// its capacity, so a comment allocates no new `String` after the first few.
+    private var scratch = ""
+
+    init(
+        maximumBlankLines: Int,
+        indentation: LayoutIndentation,
+        column: Int = 0,
+        reservingCapacity capacity: Int = 0
+    ) {
         self.maximumBlankLines = maximumBlankLines
-        self.tabWidth = tabWidth
-        currentIndentation = []
+        self.indentation = indentation
         self.column = column
+        output.reserveCapacity(capacity)
     }
 
     /// Writes newlines into the output stream, taking into account any preexisting consecutive
@@ -91,7 +97,7 @@ struct LayoutBuffer {
         guard numberToPrint > 0 else { return }
 
         for number in 0..<numberToPrint {
-            if shouldIndentBlankLines, number >= 1 { writeRaw(currentIndentation.indentation()) }
+            if shouldIndentBlankLines, number >= 1 { writeIndentation() }
             writeRaw("\n")
         }
 
@@ -106,12 +112,16 @@ struct LayoutBuffer {
     ///
     /// Before printing the text, this function will print any line-leading indentation or interior
     /// leading spaces that are required before the text itself.
-    mutating func write(_ text: String) {
+    mutating func write(_ text: String) { write(text, width: nil) }
+
+    /// Writes the given text to the output stream. `width` is the column width of `text` when the
+    /// caller already knows it, or nil when this function must count it.
+    mutating func write(_ text: String, width: Int?) {
         if isAtStartOfLine {
-            writeRaw(currentIndentation.indentation())
-            column = currentIndentation.length(tabWidth: tabWidth)
+            writeIndentation()
+            column = indentation.width
             isAtStartOfLine = false
-        } else if pendingSpaces > 0 { writeRaw(SpacePadding.spaces(pendingSpaces)) }
+        } else if pendingSpaces > 0 { writeSpaces(pendingSpaces) }
         writeRaw(text)
         consecutiveNewlineCount = 0
         pendingSpaces = 0
@@ -132,8 +142,18 @@ struct LayoutBuffer {
                 to: text.endIndex
             )
         } else {
-            column += text.count
+            column += width ?? text.count
         }
+    }
+
+    /// Writes the given comment to the output stream, indented to the current indentation.
+    mutating func write(_ comment: Comment, shouldIndentBlankLines: Bool) {
+        var text = scratch
+        scratch = ""
+        text.removeAll(keepingCapacity: true)
+        comment.print(into: &text, indentation: indentation, shouldIndentBlankLines: shouldIndentBlankLines)
+        write(text)
+        scratch = text
     }
 
     /// Request that the given number of spaces be printed out before the next text token.
@@ -145,8 +165,9 @@ struct LayoutBuffer {
         column += count
     }
 
-    mutating func writeVerbatim(_ verbatim: String, _ length: Int) {
-        writeRaw(verbatim)
+    /// Writes the given verbatim content, indented to the current indentation.
+    mutating func write(_ verbatim: Verbatim, length: Int) {
+        if isEnabled { verbatim.print(into: &output, indentation: indentation) }
         consecutiveNewlineCount = 0
         pendingSpaces = 0
         column += length
@@ -155,7 +176,7 @@ struct LayoutBuffer {
     /// Calls writeRaw, but also updates some state variables that are normally tracked by higher
     /// level functions. This is used when we switch from disabled formatting to enabled formatting,
     /// writing all the previous information as-is.
-    mutating func writeVerbatimAfterEnablingFormatting<S: StringProtocol>(_ str: S) {
+    mutating func writeVerbatimAfterEnablingFormatting(_ str: Substring) {
         writeRaw(str)
 
         if str.hasSuffix("\n") {
@@ -167,11 +188,29 @@ struct LayoutBuffer {
         }
     }
 
+    /// Appends the current indentation to the output buffer.
+    private mutating func writeIndentation() {
+        guard isEnabled else { return }
+        indentation.append(to: &output)
+    }
+
+    /// Appends the given number of spaces to the output buffer.
+    private mutating func writeSpaces(_ count: Int) {
+        guard isEnabled else { return }
+        appendSpaces(count, to: &output)
+    }
+
     /// Append the given string to the output buffer.
     ///
     /// No further processing is performed on the string.
-    private mutating func writeRaw<S: StringProtocol>(_ str: S) {
+    private mutating func writeRaw(_ str: String) {
         guard isEnabled else { return }
-        output.append(String(str))
+        output.append(str)
+    }
+
+    /// Append the given substring to the output buffer.
+    private mutating func writeRaw(_ str: Substring) {
+        guard isEnabled else { return }
+        output.append(contentsOf: str)
     }
 }

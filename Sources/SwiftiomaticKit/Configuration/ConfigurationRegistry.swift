@@ -2,6 +2,26 @@
 /// carries its own `key` , `defaultValue` , and `group` via the `SyntaxRule` protocol — no
 /// generated string literals needed.
 package extension ConfigurationRegistry {
+    /// The dense index of each rule type, which is its position in `allRuleTypes` .
+    ///
+    /// The generated pipelines embed the index as a literal. Hand-written code that holds only a
+    /// rule type reads it here, one hash per call.
+    static let ruleIndexByID: [ObjectIdentifier: Int] = Dictionary(
+        uniqueKeysWithValues: allRuleTypes.enumerated().map { (ObjectIdentifier($1), $0) })
+
+    /// The dense index of `rule` , or `nil` for a type the registry does not list.
+    @inline(__always)
+    internal static func ruleIndex(of rule: any SyntaxRule.Type) -> Int? {
+        ruleIndexByID[ObjectIdentifier(rule)]
+    }
+
+    /// The short key of each rule, indexed by rule index.
+    static let ruleKeys: [String] = allRuleTypes.map { $0.key }
+
+    /// The dense index of each rule, keyed by its short key.
+    static let ruleIndexByKey: [String: Int] = Dictionary(
+        ruleKeys.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
+
     /// Fast lookup from rule type identity to its short key (used by `RuleMask` ).
     static let ruleNameCache: [ObjectIdentifier: String] = Dictionary(
         uniqueKeysWithValues: allRuleTypes.map { (ObjectIdentifier($0), $0.key) })
@@ -45,18 +65,28 @@ package extension ConfigurationRegistry {
     /// Set of all qualified keys managed by a group (used to avoid double-encoding).
     static let groupManagedRules: Set<String> = Set(
         allRuleTypes.compactMap { type in type.group != nil ? type.qualifiedKey : nil })
+}
 
-    /// Storage keys for every rule and every layout setting, keyed by type identity.
+package extension ConfigurationRegistry {
+    /// The number of `Configuration` storage slots: one per rule, then one per layout setting.
+    static let storageCount = ruleCount + allSettingTypes.count
+
+    /// The `Configuration` storage slot of each rule and layout setting, keyed by type identity.
     ///
-    /// `Configurable.qualifiedKey` derives its result from the type name on each access, which
-    /// costs a metatype interpolation, a split, and a regex replacement. `Configuration` reads a
-    /// setting once per token while laying out a file, so the subscript takes the key from here and
-    /// falls back to the derivation only for a type the registry does not list.
-    static let qualifiedKeyCache: [ObjectIdentifier: String] = {
-        var map: [ObjectIdentifier: String] = [:]
-        map.reserveCapacity(allRuleTypes.count + allSettingTypes.count)
-        for type in allRuleTypes { map[ObjectIdentifier(type)] = type.qualifiedKey }
-        for type in allSettingTypes { map[ObjectIdentifier(type)] = type.qualifiedKey }
+    /// A rule's slot is its rule index. A layout setting's slot follows the rules.
+    static let storageIndexByID: [ObjectIdentifier: Int] = {
+        var map = ruleIndexByID
+        map.reserveCapacity(storageCount)
+
+        for (offset, type) in allSettingTypes.enumerated() {
+            map[ObjectIdentifier(type)] = ruleCount + offset
+        }
         return map
     }()
+
+    /// The storage slot of `type` , or `nil` for a type the registry does not list.
+    @inline(__always)
+    static func storageIndex<C: Configurable>(of type: C.Type) -> Int? {
+        storageIndexByID[ObjectIdentifier(type)]
+    }
 }

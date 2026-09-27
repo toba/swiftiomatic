@@ -27,9 +27,13 @@ class LintSyntaxRule<V: SyntaxRuleValue>: SyntaxVisitor, InstanceSyntaxRule, @un
         return config
     }
 
+    /// The rule's dense index, read once so that a finding does not look it up.
+    let ruleIndex: Int?
+
     /// Creates a new rule in a given context.
     required init(context: Context) {
         self.context = context
+        ruleIndex = ConfigurationRegistry.ruleIndex(of: Self.self)
         super.init(viewMode: .sourceAccurate)
     }
 }

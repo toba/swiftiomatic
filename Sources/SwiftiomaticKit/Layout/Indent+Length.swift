@@ -27,13 +27,3 @@ extension Indent {
         }
     }
 }
-
-extension [Indent] {
-    func indentation() -> String { map { $0.text }.joined() }
-
-    func length(in configuration: Configuration) -> Int {
-        length(tabWidth: configuration[TabWidth.self])
-    }
-
-    func length(tabWidth: Int) -> Int { reduce(into: 0) { $0 += $1.length(tabWidth: tabWidth) } }
-}

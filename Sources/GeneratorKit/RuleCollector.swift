@@ -30,6 +30,19 @@ package final class RuleCollector {
 
     package init() {}
 
+    /// Every syntax rule, sorted by type name.
+    ///
+    /// A rule's position in this list is its dense rule index. The registry and both pipelines read
+    /// the index from here, so they always agree.
+    var sortedSyntaxRules: [DetectedSyntaxRule] {
+        lintingSyntaxRules.sorted { $0.typeName < $1.typeName }
+    }
+
+    /// The dense rule index of each rule, keyed by type name.
+    package var ruleIndexByTypeName: [String: Int] {
+        Dictionary(uniqueKeysWithValues: sortedSyntaxRules.enumerated().map { ($1.typeName, $0) })
+    }
+
     /// Populates every collection by scanning the given directory once.
     ///
     /// A statement declares at most one kind of rule, so both detectors run against the same parse.
@@ -129,14 +142,18 @@ package final class RuleCollector {
                 .name.text
 
             var visitedNodes = [String]()
+            var postVisitedNodes = Set<String>()
 
             for member in members {
-                guard let function = member.decl.as(FunctionDeclSyntax.self),
-                    function.name.text == "visit" else { continue }
-
+                guard let function = member.decl.as(FunctionDeclSyntax.self) else { continue }
                 let params = function.signature.parameterClause.parameters
-                if let firstType = params.firstAndOnly?.type.as(IdentifierTypeSyntax.self) {
-                    visitedNodes.append(firstType.name.text)
+                guard let firstType = params.firstAndOnly?.type.as(IdentifierTypeSyntax.self)
+                else { continue }
+
+                switch function.name.text {
+                    case "visit": visitedNodes.append(firstType.name.text)
+                    case "visitPost": postVisitedNodes.insert(firstType.name.text)
+                    default: break
                 }
             }
 
@@ -164,6 +181,7 @@ package final class RuleCollector {
                 canRewrite: canRewrite,
                 isThreshold: isThreshold,
                 visitedNodes: visitedNodes,
+                postVisitedNodes: postVisitedNodes,
                 isOptIn: Self.extractIsOptIn(from: members),
                 customProperties: customProperties,
             )

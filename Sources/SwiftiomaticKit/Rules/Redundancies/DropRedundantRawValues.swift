@@ -82,7 +82,7 @@ final class DropRedundantRawValues: StaticFormatRule<BasicRuleValue>, @unchecked
     private static func hasStringRawType(_ enumDecl: EnumDeclSyntax) -> Bool {
         guard let inheritanceClause = enumDecl.inheritanceClause else { return false }
         return inheritanceClause.inheritedTypes.contains { inherited in
-            inherited.type.trimmedDescription == "String"
+            inherited.type.trimmedDescriptionEquals("String")
         }
     }
 

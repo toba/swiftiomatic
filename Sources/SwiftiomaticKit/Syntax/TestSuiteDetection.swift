@@ -61,20 +61,72 @@ func isTestSuite(
 
     // Skip types documented as a base class or as something to subclass. A substring test also
     // rejected every suite whose documentation mentions a database.
-    let triviaText = leadingTrivia.description.lowercased()
-    if triviaText.containsWord("base") || triviaText.containsWord("subclass") { return false }
+    if leadingTrivia.mentionsBaseClass { return false }
 
     // For XCTest: must be a class with exactly XCTestCase conformance
     if framework == .xcTest {
         guard let inheritance = inheritanceClause else { return false }
         let types = Array(inheritance.inheritedTypes)
-        guard types.count == 1, types[0].type.trimmedDescription == "XCTestCase"
+        guard types.count == 1, types[0].type.trimmedDescriptionEquals("XCTestCase")
         else { return false }
         return true
     }
 
     // For Swift Testing: type name must end with a test suffix
     return testSuiteSuffixes.contains(where: { name.hasSuffix($0) })
+}
+
+private extension Trivia {
+    /// Whether a comment in the trivia holds `base` or `subclass` as its own word, in any case.
+    ///
+    /// The scan reads each piece in place. Only a piece that can hold a word is checked: a
+    /// comment or unexpected text. A whitespace piece cannot hold one, and a piece boundary is
+    /// never a letter, so the result is the same as a scan of the full trivia text.
+    ///
+    /// A piece is lowercased only when its bytes hold one of the words in ASCII, in any case. Most
+    /// comments hold neither word, so the common path allocates nothing.
+    var mentionsBaseClass: Bool {
+        contains { piece in
+            let text: String
+            switch piece {
+                case let .lineComment(t), let .blockComment(t), let .docLineComment(t),
+                     let .docBlockComment(t), let .unexpectedText(t):
+                    text = t
+                default: return false
+            }
+            guard text.utf8.containsASCIICaseInsensitive("base")
+                || text.utf8.containsASCIICaseInsensitive("subclass")
+            else { return false }
+            let lower = text.lowercased()
+            return lower.containsWord("base") || lower.containsWord("subclass")
+        }
+    }
+}
+
+private extension String.UTF8View {
+    /// Whether the bytes hold `word` , with ASCII letters compared in any case.
+    ///
+    /// `word` is lowercase ASCII.
+    func containsASCIICaseInsensitive(_ word: StaticString) -> Bool {
+        word.withUTF8Buffer { needle in
+            guard let first = needle.first else { return true }
+            var start = startIndex
+            while let found = self[start...].firstIndex(where: { $0 | 0x20 == first }) {
+                var candidate = found
+                var matched = true
+                for byte in needle {
+                    guard candidate != endIndex, self[candidate] | 0x20 == byte else {
+                        matched = false
+                        break
+                    }
+                    formIndex(after: &candidate)
+                }
+                if matched { return true }
+                start = index(after: found)
+            }
+            return false
+        }
+    }
 }
 
 private extension String {

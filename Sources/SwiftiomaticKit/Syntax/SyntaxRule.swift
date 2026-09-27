@@ -18,6 +18,10 @@ protocol InstanceSyntaxRule: SyntaxRule {
     /// The context in which the rule is executed.
     var context: Context { get }
 
+    /// The rule's dense index, or `nil` for a type the registry does not list. The base class
+    /// reads it once per instance, so a finding does not look it up.
+    var ruleIndex: Int? { get }
+
     /// Creates a new Rule in a given context.
     init(context: Context)
 }
@@ -44,15 +48,19 @@ extension SyntaxRule {
     /// Static counterpart to `diagnose(_:on:anchor:notes:)` . Used by combined-pipeline
     /// `static func transform(_:context:)` overloads (issue `iv7-r5g` / `ddi-wtv` ) so they don't
     /// need to instantiate the rule per node visit.
+    ///
+    /// The message and the notes are built only for a finding that survives the severity, mask and
+    /// warning-control checks.
     static func diagnose<SyntaxType: SyntaxProtocol>(
-        _ message: Finding.Message,
+        _ message: @autoclosure () -> Finding.Message,
         on node: SyntaxType?,
         context: Context,
         anchor: FindingAnchor = .start,
-        notes: [Finding.Note] = []
+        notes: @autoclosure () -> [Finding.Note] = []
     ) {
         guard context.findingEmitter.isAttached else { return }
-        let severity = context.severity(of: Self.self)
+        let index = ConfigurationRegistry.ruleIndex(of: Self.self)
+        let severity = index.map(context.severity(ruleAt:)) ?? context.configuration[Self.self].lint
         guard severity.isActive else { return }
         Self.emitFinding(
             message,
@@ -60,48 +68,38 @@ extension SyntaxRule {
             severity: severity,
             anchor: anchor,
             notes: notes,
+            ruleIndex: index,
             context: context
         )
     }
 
     fileprivate static func emitFinding<SyntaxType: SyntaxProtocol>(
-        _ message: Finding.Message,
+        _ message: () -> Finding.Message,
         on node: SyntaxType?,
         severity: Lint,
         anchor: FindingAnchor,
-        notes: [Finding.Note],
+        notes: () -> [Finding.Note],
+        ruleIndex: Int?,
         context: Context
     ) {
-        let syntaxLocation: SourceLocation?
-
-        if let node {
-            switch anchor {
-                case .start:
-                    syntaxLocation = node.startLocation(converter: context.sourceLocationConverter)
-                case let .leadingTrivia(index):
-                    syntaxLocation = node.startLocation(
-                        ofLeadingTriviaAt: index,
-                        converter: context.sourceLocationConverter
-                    )
-                case let .trailingTrivia(index):
-                    syntaxLocation = node.startLocation(
-                        ofTrailingTriviaAt: index,
-                        converter: context.sourceLocationConverter
-                    )
-            }
-        } else {
-            syntaxLocation = nil
-        }
+        let anchorPosition = node.map { anchorPosition(of: $0, anchor: anchor) }
 
         // Per-finding rule-mask gate: the pipeline gates rule dispatch at the *visited* node's
-        // start location, but rules that visit an enclosing node (e.g. `ClassDeclSyntax`) and emit
-        // on inner members would otherwise bypass `// sm:ignore` directives placed on or above
-        // those members. Re-checking here at the finding's anchor lets per-member directives
-        // suppress findings emitted by class- or file-level rules.
-        if let syntaxLocation {
-            let ruleName = ConfigurationRegistry.ruleNameCache[ObjectIdentifier(Self.self)]
-                ?? Self.key
-            if context.ruleMask.ruleState(ruleName, at: syntaxLocation) == .disabled { return }
+        // start, but rules that visit an enclosing node (e.g. `ClassDeclSyntax`) and emit on inner
+        // members would otherwise bypass `// sm:ignore` directives placed on or above those
+        // members. Re-checking here at the finding's anchor lets per-member directives suppress
+        // findings emitted by class- or file-level rules. The offset needs no converter, so a
+        // masked finding computes no location.
+        if let anchorPosition {
+            let state =
+                if let ruleIndex {
+                    context.ruleMask.ruleState(ruleIndex, atOffset: anchorPosition.utf8Offset)
+                } else {
+                    context.ruleMask.ruleState(
+                        Self.key,
+                        at: context.sourceLocationConverter.location(for: anchorPosition))
+                }
+            if state == .disabled { return }
         }
 
         // Honour Swift's `@warn(<group>, as: …)` attribute: if the finding's anchor falls inside a
@@ -111,7 +109,8 @@ extension SyntaxRule {
         let effectiveSeverity: Lint
 
         if let node,
-           let override = context.warningControlSeverity(of: Self.self, at: node.position)
+           let override = context.warningControlSeverity(
+               of: Self.self, ruleIndex: ruleIndex, at: node.position)
         {
             effectiveSeverity = override
         } else {
@@ -119,15 +118,29 @@ extension SyntaxRule {
         }
         guard effectiveSeverity.isActive else { return }
 
-        let category = SyntaxFindingCategory(ruleType: Self.self)
-
+        let location = anchorPosition.map {
+            Finding.Location(context.sourceLocationConverter.location(for: $0))
+        }
         context.findingEmitter.emit(
-            message,
-            category: category,
+            message(),
+            category: SyntaxFindingCategory(ruleType: Self.self),
             severity: effectiveSeverity,
-            location: syntaxLocation.flatMap(Finding.Location.init),
-            notes: notes
+            location: location,
+            notes: notes()
         )
+    }
+
+    /// The position a finding on `node` points at, the same position `startLocation(converter:)`
+    /// and its trivia variants convert.
+    private static func anchorPosition(
+        of node: some SyntaxProtocol,
+        anchor: FindingAnchor
+    ) -> AbsolutePosition {
+        switch anchor {
+            case .start: node.positionAfterSkippingLeadingTrivia
+            case let .leadingTrivia(index): node.position(ofLeadingTriviaAt: index)
+            case let .trailingTrivia(index): node.position(ofTrailingTriviaAt: index)
+        }
     }
 }
 
@@ -146,13 +159,13 @@ extension InstanceSyntaxRule {
     ///     of the node's content (after any leading trivia).
     ///   - notes: An array of notes that provide additional detail about the finding.
     func diagnose<SyntaxType: SyntaxProtocol>(
-        _ message: Finding.Message,
+        _ message: @autoclosure () -> Finding.Message,
         on node: SyntaxType?,
         anchor: FindingAnchor = .start,
-        notes: [Finding.Note] = []
+        notes: @autoclosure () -> [Finding.Note] = []
     ) {
         guard context.findingEmitter.isAttached else { return }
-        let severity = context.severity(of: type(of: self))
+        let severity = configuredSeverity
         guard severity.isActive else { return }
         Self.emitFinding(
             message,
@@ -160,8 +173,14 @@ extension InstanceSyntaxRule {
             severity: severity,
             anchor: anchor,
             notes: notes,
+            ruleIndex: ruleIndex,
             context: context
         )
+    }
+
+    /// The rule's configured severity, read by index when the registry lists the rule.
+    private var configuredSeverity: Lint {
+        ruleIndex.map(context.severity(ruleAt:)) ?? context.severity(of: type(of: self))
     }
 
     /// Emits a finding at an explicit severity, overriding the rule's configured `lint` value. The
@@ -171,21 +190,21 @@ extension InstanceSyntaxRule {
     /// Used by metrics rules that emit at `.warn` over a warning threshold and `.error` over an
     /// error threshold within a single configured rule.
     func diagnose<SyntaxType: SyntaxProtocol>(
-        _ message: Finding.Message,
+        _ message: @autoclosure () -> Finding.Message,
         on node: SyntaxType?,
         severity: Lint,
         anchor: FindingAnchor = .start,
-        notes: [Finding.Note] = []
+        notes: @autoclosure () -> [Finding.Note] = []
     ) {
         guard context.findingEmitter.isAttached else { return }
-        let configured = context.severity(of: type(of: self))
-        guard configured.isActive, severity.isActive else { return }
+        guard configuredSeverity.isActive, severity.isActive else { return }
         Self.emitFinding(
             message,
             on: node,
             severity: severity,
             anchor: anchor,
             notes: notes,
+            ruleIndex: ruleIndex,
             context: context
         )
     }

@@ -10,58 +10,76 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
-
 struct Verbatim: Sendable {
-    /// Hoisted to avoid rebuilding a `CharacterSet` per line during init.
-    private static let spacesOnly = CharacterSet(charactersIn: " ")
+    /// One line of verbatim content.
+    private struct Line: Sendable {
+        /// The UTF-8 offset range of the line text in `text` , with leading and trailing spaces
+        /// removed unless the indenting behavior is `none` .
+        var range: Range<Int>
+
+        /// The number of leading spaces to print before the line text, not including any
+        /// additional indentation requested externally.
+        var leadingSpaces: Int
+    }
 
     /// The behavior used to adjust indentation when printing verbatim content.
     private let indentingBehavior: IndentingBehavior
 
-    /// The lines of verbatim text.
-    private let lines: [String]
+    /// The owned text that holds every line.
+    private let text: String
 
-    /// The number of leading whitespaces to print for each line of verbatim content, not including
-    /// any additional indentation requested externally.
-    private let leadingWhitespaceCounts: [Int]
+    /// The lines of verbatim text.
+    private let lines: [Line]
 
     init(text: String, indentingBehavior: IndentingBehavior) {
         self.indentingBehavior = indentingBehavior
+        self.text = text
 
-        var originalLines = text.split(separator: "\n", omittingEmptySubsequences: false)
+        // Split at each line feed that is a `Character` of its own. A line feed after a carriage
+        // return is part of one `Character` , so it does not split the line.
+        let bytes = text.utf8.span
+        var lines = [Line]()
+        var lineStart = 0
+
+        for index in bytes.indices where bytes[index] == UInt8(ascii: "\n") {
+            if index > 0, bytes[index - 1] == UInt8(ascii: "\r") { continue }
+            lines.append(Line(range: lineStart..<index, leadingSpaces: 0))
+            lineStart = index + 1
+        }
+        lines.append(Line(range: lineStart..<bytes.count, leadingSpaces: 0))
 
         // Prevents an extra leading new line from being created.
-        if originalLines[0].isEmpty { originalLines.remove(at: 0) }
+        if lines[0].range.isEmpty { lines.removeFirst() }
 
         // If we have no lines left (or none with any content), just initialize everything empty and
         // exit.
-        guard !originalLines.isEmpty,
-              let index = originalLines.firstIndex(where: { !$0.isEmpty })
-        else {
-            lines = []
-            leadingWhitespaceCounts = []
+        guard let index = lines.firstIndex(where: { !$0.range.isEmpty }) else {
+            self.lines = []
             return
         }
 
         // If our indenting behavior is `none` , then keep the original lines _exactly_ as
         // is---don't attempt to calculate or trim their leading indentation.
         guard indentingBehavior != .none else {
-            lines = originalLines.map(String.init)
-            leadingWhitespaceCounts = [Int](repeating: 0, count: originalLines.count)
+            self.lines = lines
             return
         }
 
         // Otherwise, we're in one of the indentation compensating modes. Get the number of leading
         // whitespaces of the first line, and subtract this from the number of leading whitespaces
         // for subsequent lines (if possible). Record the new leading whitespaces counts, and trim
-        // off whitespace from the ends of the strings.
-        let firstLineLeadingSpaceCount = numberOfLeadingSpaces(in: originalLines[index])
+        // off spaces from the ends of the lines.
+        let firstLineLeadingSpaceCount = Self.numberOfLeadingSpaces(in: lines[index].range, of: text)
 
-        leadingWhitespaceCounts = originalLines.map {
-            max(numberOfLeadingSpaces(in: $0) - firstLineLeadingSpaceCount, 0)
+        for i in lines.indices {
+            let range = lines[i].range
+            lines[i] = Line(
+                range: Self.trimmingSpaces(range, in: bytes),
+                leadingSpaces: max(
+                    Self.numberOfLeadingSpaces(in: range, of: text) - firstLineLeadingSpaceCount, 0)
+            )
         }
-        lines = originalLines.map { $0.trimmingCharacters(in: Self.spacesOnly) }
+        self.lines = lines
     }
 
     /// Returns the length that the pretty printer should use when determining layout for this
@@ -70,45 +88,66 @@ struct Verbatim: Sendable {
     /// Specifically, multiline content should have a length equal to the maximum (to force
     /// breaking), while single-line content should have its natural length.
     func prettyPrintingLength(maximum: Int) -> Int {
-        if lines.isEmpty { 0 } else if lines.count > 1 { maximum } else { lines[0].count }
+        if lines.isEmpty { 0 } else if lines.count > 1 { maximum } else { lineText(lines[0]).count }
     }
 
-    func print(indent: [Indent]) -> String {
-        // Hoist the indentation string and pre-compute the output capacity so the writer doesn't
-        // reallocate while concatenating each line.
-        let indentation = indent.indentation()
-        var capacity = 0
-
-        for i in 0..<lines.count {
+    /// Writes the verbatim content to the given string with the given indentation.
+    func print(into output: inout String, indentation: LayoutIndentation) {
+        for i in lines.indices {
             let line = lines[i]
 
-            if !line.isEmpty {
+            if !line.range.isEmpty {
                 switch indentingBehavior {
-                    case .firstLine where i == 0, .allLines: capacity += indentation.utf8.count
+                    case .firstLine where i == 0, .allLines: indentation.append(to: &output)
                     case .none, .firstLine: break
                 }
-                capacity += leadingWhitespaceCounts[i] + line.utf8.count
+                appendSpaces(line.leadingSpaces, to: &output)
+                output.append(contentsOf: lineText(line))
             }
-            if i < lines.count - 1 { capacity += 1 }
+            if i < lines.count - 1 { output.append("\n") }
         }
+    }
 
+    /// Returns the verbatim content with the given indentation.
+    func print(indentation: LayoutIndentation) -> String {
         var output = ""
-        output.reserveCapacity(capacity)
-
-        for i in 0..<lines.count {
-            if !lines[i].isEmpty {
-                switch indentingBehavior {
-                    case .firstLine where i == 0, .allLines: output += indentation
-                    case .none, .firstLine: break
-                }
-                if leadingWhitespaceCounts[i] > 0 {
-                    output += SpacePadding.spaces(leadingWhitespaceCounts[i])
-                }
-                output += lines[i]
-            }
-            if i < lines.count - 1 { output += "\n" }
-        }
+        print(into: &output, indentation: indentation)
         return output
+    }
+
+    private func lineText(_ line: Line) -> Substring {
+        let utf8 = text.utf8
+        let start = utf8.index(utf8.startIndex, offsetBy: line.range.lowerBound)
+        let end = utf8.index(start, offsetBy: line.range.count)
+        return text[start..<end]
+    }
+
+    /// Returns the number of leading `Character` values in the line that are a single space.
+    private static func numberOfLeadingSpaces(in range: Range<Int>, of text: String) -> Int {
+        let bytes = text.utf8.span
+        var index = range.lowerBound
+
+        while index < range.upperBound, bytes[index] == UInt8(ascii: " ") { index += 1 }
+
+        // A non-ASCII scalar after the spaces can join the last space into one `Character` .
+        guard index < range.upperBound, bytes[index] >= 0x80 else { return index - range.lowerBound }
+
+        let utf8 = text.utf8
+        let start = utf8.index(utf8.startIndex, offsetBy: range.lowerBound)
+        let end = utf8.index(utf8.startIndex, offsetBy: range.upperBound)
+        var count = 0
+        for character in text[start..<end] { if character == " " { count += 1 } else { break } }
+        return count
+    }
+
+    /// Returns the range without its leading and trailing U+0020 scalars. This matches
+    /// `trimmingCharacters(in: CharacterSet(charactersIn: " "))` , which trims scalars.
+    private static func trimmingSpaces(_ range: Range<Int>, in bytes: Span<UInt8>) -> Range<Int> {
+        var lower = range.lowerBound
+        var upper = range.upperBound
+        while lower < upper, bytes[lower] == UInt8(ascii: " ") { lower += 1 }
+        while upper > lower, bytes[upper - 1] == UInt8(ascii: " ") { upper -= 1 }
+        return lower..<upper
     }
 }
 
@@ -117,10 +156,3 @@ struct Verbatim: Sendable {
 /// Describes options for behavior when applying the indentation of the current context when
 /// printing a verbatim token.
 enum IndentingBehavior: Sendable { case none, allLines, firstLine }
-
-/// Returns the leading number of spaces in the given string.
-private func numberOfLeadingSpaces(in text: Substring) -> Int {
-    var count = 0
-    for char in text { if char == " " { count += 1 } else { break } }
-    return count
-}

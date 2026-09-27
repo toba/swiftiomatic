@@ -125,6 +125,23 @@ class Frontend: @unchecked Sendable {
             forConfigPathOrString pathOrString: String?,
             orForSwiftFileAt swiftFileURL: URL?
         ) -> Configuration? {
+            resolve(forConfigPathOrString: pathOrString, orForSwiftFileAt: swiftFileURL)?
+                .configuration
+        }
+
+        /// The key of the default configuration. No configuration file path can be equal to it.
+        static let defaultConfigurationKey = "<default configuration>"
+
+        /// Returns the configuration that applies to the given `.swift` source file, and the key
+        /// that names it.
+        ///
+        /// The rules are the same as the rules of
+        /// ``provide(forConfigPathOrString:orForSwiftFileAt:)`` . Equal keys name equal
+        /// configurations for the life of this provider.
+        func resolve(
+            forConfigPathOrString pathOrString: String?,
+            orForSwiftFileAt swiftFileURL: URL?
+        ) -> ConfigurationLoader.Loaded? {
             if let pathOrString {
                 let argument = ConfigurationArgument(pathOrString)
 
@@ -187,7 +204,10 @@ class Frontend: @unchecked Sendable {
 
             // An explicit configuration has not been given, and one cannot be found. Return the
             // default configuration.
-            return Configuration()
+            return ConfigurationLoader.Loaded(
+                configuration: Configuration(),
+                key: Self.defaultConfigurationKey
+            )
         }
     }
 
@@ -207,6 +227,10 @@ class Frontend: @unchecked Sendable {
         /// The configuration that should applied for this file.
         let configuration: Configuration
 
+        /// The key that names `configuration` for the life of the run. Equal keys name equal
+        /// configurations.
+        let configurationKey: String
+
         /// the selected ranges to process
         let selection: Selection
 
@@ -219,15 +243,18 @@ class Frontend: @unchecked Sendable {
         init(
             fileHandle: FileHandle,
             url: URL,
-            configuration: Configuration,
+            configuration: ConfigurationLoader.Loaded,
             selection: Selection = .infinite
         ) {
             self.url = url
-            self.configuration = configuration
+            self.configuration = configuration.configuration
+            configurationKey = configuration.key
             self.selection = selection
             let sourceData = fileHandle.readDataToEndOfFile()
             fileHandle.closeFile()
-            sourceText = String(data: sourceData, encoding: .utf8)
+            // `String(validating:as:)` validates and copies the bytes once. A leading byte order
+            // mark is removed, as `String(data:encoding:)` removes it.
+            sourceText = SourceText.decode(sourceData)
         }
     }
 
@@ -316,7 +343,7 @@ class Frontend: @unchecked Sendable {
     private func processStandardInput() {
         let assumedURL = lintFormatOptions.assumeFilename.map(URL.init(fileURLWithPath:))
 
-        guard let configuration = configurationProvider.provide(
+        guard let configuration = configurationProvider.resolve(
             forConfigPathOrString: configurationOptions.configuration,
             orForSwiftFileAt: assumedURL
         ) else { return }
@@ -345,13 +372,12 @@ class Frontend: @unchecked Sendable {
         let excludes = excludePatterns(forInputs: urls)
 
         if parallel {
-            // Materialize URLs only (cheap path strings); open and read each file inside the worker
-            // so peak memory stays at ~workers × file_size instead of total-source-bytes.
-            let urlsToProcess = Array(FileIterator(
-                urls: urls, followSymlinks: lintFormatOptions.followSymlinks, excludes: excludes))
-            DispatchQueue.concurrentPerform(iterations: urlsToProcess.count) { index in
-                if let file = openAndPrepareFile(at: urlsToProcess[index]) { processFile(file) }
-            }
+            processInParallel(
+                FileIterator(
+                    urls: urls,
+                    followSymlinks: lintFormatOptions.followSymlinks,
+                    excludes: excludes
+                ))
         } else {
             FileIterator(
                 urls: urls,
@@ -362,6 +388,32 @@ class Frontend: @unchecked Sendable {
             .compactMap(openAndPrepareFile)
             .forEach(processFile)
         }
+    }
+
+    /// Processes the files of the walk on worker threads while the walk continues.
+    ///
+    /// The walk runs on the calling thread and gives each file to a worker as soon as it finds the
+    /// file. A semaphore holds the number of files in progress at the processor count or less. The
+    /// walk waits for a free slot, so the number of open files and the peak memory stay bounded.
+    /// The function returns when all the workers are done.
+    ///
+    /// The subcommands are synchronous, and `processFile(_:)` does synchronous file and CPU work.
+    /// Dispatch workers therefore do this work. Swift concurrency tasks would block threads of the
+    /// cooperative pool. Findings arrive in completion order, as they did with
+    /// `concurrentPerform` .
+    private func processInParallel(_ files: FileIterator) {
+        let slots = DispatchSemaphore(value: max(1, ProcessInfo.processInfo.activeProcessorCount))
+        let group = DispatchGroup()
+        let queue = DispatchQueue.global(qos: .userInitiated)
+
+        for url in files {
+            slots.wait()
+            queue.async(group: group) {
+                defer { slots.signal() }
+                if let file = self.openAndPrepareFile(at: url) { self.processFile(file) }
+            }
+        }
+        group.wait()
     }
 
     /// Loads the configuration that applies to the first input path to obtain the `excludes` list
@@ -386,7 +438,7 @@ class Frontend: @unchecked Sendable {
             return nil
         }
 
-        guard let configuration = configurationProvider.provide(
+        guard let configuration = configurationProvider.resolve(
             forConfigPathOrString: configurationOptions.configuration,
             orForSwiftFileAt: url
         ) else { return nil }

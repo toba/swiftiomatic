@@ -33,6 +33,12 @@ class StructuralFormatRule<V: SyntaxRuleValue>: SyntaxRewriter, InstanceSyntaxRu
     class var guidance: GuidanceLevel { group?.defaultGuidance ?? .should }
     class var defaultValue: V { .init() }
 
+    /// The rule's dense index, read once so that a finding does not look it up.
+    let ruleIndex: Int?
+
     /// Creates a new StructuralFormatRule in the given context.
-    required init(context: Context) { self.context = context }
+    required init(context: Context) {
+        self.context = context
+        ruleIndex = ConfigurationRegistry.ruleIndex(of: Self.self)
+    }
 }

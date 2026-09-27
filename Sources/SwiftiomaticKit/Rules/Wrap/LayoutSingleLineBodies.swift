@@ -41,6 +41,17 @@ extension LayoutSingleLineBodies {
 
     static func maxLength(context: Context) -> Int { context.configuration[LineLength.self] }
 
+    /// Tells if `indent` plus the character count of the trimmed node fits in the line length.
+    ///
+    /// The UTF-8 length of the node is known with no `String` built, and it is never less than the
+    /// character count. When it fits, the character count fits too. Only a node that does not fit
+    /// by UTF-8 length builds its text to count the characters.
+    static func fits(_ node: some SyntaxProtocol, indent: Int, context: Context) -> Bool {
+        let limit = maxLength(context: context)
+        if indent + node.trimmedLength.utf8Length <= limit { return true }
+        return indent + node.trimmedDescription.count <= limit
+    }
+
     static func transform(
         _ node: IfExprSyntax,
         original: IfExprSyntax,
@@ -980,8 +991,9 @@ extension LayoutSingleLineBodies {
                         context: context
                     ) else { return node }
                 } else {
-                    let estimate = varIndent.count + node.trimmedDescription.count
-                    guard estimate <= Self.maxLength(context: context) else { return node }
+                    guard Self.fits(node, indent: varIndent.count, context: context) else {
+                        return node
+                    }
                 }
 
                 Self.diagnose(.inlinePropertyBody, on: originalBrace, context: context)
@@ -1055,8 +1067,7 @@ extension LayoutSingleLineBodies {
             guard total <= Self.maxLength(context: context) else { return node }
         } else {
             let varIndent = Self.resolveVarIndent(parent: parent)
-            let estimate = varIndent.count + node.trimmedDescription.count
-            guard estimate <= Self.maxLength(context: context) else { return node }
+            guard Self.fits(node, indent: varIndent.count, context: context) else { return node }
         }
 
         Self.diagnose(.inlinePropertyBody, on: originalBrace, context: context)

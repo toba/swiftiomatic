@@ -30,7 +30,7 @@ final class UseForLoopNotForEach: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         }
 
         let memberName = member.declName.baseName
-        guard memberName.text == "forEach" else { return .visitChildren }
+        guard memberName.hasText("forEach") else { return .visitChildren }
 
         // If there is another chained member after `.forEach` , let's skip the diagnostic because
         // resulting code might be less understandable.

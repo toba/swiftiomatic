@@ -71,8 +71,9 @@ final class FormatFrontend: Frontend, @unchecked Sendable {
                     parsingDiagnosticHandler: diagnosticHandler
                 )
 
-                let bufferData = buffer.data(using: .utf8)!  // Conversion to UTF-8 cannot fail
                 if buffer != source {
+                    // Convert to `Data` only for a changed file. An unchanged file needs no copy.
+                    let bufferData = Data(buffer.utf8)
                     // An atomic write replaces the file rather than rewriting it. On Darwin the
                     // replacement takes the mode of the file it replaces, so a source file at
                     // 0600 or 0444 keeps that mode and needs no restore here. swift-format

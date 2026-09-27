@@ -10,7 +10,7 @@ final class UseFirstWhere: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .collections }
 
     override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
-        guard node.declName.baseName.text == "first",
+        guard node.declName.baseName.hasText("first"),
               // Skip `xs.filter { ... }.first(where:)` / `.first { ... }` — the `.first` there is a
               // method call (already `first(where:)`), not the `.first` property.
               node.parent?.is(FunctionCallExprSyntax.self) != true,

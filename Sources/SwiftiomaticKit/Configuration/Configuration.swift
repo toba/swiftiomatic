@@ -14,11 +14,27 @@ package struct Configuration: Sendable, Equatable {
         return true
     }
 
-    /// Type-erased store for layout settings and rule values.
-    private var values: [String: any Sendable] = [:]
+    /// Type-erased store for rule values and layout settings, indexed by storage index.
+    ///
+    /// A rule sits at its rule index, and a layout setting follows the rules. A read hashes the
+    /// type identity once and does not hash a `String` . A `nil` slot holds the default.
+    private var values = Self.emptyValues
+
+    /// Values of `Configurable` types the registry does not list, such as one a test declares,
+    /// keyed by qualified key.
+    private var unregisteredValues: [String: any Sendable] = [:]
+
+    /// Which rules are active, and at what severity, derived from `values` .
+    ///
+    /// Every write to a rule value updates it, so a `Context` reads it per file without a loop over
+    /// the rules.
+    private(set) var ruleActivation = RuleActivation.defaults
 
     /// Version of the configuration format.
     private var version: Int = highestSupportedConfigurationVersion
+
+    private static let emptyValues = ContiguousArray<(any Sendable)?>(
+        repeating: nil, count: ConfigurationRegistry.storageCount)
 
     // MARK: - Typed access
 
@@ -29,31 +45,35 @@ package struct Configuration: Sendable, Equatable {
     /// instead of silently returning the default, which would hide the bug.
     package subscript<C: Configurable>(_: C.Type = C.self) -> C.Value {
         get {
-            let key = Self.storageKey(for: C.self)
-            guard let stored = values[key] else { return C.defaultValue }
+            let stored: (any Sendable)?
+
+            if let slot = ConfigurationRegistry.storageIndex(of: C.self) {
+                stored = values[slot]
+            } else {
+                stored = unregisteredValues[C.qualifiedKey]
+            }
+            guard let stored else { return C.defaultValue }
             guard let typed = stored as? C.Value else {
                 preconditionFailure(
-                    "Configuration key '\(key)' has stored type \(type(of: stored)), "
+                    "Configuration value for '\(C.self)' has stored type \(type(of: stored)), "
                         + "expected \(C.Value.self). This indicates a duplicate Configurable "
                         + "registration with conflicting Value types.")
             }
             return typed
         }
-        set { values[Self.storageKey(for: C.self)] = newValue }
-    }
+        set {
+            guard let slot = ConfigurationRegistry.storageIndex(of: C.self) else {
+                unregisteredValues[C.qualifiedKey] = newValue
+                return
+            }
+            values[slot] = newValue
 
-    /// The storage key for a configurable type, read from the registry's memo.
-    ///
-    /// Deriving the key costs a metatype interpolation and a regex replacement, and the layout pass
-    /// reads a setting once per token. The fallback covers a type the registry does not list, such
-    /// as one a test declares.
-    private static func storageKey<C: Configurable>(for _: C.Type) -> String {
-        ConfigurationRegistry.qualifiedKeyCache[ObjectIdentifier(C.self)] ?? C.qualifiedKey
-    }
-
-    /// Existential counterpart to `storageKey(for:)` , for a rule held as `any SyntaxRule.Type` .
-    private static func storageKey(for rule: any SyntaxRule.Type) -> String {
-        ConfigurationRegistry.qualifiedKeyCache[ObjectIdentifier(rule)] ?? rule.qualifiedKey
+            if slot < ConfigurationRegistry.ruleCount,
+               let ruleValue = newValue as? any SyntaxRuleValue
+            {
+                ruleActivation.update(ruleAt: slot, with: ruleValue)
+            }
+        }
     }
 
     /// Returns whether the given rule is active, using existential dispatch on the runtime
@@ -69,19 +89,20 @@ package struct Configuration: Sendable, Equatable {
     /// This helper avoids that footgun by going through `any SyntaxRule.Type` , whose member access
     /// dispatches on the runtime metatype.
     func isActive(rule: any SyntaxRule.Type) -> Bool {
-        storedValue(for: rule)?.isActive ?? rule.defaultIsActive
+        guard let index = ConfigurationRegistry.ruleIndex(of: rule) else {
+            return rule.defaultIsActive
+        }
+        return ruleActivation.active[index]
     }
 
     /// Returns whether the given rule's rewrite path is enabled. Mirrors `isActive(rule:)` but
     /// consults only the `rewrite` flag, so a rule with `rewrite: false, lint: .warn` reports
     /// findings without rewriting.
     func isRewriteActive(rule: any SyntaxRule.Type) -> Bool {
-        storedValue(for: rule)?.isRewriteActive ?? rule.defaultRewriteActive
-    }
-
-    /// The configured value for a rule, or `nil` when the file left the rule at its default.
-    private func storedValue(for rule: any SyntaxRule.Type) -> any SyntaxRuleValue? {
-        values[Self.storageKey(for: rule)] as? any SyntaxRuleValue
+        guard let index = ConfigurationRegistry.ruleIndex(of: rule) else {
+            return rule.defaultRewriteActive
+        }
+        return ruleActivation.rewrite[index]
     }
 
     // MARK: - Layout setting registry

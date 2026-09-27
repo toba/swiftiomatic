@@ -9,7 +9,9 @@ import SwiftSyntax
 ///
 /// A container counts as a level when it sits inside the content of another level. A
 /// `.background` or `.overlay` layer also counts as a level, one deeper than the view it decorates,
-/// when its content holds a container. A leaf layer such as `.background(.red)` adds no level.
+/// when its content holds a container, or when it fills a shape, as in
+/// `.background(.quaternary, in: .capsule)` . A shape layer composes a shape view with its own
+/// style. A leaf layer such as `.background(.red)` adds no level.
 /// Levels that sit side by side do not add up: two containers in sibling modifiers, or two layers
 /// in one modifier chain, each count only once.
 ///
@@ -104,12 +106,18 @@ final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked S
         }
 
         /// The modifier name in `view.background(...)` or `view.overlay(...)` , when the layer
-        /// content holds a container
+        /// fills a shape or its content holds a container
         private static func layerModifier(of call: FunctionCallExprSyntax) -> TokenSyntax? {
             guard let name = call.modifierName, FlagDeepViewComposition.layers.contains(name),
                   let member = call.calledExpression.as(MemberAccessExprSyntax.self),
-                  member.base != nil, holdsContainer(call) else { return nil }
+                  member.base != nil, fillsShape(call) || holdsContainer(call) else { return nil }
             return member.declName.baseName
+        }
+
+        /// Whether `call` is the shape form of a layer, `background(_:in:fillStyle:)` or
+        /// `overlay(_:in:fillStyle:)`
+        private static func fillsShape(_ call: FunctionCallExprSyntax) -> Bool {
+            call.arguments.contains { $0.label?.hasText("in") == true }
         }
 
         /// Whether the arguments or trailing closures of `call` hold a container call

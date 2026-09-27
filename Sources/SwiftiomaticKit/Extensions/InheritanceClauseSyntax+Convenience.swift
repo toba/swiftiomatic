@@ -4,8 +4,8 @@ extension InheritanceClauseSyntax {
     /// Returns a copy with the inherited type matching `typeName` removed, or `nil` if the clause
     /// becomes empty (the caller should set `inheritanceClause = nil` ).
     ///
-    /// Matching uses `trimmedDescription` on the type, so both simple names ( `Sendable` ) and
-    /// qualified names ( `Swift.Sendable` ) work.
+    /// Matching compares the full type text, as `trimmedDescription` gives it, so both simple names
+    /// ( `Sendable` ) and qualified names ( `Swift.Sendable` ) work.
     ///
     /// Comma handling:
     /// - Removing the only item → returns `nil`
@@ -13,7 +13,7 @@ extension InheritanceClauseSyntax {
     /// - Removing the last item → the preceding item's trailing comma is removed
     func removing(named typeName: String) -> InheritanceClauseSyntax? {
         var items = Array(inheritedTypes)
-        guard let index = items.firstIndex(where: { $0.type.trimmedDescription == typeName }) else {
+        guard let index = items.firstIndex(where: { $0.type.trimmedDescriptionEquals(typeName) }) else {
             return self
         }
 
@@ -41,11 +41,11 @@ extension InheritanceClauseSyntax {
 
     /// Returns `true` if the clause contains an inherited type matching `typeName` .
     func contains(named typeName: String) -> Bool {
-        inheritedTypes.contains { $0.type.trimmedDescription == typeName }
+        inheritedTypes.contains { $0.type.trimmedDescriptionEquals(typeName) }
     }
 
     /// Returns the `InheritedTypeSyntax` matching `typeName` , or `nil` .
     func inherited(named typeName: String) -> InheritedTypeSyntax? {
-        inheritedTypes.first { $0.type.trimmedDescription == typeName }
+        inheritedTypes.first { $0.type.trimmedDescriptionEquals(typeName) }
     }
 }

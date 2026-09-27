@@ -18,7 +18,7 @@ final class UseContains: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
 
     // Pattern: `xs.filter { ... }.isEmpty`
     override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
-        guard node.declName.baseName.text == "isEmpty",
+        guard node.declName.baseName.hasText("isEmpty"),
               let call = node.base?.as(FunctionCallExprSyntax.self),
               let calledMember = call.calledExpression.as(MemberAccessExprSyntax.self),
               calledMember.declName.baseName.text == "filter" else { return .visitChildren }

@@ -102,7 +102,7 @@ extension TokenStream {
         if let elseKeyword = node.elseKeyword {
             // Add a token before the else keyword. Breaking before `else` is explicitly allowed
             // when there's a comment.
-            if config[PlaceElseCatchOnNewLine.self] {
+            if placeElseCatchOnNewLine {
                 before(elseKeyword, tokens: .break(.same, newlines: .soft))
             } else if elseKeyword.hasPrecedingLineComment {
                 before(elseKeyword, tokens: .break(.same, size: 1))
@@ -231,7 +231,7 @@ extension TokenStream {
     func visitRepeatStmt(_ node: RepeatStmtSyntax) -> SyntaxVisitorContinueKind {
         arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
 
-        if config[PlaceElseCatchOnNewLine.self] {
+        if placeElseCatchOnNewLine {
             before(node.whileKeyword, tokens: .break(.same), .open)
             after(node.condition.lastToken(viewMode: .sourceAccurate), tokens: .close)
         } else {
@@ -254,7 +254,7 @@ extension TokenStream {
     }
 
     func visitCatchClause(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
-        let catchPrecedingBreak = config[PlaceElseCatchOnNewLine.self]
+        let catchPrecedingBreak = placeElseCatchOnNewLine
             ? Token.break(.same, newlines: .soft)
             : Token.space
         before(node.catchKeyword, tokens: catchPrecedingBreak)
@@ -352,7 +352,7 @@ extension TokenStream {
         // An if-configuration clause around a switch-case encloses the case's node, so an
         // if-configuration clause requires a break here in order to be allowed on a new line.
         for ifConfigDecl in node.cases where ifConfigDecl.is(IfConfigDeclSyntax.self) {
-            if config[IndentSwitchCases.self].style == .indented {
+            if indentsSwitchCases {
                 before(ifConfigDecl.firstToken(viewMode: .sourceAccurate), tokens: .break(.open))
                 after(
                     ifConfigDecl.lastToken(viewMode: .sourceAccurate),
@@ -375,7 +375,7 @@ extension TokenStream {
         // If switch/case labels were configured to be indented, use an `open` break; otherwise, use
         // the default `same` break.
         let openBreak: Token
-        openBreak = config[IndentSwitchCases.self].style == .indented
+        openBreak = indentsSwitchCases
             ? .break(.open, newlines: .elective)
             : .break(.same, newlines: .soft)
         before(node.firstToken(viewMode: .sourceAccurate), tokens: openBreak)
@@ -392,7 +392,7 @@ extension TokenStream {
         // the case body to match the `open` break above
         var afterLastTokenTokens: [Token] = [.break(.close, size: 0), .close]
 
-        if config[IndentSwitchCases.self].style == .indented {
+        if indentsSwitchCases {
             afterLastTokenTokens.append(.break(.close, size: 0))
         }
 
@@ -443,7 +443,7 @@ extension TokenStream {
         // Disambiguation: if an item with a `where` clause follows an item without one, the
         // compiler warns. Enforce a soft newline between such items to avoid the warning,
         // especially after `NoCasesWithOnlyFallthrough` transforms that might merge cases.
-        let useAlignment = config[AlignWrappedConditions.self]
+        let useAlignment = alignWrappedConditions
         var hasOpenAlignmentBreak = false
 
         for (index, item) in caseItems.enumerated() {

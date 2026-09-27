@@ -196,7 +196,7 @@ package final class RewriteCoordinator {
             sourceFileSyntax: syntax,
             source: source
         )
-        let transformedSyntax = runPipeline(Syntax(syntax), context: context)
+        let transformedSyntax = runPipeline(Syntax(syntax), source: source, context: context)
         if debugOptions.contains(.disablePrettyPrint) { return transformedSyntax.description }
 
         let printer = LayoutCoordinator(
@@ -219,7 +219,12 @@ package final class RewriteCoordinator {
     /// `UseDocCommentsOnAPI` , `NormalizeSwitchCaseSpacing` , `ReflowComments` — were inlined into
     /// stage 1 (sessions 11–14 of `ddi-wtv` Phase 4g) and removed from this list once their
     /// `override func visit` shells were stripped.
-    private func runPipeline(_ node: Syntax, context: Context) -> Syntax {
+    ///
+    /// `source` is the text that `node` was parsed from. A pass whose rule can act only on some
+    /// text first checks the source bytes for that text, and skips its walk when the text is
+    /// absent. No stage 1 rule writes a sort marker or a new `typealias` , so the original source
+    /// is enough for the check.
+    private func runPipeline(_ node: Syntax, source: String, context: Context) -> Syntax {
         var current = RewritePipeline(context: context).rewrite(node)
         current = runStructuralPass(SortImports.self, on: current, context: context)
         current = runStructuralPass(InsertBlankLineAfterImports.self, on: current, context: context)
@@ -227,9 +232,13 @@ package final class RewriteCoordinator {
         current = runStructuralPass(HoistExtensionAccess.self, on: current, context: context)
         current = runStructuralPass(
             InsertBlankLineBetweenScopes.self, on: current, context: context)
-        current = runStructuralPass(SortDeclarations.self, on: current, context: context)
+        if SortDeclarations.sourceCanMatch(source) {
+            current = runStructuralPass(SortDeclarations.self, on: current, context: context)
+        }
         current = runStructuralPass(SortSwitchCases.self, on: current, context: context)
-        current = runStructuralPass(SortTypeAliases.self, on: current, context: context)
+        if SortTypeAliases.sourceCanMatch(source) {
+            current = runStructuralPass(SortTypeAliases.self, on: current, context: context)
+        }
         current = runStructuralPass(FileHeader.self, on: current, context: context)
         return current
     }

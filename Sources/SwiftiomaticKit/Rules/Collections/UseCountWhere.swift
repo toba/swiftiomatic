@@ -28,7 +28,7 @@ final class UseCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
         }
 
         // Match .count property access
-        guard memberNode.declName.baseName.text == "count" else { return ExprSyntax(memberNode) }
+        guard memberNode.declName.baseName.hasText("count") else { return ExprSyntax(memberNode) }
 
         // Base must be a .filter call
         guard let filterCall = memberNode.base?.as(FunctionCallExprSyntax.self),

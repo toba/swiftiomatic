@@ -20,17 +20,21 @@ import SwiftSyntax
 extension RewritePipeline {
     /// Applies a rule to an accumulator of the node's own kind.
     ///
+    /// The rule type names the rule for a reader of the generated code. The gate reads `index` ,
+    /// the rule's dense index, which the generator writes as a literal.
+    ///
     /// The override returns that same kind, so no rule in the chain can replace the node with a
     /// different one. A result that is not the node's kind is dropped.
     @inline(__always)
     func apply<N: SyntaxProtocol, R: SyntaxRule>(
         _: R.Type,
+        index: Int,
         to concrete: inout N,
         original: N,
         gate: Context.Gate,
         _ body: (N, N, Context) -> some SyntaxProtocol
     ) {
-        guard context.shouldRewrite(R.self, gate: gate) else { return }
+        guard context.shouldRewrite(index, gate: gate) else { return }
         if let next = body(concrete, original, context).as(N.self) { concrete = next }
     }
 
@@ -46,13 +50,14 @@ extension RewritePipeline {
     @inline(__always)
     func applyNarrowing<N: SyntaxProtocol, R: SyntaxRule, W: SyntaxProtocol>(
         _: R.Type,
+        index: Int,
         to current: inout W,
         as _: N.Type,
         original: N,
         gate: Context.Gate,
         _ body: (N, N, Context) -> some SyntaxProtocol
     ) {
-        guard context.shouldRewrite(R.self, gate: gate),
+        guard context.shouldRewrite(index, gate: gate),
               let concrete = current.as(N.self) else { return }
 
         if let next = Syntax(body(concrete, original, context)).as(W.self) { current = next }

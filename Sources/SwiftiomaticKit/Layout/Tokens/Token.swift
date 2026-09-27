@@ -13,7 +13,9 @@
 import SwiftSyntax
 
 enum Token: Sendable {
-    case syntax(String)
+    /// Source text. `width` is the column width of `text` , which `Token.syntax(_:)` computes once
+    /// when it creates the token.
+    case syntax(String, width: Int)
     case open(GroupBreakStyle)
     case close
     case `break`(BreakKind, size: Int, newlines: NewlineBehavior)
@@ -59,7 +61,29 @@ enum Token: Sendable {
     /// Turn formatting off at the given position in the original file.
     case disableFormatting(AbsolutePosition)
 
+    /// The kind of the comment when this token is a comment that did not end a line of code.
+    var leadingCommentKind: Comment.Kind? {
+        if case .comment(let comment, false) = self { comment.kind } else { nil }
+    }
+
     // Convenience overloads for the enum types
+
+    /// A syntax token for the given text, with its column width computed once.
+    static func syntax(_ text: String) -> Token { .syntax(text, width: columnWidth(of: text)) }
+
+    /// Returns the column width of the text: the number of `Character` values it holds.
+    ///
+    /// Text of ASCII bytes other than CR has one `Character` per byte, so the byte count is the
+    /// answer. Other text counts its grapheme clusters.
+    static func columnWidth(of text: String) -> Int {
+        let bytes = text.utf8.span
+
+        for index in bytes.indices {
+            let byte = bytes[index]
+            if byte >= 0x80 || byte == UInt8(ascii: "\r") { return text.count }
+        }
+        return bytes.count
+    }
     static let open = Token.open(.inconsistent, 0)
 
     static func open(_ breakStyle: GroupBreakStyle, _: Int) -> Token { Token.open(breakStyle) }

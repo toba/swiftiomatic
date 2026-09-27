@@ -56,6 +56,37 @@ extension UTF8.CodeUnit {
     }
 }
 
+extension Substring {
+    /// Drops the trailing whitespace. This matches `trimmingTrailingWhitespace()` but returns a
+    /// slice of the same storage.
+    fileprivate func droppingTrailingWhitespace() -> Substring {
+        var end = endIndex
+
+        while end > startIndex {
+            let prev = index(before: end)
+            let ch = self[prev]
+            guard ch == " " || ch == "\n" || ch == "\t" || ch == "\r"
+                || ch == "\u{0B}" || ch == "\u{0C}"
+            else { break }
+            end = prev
+        }
+        return self[..<end]
+    }
+
+    /// Whether the slice starts with `count` copies of the given character. This matches
+    /// `hasPrefix` with a string of `count` copies of `character` .
+    fileprivate func starts(with character: Character, count: Int) -> Bool {
+        var remaining = count
+
+        for ch in self {
+            guard remaining > 0 else { return true }
+            guard ch == character else { return false }
+            remaining -= 1
+        }
+        return remaining == 0
+    }
+}
+
 struct Comment: Sendable {
     enum Kind: Sendable {
         case line, docLine, block, docBlock
@@ -81,7 +112,16 @@ struct Comment: Sendable {
     }
 
     let kind: Kind
-    var text: [String]
+
+    /// The owned text that holds every line. Merged `//` lines are appended to it, each after a
+    /// newline, so that a line never shares a grapheme cluster with the line before it.
+    private var storage: String
+
+    /// The UTF-8 offset range of each line in `storage` . A line holds the text after the comment
+    /// prefix. The lines of a block comment have their trailing whitespace removed, except the
+    /// last line.
+    private var lineRanges: [Range<Int>]
+
     var length: Int
     // what was the leading indentation, if any, that preceded this comment?
     var leadingIndent: Indent?
@@ -93,75 +133,137 @@ struct Comment: Sendable {
     init(kind: Kind, leadingIndent: Indent?, text: String) {
         self.kind = kind
         self.leadingIndent = leadingIndent
+        storage = text
+
+        let bodyStart = text.index(text.startIndex, offsetBy: kind.prefixLength)
 
         switch kind {
             case .line, .docLine:
                 length = text.count
-                self.text = [text]
-                self.text[0].removeFirst(kind.prefixLength)
+                lineRanges = [Self.offset(of: bodyStart, in: text)..<text.utf8.count]
 
             case .block, .docBlock:
-                var fullText: String = text
-                fullText.removeFirst(kind.prefixLength)
-                fullText.removeLast(2)
-
-                let lines = fullText.split(separator: "\n", omittingEmptySubsequences: false)
+                let bodyEnd = text.index(text.endIndex, offsetBy: -2)
+                let lines = text[bodyStart..<bodyEnd]
+                    .split(separator: "\n", omittingEmptySubsequences: false)
 
                 // The last line in a block style comment contains the "*/" pattern to end the
                 // comment. The trailing space(s) need to be kept in that line to have space between
                 // text and "*/".
-                var trimmedLines = lines.dropLast().map { $0.trimmingTrailingWhitespace() }
-                if let lastLine = lines.last { trimmedLines.append(String(lastLine)) }
-                self.text = trimmedLines
-                length = self.text.reduce(0) { $0 + $1.count } + kind.prefixLength + 3
+                var ranges = [Range<Int>]()
+                ranges.reserveCapacity(lines.count)
+                var total = 0
+
+                for (index, line) in lines.enumerated() {
+                    let kept = index == lines.count - 1 ? line : line.droppingTrailingWhitespace()
+                    total += kept.count
+                    ranges.append(
+                        Self.offset(of: kept.startIndex, in: text)
+                            ..< Self.offset(of: kept.endIndex, in: text))
+                }
+                lineRanges = ranges
+                length = total + kind.prefixLength + 3
         }
     }
 
-    func print(indent: [Indent], shouldIndentBlankLines: Bool = true) -> String {
+    /// The first line, after the comment prefix.
+    var firstLine: Substring? { lineRanges.first.map(lineText(at:)) }
+
+    /// Writes the comment to the given string. Each line after the first starts with the given
+    /// indentation.
+    func print(
+        into output: inout String,
+        indentation: LayoutIndentation,
+        shouldIndentBlankLines: Bool = true
+    ) {
         switch kind {
             case .line, .docLine:
-                let separator = "\n" + indent.indentation() + kind.prefix
-                var lines = text.map { $0.trimmingTrailingWhitespace() }
+                for (index, range) in lineRanges.enumerated() {
+                    if index > 0 {
+                        output.append("\n")
+                        indentation.append(to: &output)
+                    }
+                    output.append(kind.prefix)
 
-                if alignsWithPrecedingDocLine {
+                    let line = lineText(at: range).droppingTrailingWhitespace()
+
                     // Indent the body one extra space so it aligns with the `///` body. A standard
                     // `// ` body has a single leading space; bump it to two. Lines that already
                     // have two leading spaces are left untouched, which keeps the transform a fixed
                     // point (idempotent) when re-formatting already-aligned input.
-                    lines = lines.map { $0.hasPrefix(" ") && !$0.hasPrefix("  ") ? " " + $0 : $0 }
+                    if alignsWithPrecedingDocLine, line.hasPrefix(" "), !line.hasPrefix("  ") {
+                        output.append(" ")
+                    }
+                    output.append(contentsOf: line)
                 }
-                return kind.prefix + lines.joined(separator: separator)
             case .block, .docBlock:
-                let separator = "\n"
+                output.append(kind.prefix)
 
                 // if all the lines after the first matching leadingIndent, replace that prefix with
                 // the current indentation level
-                if let leadingIndent {
-                    let rest = text.dropFirst()
+                if let leadingIndent, lineRanges.count > 1 {
+                    let indentCharacter = leadingIndent.character
+                    let indentCount = leadingIndent.count
+                    let rest = lineRanges.dropFirst()
                     let hasLeading = rest.allSatisfy {
-                        $0.hasPrefix(leadingIndent.text) || $0.isEmpty
+                        let line = lineText(at: $0)
+                        return line.isEmpty
+                            || line.starts(with: indentCharacter, count: indentCount)
                     }
 
-                    if hasLeading, let first = text.first, !rest.isEmpty {
-                        let indentation = indent.indentation()
-                        let restStr = rest.map {
-                            guard !$0.isEmpty else {
-                                return shouldIndentBlankLines ? indentation : ""
+                    if hasLeading {
+                        output.append(contentsOf: lineText(at: lineRanges[0]))
+
+                        for range in rest {
+                            output.append("\n")
+                            let line = lineText(at: range)
+
+                            guard !line.isEmpty else {
+                                if shouldIndentBlankLines { indentation.append(to: &output) }
+                                continue
                             }
-                            let stripped = $0.dropFirst(leadingIndent.text.count)
-                            return indentation + stripped
-                        }.joined(separator: separator)
-                        return kind.prefix + first + separator + restStr + "*/"
+                            indentation.append(to: &output)
+                            output.append(contentsOf: line.dropFirst(indentCount))
+                        }
+                        output.append("*/")
+                        return
                     }
                 }
-                return kind.prefix + text.joined(separator: separator) + "*/"
+                for (index, range) in lineRanges.enumerated() {
+                    if index > 0 { output.append("\n") }
+                    output.append(contentsOf: lineText(at: range))
+                }
+                output.append("*/")
         }
     }
 
-    mutating func addText(_ text: [String]) {
-        for line in text {
-            self.text.append(line)
+    /// Returns the comment text with the given indentation.
+    func print(indentation: LayoutIndentation, shouldIndentBlankLines: Bool = true) -> String {
+        var output = ""
+        print(into: &output, indentation: indentation, shouldIndentBlankLines: shouldIndentBlankLines)
+        return output
+    }
+
+    /// Appends the lines of another comment of the same kind.
+    mutating func addLines(of other: Comment) {
+        for range in other.lineRanges {
+            let line = other.lineText(at: range)
+            storage.append("\n")
+            let start = storage.utf8.count
+            storage.append(contentsOf: line)
+            lineRanges.append(start..<storage.utf8.count)
             length += line.count + kind.prefixLength + 1
         }
+    }
+
+    private func lineText(at range: Range<Int>) -> Substring {
+        let utf8 = storage.utf8
+        let start = utf8.index(utf8.startIndex, offsetBy: range.lowerBound)
+        let end = utf8.index(start, offsetBy: range.count)
+        return storage[start..<end]
+    }
+
+    private static func offset(of index: String.Index, in text: String) -> Int {
+        text.utf8.distance(from: text.utf8.startIndex, to: index)
     }
 }

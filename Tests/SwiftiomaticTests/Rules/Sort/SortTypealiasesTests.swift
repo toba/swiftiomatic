@@ -229,4 +229,39 @@ struct SortTypeAliasesTests: RuleTesting {
       findings: []
     )
   }
+
+  /// A composition typealias inside a nested type still sorts, when the full pipeline runs with
+  /// its source precheck.
+  @Test func sortsTypealiasInNestedType() {
+    assertFormatting(
+      SortTypeAliases.self,
+      input: """
+        struct Outer {
+          enum Inner {
+            1️⃣typealias Deps = Foo & Bar
+          }
+        }
+        """,
+      expected: """
+        struct Outer {
+          enum Inner {
+            typealias Deps = Bar & Foo
+          }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "sort protocol composition types alphabetically"),
+      ]
+    )
+  }
+
+  // MARK: - Source precheck
+
+  @Test func precheckNeedsTypealiasAndAmpersand() {
+    #expect(SortTypeAliases.sourceCanMatch("typealias Deps = Foo & Bar"))
+    #expect(SortTypeAliases.sourceCanMatch("typealias Deps =\n  Foo\n  & Bar"))
+    #expect(!SortTypeAliases.sourceCanMatch("typealias Deps = Foo"))
+    #expect(!SortTypeAliases.sourceCanMatch("let x = a & b"))
+    #expect(!SortTypeAliases.sourceCanMatch(""))
+  }
 }
