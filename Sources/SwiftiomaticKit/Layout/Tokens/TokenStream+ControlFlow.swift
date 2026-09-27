@@ -60,7 +60,7 @@ extension TokenStream {
         // so that continuations inside of the conditions can stack in addition to continuations
         // between the conditions. There are no breaks around the first condition because
         // if-statements look better without a break between the "if" and the first condition.
-        let ifBreakKind = ifConditionWrapping(node.conditions, config: config).breakKind
+        let ifBreakKind = ifConditionWrapping(node.conditions, settings: conditionWrappingSettings).breakKind
 
         for condition in node.conditions.dropFirst() {
             before(
@@ -210,7 +210,7 @@ extension TokenStream {
         // excessive changes to previously formatted code. This has the side effect that the label +
         // `while` + tokens up to the first break in the first condition could be longer than the
         // column limit since there are no breaks between the label or while token.
-        let whileBreakKind = whileConditionWrapping(node.conditions, config: config).breakKind
+        let whileBreakKind = whileConditionWrapping(node.conditions, settings: conditionWrappingSettings).breakKind
 
         for condition in node.conditions.dropFirst() {
             before(

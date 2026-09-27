@@ -110,6 +110,16 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
             return DeclSyntax(node)
         }
 
+        guard !context.isLintMode else {
+            let notes = keywordToAdd.map { keyword in
+                ExtensionMemberCollector.members(of: node)
+                    .filter { $0.modifiers.accessLevelModifier == nil }
+                    .map { addModifierNote(keyword, on: $0) }
+            } ?? []
+            diagnose(message, on: accessKeyword, notes: notes)
+            return DeclSyntax(node)
+        }
+
         var result: ExtensionDeclSyntax
 
         if let keywordToAdd {
@@ -170,6 +180,22 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
 
         // Check if all members share the same hoistable access level.
         guard let commonAccess = commonMemberAccessLevel(node.memberBlock) else {
+            return DeclSyntax(node)
+        }
+
+        guard !context.isLintMode else {
+            let notes = ExtensionMemberCollector.members(of: node).compactMap { member in
+                member.modifiers.accessLevelModifier.flatMap { modifier in
+                    modifier.name.tokenKind == .keyword(commonAccess)
+                        ? removeModifierNote(modifier, on: member)
+                        : nil
+                }
+            }
+            diagnose(
+                .hoistAccessKeyword(keyword: TokenSyntax.keyword(commonAccess).text),
+                on: node.extensionKeyword,
+                notes: notes
+            )
             return DeclSyntax(node)
         }
 
@@ -353,10 +379,7 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         // If there's already an access modifier among the modifier list, bail out.
         guard decl.modifiers.accessLevelModifier == nil else { return DeclSyntax(decl) }
 
-        notesFromRewrittenMembers.append(Finding.Note(
-            message: .addModifierToExtensionMember(keyword: TokenSyntax.keyword(modifier).text),
-            location: Finding.Location(decl.startLocation(
-                converter: context.sourceLocationConverter))))
+        notesFromRewrittenMembers.append(addModifierNote(modifier, on: decl))
 
         var result = decl
         var modifier = DeclModifierSyntax(name: .keyword(modifier))
@@ -382,6 +405,25 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
         return DeclSyntax(result)
     }
 
+    /// The note for a member that gains the `keyword` access modifier.
+    private func addModifierNote(_ keyword: Keyword, on decl: some SyntaxProtocol) -> Finding.Note {
+        Finding.Note(
+            message: .addModifierToExtensionMember(keyword: TokenSyntax.keyword(keyword).text),
+            location: Finding.Location(decl.startLocation(
+                converter: context.sourceLocationConverter)))
+    }
+
+    /// The note for a member that loses its `modifier` access modifier.
+    private func removeModifierNote(
+        _ modifier: DeclModifierSyntax,
+        on decl: some SyntaxProtocol
+    ) -> Finding.Note {
+        Finding.Note(
+            message: .removeModifierFromExtensionMember(keyword: modifier.name.text),
+            location: Finding.Location(decl.startLocation(
+                converter: context.sourceLocationConverter)))
+    }
+
     /// Removes the access modifier from `decl` if it matches the keyword being hoisted.
     private func removingAccessModifier<Decl: DeclSyntaxProtocol & WithModifiersSyntax>(
         _ keyword: Keyword,
@@ -392,10 +434,7 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
               case .keyword(keyword) = accessModifier.name.tokenKind
         else { return DeclSyntax(decl) }
 
-        notesFromRewrittenMembers.append(Finding.Note(
-            message: .removeModifierFromExtensionMember(keyword: accessModifier.name.text),
-            location: Finding.Location(decl.startLocation(
-                converter: context.sourceLocationConverter))))
+        notesFromRewrittenMembers.append(removeModifierNote(accessModifier, on: decl))
 
         var result = decl
         let savedLeadingTrivia = accessModifier.leadingTrivia
@@ -412,6 +451,48 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
 
         return DeclSyntax(result)
     }
+}
+
+// MARK: - Lint mode
+
+/// Collects the members of an extension that the rule's member visitors reach.
+///
+/// The rewrite reaches a member through `super.visit` , which descends into `#if` clauses and
+/// stops at each member visitor. This visitor stops at the same kinds, so lint mode reports the
+/// same notes without a rewrite.
+private final class ExtensionMemberCollector: SyntaxVisitor {
+    private var members: [any DeclSyntaxProtocol & WithModifiersSyntax] = []
+
+    static func members(
+        of node: ExtensionDeclSyntax
+    ) -> [any DeclSyntaxProtocol & WithModifiersSyntax] {
+        let collector = ExtensionMemberCollector(viewMode: .sourceAccurate)
+        collector.walk(node.memberBlock)
+        return collector.members
+    }
+
+    private func collect(
+        _ node: some DeclSyntaxProtocol & WithModifiersSyntax
+    ) -> SyntaxVisitorContinueKind {
+        members.append(node)
+        return .skipChildren
+    }
+
+    override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind { collect(node) }
+    override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind { collect(node) }
+    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind { collect(node) }
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind { collect(node) }
+    override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        collect(node)
+    }
+    override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind { collect(node) }
+    override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind { collect(node) }
+    override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind { collect(node) }
+    override func visit(_ node: TypeAliasDeclSyntax) -> SyntaxVisitorContinueKind { collect(node) }
+    override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind { collect(node) }
+
+    /// The rule returns a nested extension unchanged, so its members are not reached.
+    override func visit(_: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
 }
 
 // MARK: - File lookups

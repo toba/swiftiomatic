@@ -30,7 +30,19 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
     /// per-node merged rewrite functions in `Sources/SwiftiomaticKit/Rewrites/Exprs/` .
     fileprivate var compactPipelineParent: Syntax?
 
+    /// Whether a static `transform` created this instance for the rewrite pipeline.
+    fileprivate var runsInRewritePipeline = false
+
+    /// Whether this instance serves the lint pipeline in lint mode.
+    ///
+    /// The static `willEnter` hooks emit every finding of this rule, so the lint pipeline's
+    /// instance has nothing to report and returns each node unchanged. The rewrite pipeline still
+    /// rewrites in lint mode, because later hooks read the rewritten tree.
+    private var skipsRewrite: Bool { context.isLintMode && !runsInRewritePipeline }
+
     override func visit(_ node: IdentifierTypeSyntax) -> TypeSyntax {
+        guard !skipsRewrite else { return TypeSyntax(node) }
+
         // Ignore types that don't have generic arguments.
         guard let genericArgumentClause = node.genericArgumentClause else {
             return super.visit(node)
@@ -117,6 +129,8 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
     }
 
     override func visit(_ node: GenericSpecializationExprSyntax) -> ExprSyntax {
+        guard !skipsRewrite else { return ExprSyntax(node) }
+
         // `GenericSpecializationExprSyntax` s are found in the syntax tree when a generic type is
         // encountered in an expression context, such as `Array<Int>()` . In these situations, the
         // corresponding array and dictionary shorthand nodes will be expression nodes, not type
@@ -752,6 +766,7 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
     ) -> TypeSyntax {
         let rule = UseShorthandTypeNames(context: context)
         rule.compactPipelineParent = parent
+        rule.runsInRewritePipeline = true
         return rule.visit(node)
     }
 
@@ -763,6 +778,7 @@ final class UseShorthandTypeNames: StructuralFormatRule<BasicRuleValue>, @unchec
     ) -> ExprSyntax {
         let rule = UseShorthandTypeNames(context: context)
         rule.compactPipelineParent = parent
+        rule.runsInRewritePipeline = true
         return rule.visit(node)
     }
 }

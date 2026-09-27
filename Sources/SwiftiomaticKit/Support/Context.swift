@@ -94,6 +94,13 @@ package final class Context {
     /// run, because the lint coordinator discards the tree it would build. See issue fn9-zk6.
     let rewriteEnabledRules: RuleSet
 
+    /// Whether `LintCoordinator` created this context, so every rewritten tree is discarded.
+    ///
+    /// A `StructuralFormatRule` reads it to emit its findings and return the original node without
+    /// building a new tree. The lint pipeline visits every node itself, so such a rule also skips
+    /// its `super.visit` recursion in lint mode.
+    let isLintMode: Bool
+
     /// Whether the source may hold a `@warn` or `@diagnose` attribute.
     ///
     /// False only when the initializer read the source text and found neither. A finding then
@@ -126,6 +133,9 @@ package final class Context {
     lazy var urlMacroState = UseURLMacroForURLLiterals.State()
     lazy var validateTestCasesState = RequireTestFnPrefixOrAttribute.State()
     lazy var layoutSingleLineBodiesState = LayoutSingleLineBodiesState()
+
+    /// The condition wrapping settings, read from `configuration` once per file.
+    lazy var conditionWrappingSettings = ConditionWrappingSettings(configuration)
 
     /// What this file declares, keyed by simple name, built on first lookup.
     ///
@@ -183,6 +193,7 @@ package final class Context {
         isLintMode: Bool = false
     ) {
         self.configuration = configuration
+        self.isLintMode = isLintMode
         self.operatorTable = operatorTable
         findingEmitter = FindingEmitter(consumer: findingConsumer)
         self.fileURL = fileURL

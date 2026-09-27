@@ -43,6 +43,7 @@ class TokenStreamBase: SyntaxVisitor {
     let spacesBeforeEndOfLineComments: Int
     let indentsSwitchCases: Bool
     let alignWrappedConditions: Bool
+    let conditionWrappingSettings: ConditionWrappingSettings
 
     /// The column width of one indentation unit.
     let indentationUnitWidth: Int
@@ -108,7 +109,8 @@ class TokenStreamBase: SyntaxVisitor {
         alignCommentWithAdjacentDocComment = configuration[AlignCommentWithAdjacentDocComment.self]
         spacesBeforeEndOfLineComments = configuration[SpacesBeforeEndOfLineComments.self]
         indentsSwitchCases = configuration[IndentSwitchCases.self].style == .indented
-        alignWrappedConditions = configuration[AlignWrappedConditions.self]
+        conditionWrappingSettings = ConditionWrappingSettings(configuration)
+        alignWrappedConditions = conditionWrappingSettings.alignsWrappedConditions
         indentationUnitWidth = switch configuration[IndentationSetting.self] {
             case let .spaces(n): n
             case let .tabs(n): n * configuration[TabWidth.self]

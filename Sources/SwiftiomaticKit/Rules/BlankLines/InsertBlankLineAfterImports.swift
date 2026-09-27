@@ -35,6 +35,7 @@ final class InsertBlankLineAfterImports: StructuralFormatRule<BasicRuleValue>, @
         guard newlineCount < 2 else { return node }
 
         diagnose(.insertBlankLineAfterImports, on: nextStatement)
+        guard !context.isLintMode else { return node }
 
         // Add an extra newline to the leading trivia of the next statement.
         var modifiedStatements = statements

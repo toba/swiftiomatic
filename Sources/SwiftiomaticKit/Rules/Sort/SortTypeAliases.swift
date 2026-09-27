@@ -65,6 +65,7 @@ final class SortTypeAliases: StructuralFormatRule<BasicRuleValue>, @unchecked Se
         }
 
         diagnose(.sortTypealiases, on: node.typealiasKeyword)
+        guard !context.isLintMode else { return DeclSyntax(node) }
 
         // Rebuild preserving positional trivia structure. Each position has a "slot" with trivia
         // from the original element at that index.

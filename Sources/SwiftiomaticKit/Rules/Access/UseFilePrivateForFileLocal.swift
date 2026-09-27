@@ -26,9 +26,52 @@ final class UseFilePrivateForFileLocal: StructuralFormatRule<
 {
     override class var group: ConfigurationGroup? { .access }
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+        guard !context.isLintMode else {
+            diagnoseCodeBlockItems(node.statements)
+            return node
+        }
         var result = node
         result.statements = rewrittenCodeBlockItems(node.statements)
         return result
+    }
+
+    /// Emits the findings of `rewrittenCodeBlockItems(_:)` without building new nodes.
+    ///
+    /// Lint mode discards the rewritten tree, so this walks the same declarations and only reports
+    /// each modifier that `rewrittenDecl(_:)` would replace.
+    private func diagnoseCodeBlockItems(_ codeBlockItems: CodeBlockItemListSyntax) {
+        let (invalidAccess, _, diagnostic) = accessReplacement
+
+        for codeBlockItem in codeBlockItems {
+            guard case let .decl(decl) = codeBlockItem.item else { continue }
+
+            switch Syntax(decl).as(SyntaxEnum.self) {
+                case let .ifConfigDecl(ifConfigDecl):
+                    for clause in ifConfigDecl.clauses {
+                        if case let .statements(items)? = clause.elements {
+                            diagnoseCodeBlockItems(items)
+                        }
+                    }
+                case .functionDecl, .variableDecl, .classDecl, .structDecl, .enumDecl,
+                     .protocolDecl, .typeAliasDecl:
+                    guard let modifiers = decl.asProtocol(WithModifiersSyntax.self)?.modifiers
+                    else { continue }
+
+                    for modifier in modifiers
+                    where modifier.name.tokenKind == .keyword(invalidAccess) {
+                        diagnose(diagnostic, on: modifier.name)
+                    }
+                default: continue
+            }
+        }
+    }
+
+    /// The access keyword to replace, its replacement, and the finding, from the configuration.
+    private var accessReplacement: (invalid: Keyword, valid: Keyword, diagnostic: Finding.Message) {
+        switch ruleConfig.accessLevel {
+            case .private: (.fileprivate, .private, .replaceFileprivateWithPrivate)
+            case .fileprivate: (.private, .fileprivate, .replacePrivateWithFileprivate)
+        }
     }
 
     /// Returns a list of code block items equivalent to the given list, but where any file-scoped
@@ -105,20 +148,7 @@ final class UseFilePrivateForFileLocal: StructuralFormatRule<
     private func rewrittenDecl<DeclType: DeclSyntaxProtocol & WithModifiersSyntax>(
         _ decl: DeclType
     ) -> DeclType {
-        let invalidAccess: Keyword
-        let validAccess: Keyword
-        let diagnostic: Finding.Message
-
-        switch ruleConfig.accessLevel {
-            case .private:
-                invalidAccess = .fileprivate
-                validAccess = .private
-                diagnostic = .replaceFileprivateWithPrivate
-            case .fileprivate:
-                invalidAccess = .private
-                validAccess = .fileprivate
-                diagnostic = .replacePrivateWithFileprivate
-        }
+        let (invalidAccess, validAccess, diagnostic) = accessReplacement
 
         guard decl.modifiers.contains(anyOf: [invalidAccess]) else { return decl }
 

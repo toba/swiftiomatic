@@ -52,6 +52,7 @@ final class SortSwitchCases: StructuralFormatRule<BasicRuleValue>, @unchecked Se
         guard originalKeys != sortedKeys else { return node }
 
         diagnose(.sortSwitchCases, on: caseLabel.caseKeyword)
+        guard !context.isLintMode else { return node }
 
         // Rebuild items preserving positional trivia, moving comments with their patterns
         var newItems = [SwitchCaseItemSyntax]()

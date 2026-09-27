@@ -32,6 +32,7 @@ final class FileHeader: StructuralFormatRule<FileHeaderConfiguration>, @unchecke
             guard let newTrivia = processHeader(trivia: trivia, text: text, hasCodeAfter: false)
             else { return node }
             diagnose(.updateFileHeader, on: node.endOfFileToken)
+            guard !context.isLintMode else { return node }
             var result = node
             result.endOfFileToken = node.endOfFileToken.with(\.leadingTrivia, newTrivia)
             return result
@@ -43,6 +44,7 @@ final class FileHeader: StructuralFormatRule<FileHeaderConfiguration>, @unchecke
             return node
         }
         diagnose(.updateFileHeader, on: firstStmt)
+        guard !context.isLintMode else { return node }
         var statements = Array(node.statements)
         statements[0] = firstStmt.with(\.leadingTrivia, newTrivia)
         var result = node

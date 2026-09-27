@@ -759,7 +759,10 @@ extension LayoutSingleLineBodies {
               Self.conditionalFoldFits(
                   conditions: original.conditions,
                   original: original,
-                  wrapping: ifConditionWrapping(original.conditions, config: context.configuration),
+                  wrapping: ifConditionWrapping(
+                      original.conditions,
+                      settings: context.conditionWrappingSettings
+                  ),
                   headWidth: Self.ifHeadWidth,
                   wrappedBraceWidth: Self.wrappedBraceWidth,
                   bodyText: Self.singleStatementText(node.body),
@@ -783,7 +786,7 @@ extension LayoutSingleLineBodies {
                   original: original,
                   wrapping: guardConditionWrapping(
                       original.conditions,
-                      config: context.configuration
+                      settings: context.conditionWrappingSettings
                   ),
                   headWidth: Self.guardHeadWidth,
                   wrappedBraceWidth: Self.wrappedElseBraceWidth,
@@ -916,7 +919,7 @@ extension LayoutSingleLineBodies {
                   original: original,
                   wrapping: whileConditionWrapping(
                       original.conditions,
-                      config: context.configuration
+                      settings: context.conditionWrappingSettings
                   ),
                   headWidth: Self.whileHeadWidth,
                   wrappedBraceWidth: Self.wrappedBraceWidth,

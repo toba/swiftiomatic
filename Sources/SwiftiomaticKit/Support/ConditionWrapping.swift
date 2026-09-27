@@ -21,6 +21,23 @@ struct ConditionWrapping {
     let isUniform: Bool
 }
 
+/// The configuration values that choose how a condition list wraps
+///
+/// A token stream or a `Context` builds one value when it starts, so the wrapping functions read
+/// no configuration value per statement.
+struct ConditionWrappingSettings {
+    /// The `AlignWrappedConditions` setting
+    let alignsWrappedConditions: Bool
+
+    /// The `BreakBeforeGuardConditions` setting
+    let breaksBeforeGuardConditions: Bool
+
+    init(_ config: Configuration) {
+        alignsWrappedConditions = config[AlignWrappedConditions.self]
+        breaksBeforeGuardConditions = config[BreakBeforeGuardConditions.self]
+    }
+}
+
 /// How the layout wraps an `if` statement's condition list
 ///
 /// The first condition stays on the `if` line, so the list is uniform only when the continuations
@@ -29,24 +46,24 @@ struct ConditionWrapping {
 ///
 /// - Parameters:
 ///   - conditions: the condition list of the statement
-///   - config: the configuration that drives the choice
+///   - settings: the configuration values that drive the choice
 func ifConditionWrapping(
     _ conditions: ConditionElementListSyntax,
-    config: Configuration
+    settings: ConditionWrappingSettings
 ) -> ConditionWrapping {
-    conditionWrapping(conditions, alignment: ifConditionAlignment, config: config)
+    conditionWrapping(conditions, alignment: ifConditionAlignment, settings: settings)
 }
 
 /// How the layout wraps a `while` statement's condition list
 ///
 /// - Parameters:
 ///   - conditions: the condition list of the statement
-///   - config: the configuration that drives the choice
+///   - settings: the configuration values that drive the choice
 func whileConditionWrapping(
     _ conditions: ConditionElementListSyntax,
-    config: Configuration
+    settings: ConditionWrappingSettings
 ) -> ConditionWrapping {
-    conditionWrapping(conditions, alignment: whileConditionAlignment, config: config)
+    conditionWrapping(conditions, alignment: whileConditionAlignment, settings: settings)
 }
 
 /// How the layout wraps a `guard` statement's condition list
@@ -63,18 +80,18 @@ func whileConditionWrapping(
 ///
 /// - Parameters:
 ///   - conditions: the condition list of the statement
-///   - config: the configuration that drives the choice
+///   - settings: the configuration values that drive the choice
 func guardConditionWrapping(
     _ conditions: ConditionElementListSyntax,
-    config: Configuration
+    settings: ConditionWrappingSettings
 ) -> ConditionWrapping {
-    guard !config[BreakBeforeGuardConditions.self] else {
+    guard !settings.breaksBeforeGuardConditions else {
         return ConditionWrapping(
             breakKind: .continuation,
             isUniform: !firstConditionKeepsKeywordLine(conditions)
         )
     }
-    return conditionWrapping(conditions, alignment: guardConditionAlignment, config: config)
+    return conditionWrapping(conditions, alignment: guardConditionAlignment, settings: settings)
 }
 
 /// Whether break precedence holds a `guard` statement's first condition on the keyword line
@@ -86,9 +103,9 @@ private func firstConditionKeepsKeywordLine(_ conditions: ConditionElementListSy
 private func conditionWrapping(
     _ conditions: ConditionElementListSyntax,
     alignment: Int,
-    config: Configuration
+    settings: ConditionWrappingSettings
 ) -> ConditionWrapping {
-    let aligns = config[AlignWrappedConditions.self]
+    let aligns = settings.alignsWrappedConditions
         && !(conditions.first.map { conditionContainsMemberChain($0) } ?? false)
     return .init(
         breakKind: aligns ? .alignment(spaces: alignment) : .continuation,

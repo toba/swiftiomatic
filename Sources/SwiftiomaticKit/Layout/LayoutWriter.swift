@@ -3,8 +3,8 @@ import SwiftSyntax
 // sm:ignore fileLength, functionBodyLength
 
 /// Compact-pipeline merge of all `TokenSyntax` rewrites. Each former rule's logic is gated on
-/// `context.shouldRewrite(<RuleType>.self, at:)` so users can still toggle individual behaviors via
-/// configuration (the rule-name strings survive as configuration keys).
+/// `context.shouldRewrite(_:gate:)` with the rule's dense index so users can still toggle
+/// individual behaviors via configuration (the rule-name strings survive as configuration keys).
 ///
 /// Per Phase 4b of `ddi-wtv` (sub-issue `95z-bgr` ), this replaces the per-rule
 /// `StructuralFormatRule.visit(_ TokenSyntax)` overrides + the `static func transform` chain that
@@ -26,19 +26,21 @@ func rewriteToken(
     parent _: Syntax?,
     context: Context
 ) -> TokenSyntax {
+    // A transform can return a detached token, so every check gates on the original token.
+    guard let gate = context.gate(for: node) else { return node }
     var result = node
     let parent = Syntax(node).parent
 
     // 1. InsertBlankLinesAroundMark — inlined (no `static func transform` ). Adds blank lines
     //    before/after `// MARK:` comments in the token's leading trivia. Token-level: looks at
     //    leadingTrivia + previous/next token kind only.
-    if context.shouldRewrite(InsertBlankLinesAroundMark.self, at: Syntax(result)) {
+    if context.shouldRewrite(TokenRuleIndex.insertBlankLinesAroundMark, gate: gate) {
         result = applyInsertBlankLinesAroundMark(result, context: context)
     }
 
     // 2. FormatSpecialComments — ported. Normalizes TODO/MARK/FIXME comment formatting in leading
     //    and trailing trivia.
-    if context.shouldRewrite(FormatSpecialComments.self, at: Syntax(result)) {
+    if context.shouldRewrite(TokenRuleIndex.formatSpecialComments, gate: gate) {
         result = FormatSpecialComments.transform(
             result, original: node, parent: parent, context: context)
     }
@@ -46,7 +48,7 @@ func rewriteToken(
     // 3. BreakBeforeLeadingDot — ported. Uses a typed property on `Context` to thread pending
     //    trivia between adjacent token visits. The static transform already handles the state
     //    plumbing correctly.
-    if context.shouldRewrite(BreakBeforeLeadingDot.self, at: Syntax(result)) {
+    if context.shouldRewrite(TokenRuleIndex.breakBeforeLeadingDot, gate: gate) {
         result = BreakBeforeLeadingDot.transform(
             result, original: node, parent: parent, context: context)
     }
@@ -56,25 +58,25 @@ func rewriteToken(
     //    `IndentShiftRewriter` helper used internally by the rule, which the compact pipeline
     //    doesn't reach via this entry point. No-op here, kept for the merge audit. Phase 4c/4d/4e
     //    will port the FunctionCallExprSyntax visit.
-    _ = context.shouldRewrite(NestedCallLayout.self, at: Syntax(result))
+    _ = context.shouldRewrite(TokenRuleIndex.nestedCallLayout, gate: gate)
 
     // 5. DropRedundantBackticks — ported. Strips redundant backticks from identifier tokens. Uses
     //    captured pre-recursion parent for context analysis (member access, argument label, etc.).
-    if context.shouldRewrite(DropRedundantBackticks.self, at: Syntax(result)) {
+    if context.shouldRewrite(TokenRuleIndex.dropRedundantBackticks, gate: gate) {
         result = DropRedundantBackticks.transform(
             result, original: node, parent: parent, context: context)
     }
 
     // 5a. ReflowComments — inlined (no `static func transform` ). Reflows contiguous `//` and `///`
     // comment runs in leading trivia to fit `lineLength` .
-    if context.shouldRewrite(ReflowComments.self, at: Syntax(result)) {
+    if context.shouldRewrite(TokenRuleIndex.reflowComments, gate: gate) {
         result = ReflowComments.reflow(result, context: context)
     }
 
     // 6. UppercaseAcronymsInIdentifiers — inlined (no `static func transform` ). Replaces
     //    titlecased acronyms ( `Url` , `Json` ) with fully uppercased forms ( `URL` , `JSON` )
     //    inside identifier tokens. Pulls the configurable word list from `AcronymsConfiguration` .
-    if context.shouldRewrite(UppercaseAcronymsInIdentifiers.self, at: Syntax(result)) {
+    if context.shouldRewrite(TokenRuleIndex.uppercaseAcronymsInIdentifiers, gate: gate) {
         result = applyUppercaseAcronyms(result, context: context)
     }
 
@@ -85,18 +87,39 @@ func rewriteToken(
     //    many statement / decl nodes (IfExprSyntax, GuardStmtSyntax, FunctionDeclSyntax,
     //    ClassDeclSyntax, …). The private `TokenStripper` is an internal helper. No-op here; the
     //    structural merges happen in Phase 4c/4d/4e.
-    _ = context.shouldRewrite(BreakBeforeMultilineBrace.self, at: Syntax(result))
+    _ = context.shouldRewrite(TokenRuleIndex.breakBeforeMultilineBrace, gate: gate)
 
     // 9. WrapSingleLineComments — ported. Word-wraps over-long `//` and `///` comments in leading
     //    trivia. Run AFTER FormatSpecialComments so directive detection (TODO/MARK/FIXME) sees
     //    normalized prefixes, matching the legacy pipeline's alphabetical ordering coincidence (
     //    `Format…` < `Wrap…` ).
-    if context.shouldRewrite(WrapSingleLineComments.self, at: Syntax(result)) {
+    if context.shouldRewrite(TokenRuleIndex.wrapSingleLineComments, gate: gate) {
         result = WrapSingleLineComments.transform(
             result, original: node, parent: parent, context: context)
     }
 
     return result
+}
+
+/// The dense index of each token rule, resolved once so `rewriteToken` hashes no rule type per
+/// token.
+private enum TokenRuleIndex {
+    static let insertBlankLinesAroundMark = index(of: InsertBlankLinesAroundMark.self)
+    static let formatSpecialComments = index(of: FormatSpecialComments.self)
+    static let breakBeforeLeadingDot = index(of: BreakBeforeLeadingDot.self)
+    static let nestedCallLayout = index(of: NestedCallLayout.self)
+    static let dropRedundantBackticks = index(of: DropRedundantBackticks.self)
+    static let reflowComments = index(of: ReflowComments.self)
+    static let uppercaseAcronymsInIdentifiers = index(of: UppercaseAcronymsInIdentifiers.self)
+    static let breakBeforeMultilineBrace = index(of: BreakBeforeMultilineBrace.self)
+    static let wrapSingleLineComments = index(of: WrapSingleLineComments.self)
+
+    private static func index(of rule: any SyntaxRule.Type) -> Int {
+        guard let index = ConfigurationRegistry.ruleIndex(of: rule) else {
+            preconditionFailure("\(rule) is missing from ConfigurationRegistry.allRuleTypes")
+        }
+        return index
+    }
 }
 
 // MARK: - InsertBlankLinesAroundMark (inlined)

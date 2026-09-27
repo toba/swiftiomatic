@@ -23,7 +23,13 @@ final class SortDeclarations: StructuralFormatRule<BasicRuleValue>, @unchecked S
 
     // MARK: - Member blocks (type bodies)
 
+    // In lint mode the pipeline visits every list itself, so neither visit recurses or builds a
+    // new node.
     override func visit(_ node: MemberBlockItemListSyntax) -> MemberBlockItemListSyntax {
+        guard !context.isLintMode else {
+            _ = sortMarkedRegions(items: Array(node)) { declarationName($0.decl) }
+            return node
+        }
         let visited = super.visit(node)
         let items = Array(visited)
         let sorted = sortMarkedRegions(items: items) { declarationName($0.decl) }
@@ -33,6 +39,10 @@ final class SortDeclarations: StructuralFormatRule<BasicRuleValue>, @unchecked S
     // MARK: - Code blocks (top-level declarations)
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+        guard !context.isLintMode else {
+            _ = sortMarkedRegions(items: Array(node)) { codeBlockItemName($0) }
+            return node
+        }
         let visited = super.visit(node)
         let items = Array(visited)
         let sorted = sortMarkedRegions(items: items) { codeBlockItemName($0) }
@@ -84,6 +94,7 @@ final class SortDeclarations: StructuralFormatRule<BasicRuleValue>, @unchecked S
             if let firstToken = items[region.start].firstToken(viewMode: .sourceAccurate) {
                 diagnose(.sortDeclarations, on: firstToken)
             }
+            guard !context.isLintMode else { continue }
 
             // Rebuild preserving positional trivia (keeps begin marker at position 0).
             for (i, sortedItem) in sorted.enumerated() {

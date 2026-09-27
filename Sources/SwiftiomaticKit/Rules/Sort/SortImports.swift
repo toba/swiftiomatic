@@ -34,6 +34,12 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
     override class var group: ConfigurationGroup? { .sort }
 
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+        // Lint mode discards the tree, so it orders the lines for their findings and builds no
+        // code block items.
+        guard !context.isLintMode else {
+            _ = orderedLines(in: node.statements)
+            return node
+        }
         var newNode = node
         newNode.statements = orderImports(in: node.statements)
 
@@ -57,6 +63,12 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
     private func orderImports(
         in codeBlockItemList: CodeBlockItemListSyntax
     ) -> CodeBlockItemListSyntax {
+        CodeBlockItemListSyntax(convertToCodeBlockItems(lines: orderedLines(in: codeBlockItemList)))
+    }
+
+    /// Returns the lines of `codeBlockItemList` in their formatted order, and emits a finding for
+    /// each import out of place.
+    private func orderedLines(in codeBlockItemList: CodeBlockItemListSyntax) -> [Line] {
         let lines = generateLines(codeBlockItemList: codeBlockItemList, context: context)
 
         // Stores the formatted and sorted lines that will be used to reconstruct the list of code
@@ -159,23 +171,32 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
                let syntaxNode = line.syntaxNode,
                case let .ifConfigCodeBlock(ifConfigCodeBlock) = syntaxNode
             {
-                var ifConfigDecl = ifConfigCodeBlock.item.cast(IfConfigDeclSyntax.self)
-
-                let newClauses = ifConfigDecl.clauses.map { clause in
-                    guard case let .statements(codeBlockItemList) = clause.elements else {
-                        return clause
+                if context.isLintMode {
+                    // Lint mode needs only the findings of the nested import lists.
+                    for clause in ifConfigCodeBlock.item.cast(IfConfigDeclSyntax.self).clauses {
+                        if case let .statements(codeBlockItemList) = clause.elements {
+                            _ = orderedLines(in: codeBlockItemList)
+                        }
                     }
-                    var newClause = clause
-                    var newCodeBlockItemList = orderImports(in: codeBlockItemList)
-                    newCodeBlockItemList.leadingTrivia = .newline
-                        + newCodeBlockItemList.leadingTrivia
-                    newClause.elements = .statements(newCodeBlockItemList)
-                    return newClause
-                }
+                } else {
+                    var ifConfigDecl = ifConfigCodeBlock.item.cast(IfConfigDeclSyntax.self)
 
-                ifConfigDecl.clauses = IfConfigClauseListSyntax(newClauses)
-                line.syntaxNode = .ifConfigCodeBlock(CodeBlockItemSyntax(item: .decl(DeclSyntax(
-                    ifConfigDecl))))
+                    let newClauses = ifConfigDecl.clauses.map { clause in
+                        guard case let .statements(codeBlockItemList) = clause.elements else {
+                            return clause
+                        }
+                        var newClause = clause
+                        var newCodeBlockItemList = orderImports(in: codeBlockItemList)
+                        newCodeBlockItemList.leadingTrivia = .newline
+                            + newCodeBlockItemList.leadingTrivia
+                        newClause.elements = .statements(newCodeBlockItemList)
+                        return newClause
+                    }
+
+                    ifConfigDecl.clauses = IfConfigClauseListSyntax(newClauses)
+                    line.syntaxNode = .ifConfigCodeBlock(
+                        CodeBlockItemSyntax(item: .decl(DeclSyntax(ifConfigDecl))))
+                }
             }
 
             if ruleConfig.shouldGroupImports {
@@ -228,7 +249,7 @@ final class SortImports: StructuralFormatRule<SortImportsConfiguration>, @unchec
             formatAndAppend(linesSection: lines[lastSliceStartIndex..<lines.endIndex])
         }
 
-        return CodeBlockItemListSyntax(convertToCodeBlockItems(lines: formattedLines))
+        return formattedLines
     }
 
     /// Raise lint errors if the different import types appear in the wrong order, and if import

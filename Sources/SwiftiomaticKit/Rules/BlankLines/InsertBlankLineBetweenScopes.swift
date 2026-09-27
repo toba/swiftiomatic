@@ -17,13 +17,23 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
+    // In lint mode the pipeline visits every member block itself, so neither visit recurses or
+    // builds a new node.
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+        guard !context.isLintMode else {
+            _ = ensureBlankLines(in: node.statements)
+            return node
+        }
         var result = super.visit(node)
         result.statements = ensureBlankLines(in: result.statements)
         return result
     }
 
     override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
+        guard !context.isLintMode else {
+            _ = ensureBlankLines(inMembers: node.members, diagnosing: node.members)
+            return node
+        }
         let visited = super.visit(node)
         var result = visited
         result.members = ensureBlankLines(inMembers: visited.members, diagnosing: node.members)
@@ -50,6 +60,7 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
             if commentIsBlank, original[nextIndex].leadingTrivia.startsWithComment { continue }
 
             diagnose(.insertBlankLineAfterScope, on: original[nextIndex].item)
+            guard !context.isLintMode else { continue }
             var next = original[nextIndex]
             next.leadingTrivia = .newline + next.leadingTrivia
             items[nextIndex] = next
@@ -81,6 +92,7 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
             if commentIsBlank, original[nextIndex].leadingTrivia.startsWithComment { continue }
 
             diagnose(.insertBlankLineAfterScope, on: diagTargets[nextIndex].decl)
+            guard !context.isLintMode else { continue }
             var next = original[nextIndex]
             next.leadingTrivia = .newline + next.leadingTrivia
             items[nextIndex] = next

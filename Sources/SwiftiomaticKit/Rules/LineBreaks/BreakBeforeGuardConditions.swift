@@ -26,10 +26,11 @@ extension TokenStream {
         // inside of the conditions can stack in addition to continuations between the conditions.
         // When `lineBreakBeforeGuardConditions` is false, skip the first condition (like
         // if-statements) so it stays on the same line as `guard` .
-        let guardBreakKind = guardConditionWrapping(node.conditions, config: config).breakKind
+        let guardBreakKind = guardConditionWrapping(node.conditions, settings: conditionWrappingSettings)
+            .breakKind
 
         for (i, condition) in node.conditions.enumerated() {
-            if i == 0, !config[BreakBeforeGuardConditions.self] { continue }
+            if i == 0, !conditionWrappingSettings.breaksBeforeGuardConditions { continue }
 
             // When the first condition is a compound expression (&&, ||, etc.), skip the
             // continuation break so the first token stays on the guard line — matching if/while
