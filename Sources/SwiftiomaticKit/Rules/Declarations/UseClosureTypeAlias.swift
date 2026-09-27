@@ -26,8 +26,14 @@ import SwiftSyntax
 /// `@escaping @Sendable (Transaction) throws -> ID` , also counts as complex. This check applies to
 /// parameters as well as to stored properties.
 ///
+/// A function that returns a closure type spells that type too. The return types count toward
+/// repeats, so functions that all return `(Row, Row) -> Bool` report.
+///
+/// An initializer parameter that sets a stored property still reports when its own closure type
+/// is heavily decorated. One `typealias` then serves both spellings.
+///
 /// Lint: A stored property of a type has a complex closure type, a parameter has a heavily
-/// decorated closure type, or a stored property or parameter spells a closure type or a closure
+/// decorated closure type, or a stored property, parameter or function result spells a closure type or a closure
 /// shape that the file repeats.
 final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
@@ -80,13 +86,29 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
         return .skipChildren
     }
 
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+        guard let type = node.signature.returnClause?.type, let function = type.functionType
+        else { return .visitChildren }
+        let name = node.name.text
+
+        if Self.isHeavilyDecorated(type, function) {
+            diagnose(.complexClosureType(name), on: type)
+        } else if let repeated = repeatedSpelling(function) {
+            diagnose(.repeatedClosureType(name, repeated), on: type)
+        } else if let shape = sharedShape(function) {
+            diagnose(.sharedClosureShape(name, shape), on: type)
+        }
+        return .visitChildren
+    }
+
     override func visit(_ node: FunctionParameterSyntax) -> SyntaxVisitorContinueKind {
-        guard let function = node.type.functionType,
-              !Self.setsStoredProperty(node, function) else { return .skipChildren }
+        guard let function = node.type.functionType else { return .skipChildren }
         let name = (node.secondName ?? node.firstName).text
 
         if Self.isHeavilyDecorated(node.type, function) {
             diagnose(.complexClosureType(name), on: node)
+        } else if Self.setsStoredProperty(node, function) {
+            return .skipChildren
         } else if let repeated = repeatedSpelling(function) {
             diagnose(.repeatedClosureType(name, repeated), on: node)
         } else if let shape = sharedShape(function) {
@@ -211,8 +233,8 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
         return counter.count
     }
 
-    /// Collects the closure types of stored properties and of function, initializer and
-    /// subscript parameters
+    /// Collects the closure types of stored properties, of function results, and of function,
+    /// initializer and subscript parameters
     private final class ClosureTypeCollector: SyntaxVisitor {
         var functions: [FunctionTypeSyntax] = []
 
@@ -233,6 +255,13 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
                 functions.append(function)
             }
             return .skipChildren
+        }
+
+        override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+            if let function = node.signature.returnClause?.type.functionType {
+                functions.append(function)
+            }
+            return .visitChildren
         }
     }
 

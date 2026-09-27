@@ -14,9 +14,21 @@ import SwiftSyntax
 ///   `_count = State(initialValue: start)`
 /// - an assignment of the result of a `@ViewBuilder` or `@ContentBuilder` parameter call, such as
 ///   `self.popover = popover()`
-/// - a delegation to `self.init(...)` or `super.init(...)`
+/// - a call to `super.init(...)`
 ///
-/// Lint: An explicit initializer of a view type holds a statement other than those above.
+/// A delegation to `self.init(...)` is work. It runs a second initializer and often derives each
+/// argument from the input, so each construction of the view pays for both.
+///
+/// A call in the initial value of a stored property, such as `@State private var cache =
+/// RenderCache()`, is work too. SwiftUI evaluates it each time a parent re-creates the view, and a
+/// `@State` wrapper then discards every value after the first. A `@StateObject` initial value is
+/// exempt, because the wrapper takes it as an autoclosure and evaluates it once.
+///
+/// Each finding carries a note at the name of the view type. The note shows which type SwiftUI
+/// constructs again.
+///
+/// Lint: An explicit initializer of a view type holds a statement other than those above, or a
+/// stored property of a view type has a call as its initial value.
 final class NoWorkInViewInitializer: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
     override class var guidance: GuidanceLevel { .consider }
@@ -31,18 +43,37 @@ final class NoWorkInViewInitializer: LintSyntaxRule<LintOnlyValue>, @unchecked S
                 .map { ($0.secondName ?? $0.firstName).text }
         )
 
+        var notes: [Finding.Note]?
+
         for statement in body.statements where !Self.isInputSetup(statement.item, builders) {
-            diagnose(.workInInitializer, on: statement.item)
+            if notes == nil { notes = ownerNotes(for: node) }
+            diagnose(.workInInitializer, on: statement.item, notes: notes ?? [])
         }
         return .skipChildren
     }
+
+    override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+        guard !node.modifiers.contains(anyOf: [.static, .class]),
+              !Self.autoclosureWrappers.contains(node.attributes.firstAttributeName ?? ""),
+              context.viewEntry(forMember: node) != nil else { return .skipChildren }
+
+        for binding in node.bindings where binding.accessorBlock == nil {
+            guard let value = binding.initializer?.value, value.is(FunctionCallExprSyntax.self)
+            else { continue }
+            diagnose(.workInInitialValue, on: value, notes: ownerNotes(for: node))
+        }
+        return .skipChildren
+    }
+
+    /// Property wrappers that take their initial value as an autoclosure and evaluate it once
+    private static let autoclosureWrappers: Set<String> = ["StateObject"]
 
     private static func isInputSetup(_ item: CodeBlockItemSyntax.Item, _ builders: Set<String>)
         -> Bool
     {
         guard case let .expr(expression) = item else { return false }
 
-        if let call = expression.as(FunctionCallExprSyntax.self) { return isDelegation(call) }
+        if let call = expression.as(FunctionCallExprSyntax.self) { return isSuperInit(call) }
 
         guard let assignment = expression.as(InfixOperatorExprSyntax.self),
               assignment.operator.is(AssignmentExprSyntax.self) else { return false }
@@ -59,13 +90,23 @@ final class NoWorkInViewInitializer: LintSyntaxRule<LintOnlyValue>, @unchecked S
             && call.arguments.allSatisfy { isPlainValue($0.expression) }
     }
 
-    /// Whether `call` is `self.init(...)` or `super.init(...)`
-    private static func isDelegation(_ call: FunctionCallExprSyntax) -> Bool {
+    /// Whether `call` is `super.init(...)`
+    private static func isSuperInit(_ call: FunctionCallExprSyntax) -> Bool {
         guard let member = call.calledExpression.as(MemberAccessExprSyntax.self),
-              member.declName.baseName.tokenKind == .keyword(.`init`),
-              let base = member.base?.as(DeclReferenceExprSyntax.self) else { return false }
-        return base.baseName.tokenKind == .keyword(.self)
-            || base.baseName.tokenKind == .keyword(.super)
+              member.declName.baseName.tokenKind == .keyword(.`init`) else { return false }
+        return member.base?.is(SuperExprSyntax.self) == true
+    }
+
+    /// A note at the name of the view type that owns `member`, or no note when this file does not
+    /// declare that type
+    private func ownerNotes(for member: some SyntaxProtocol) -> [Finding.Note] {
+        guard let declaration = TypeMemberIndex.owningDeclaration(of: member),
+              let owner = TypeMemberIndex.typeNameToken(of: declaration) else { return [] }
+        return [Finding.Note(
+            message: .viewTypeConstructedAgain,
+            location: Finding.Location(owner.startLocation(
+                converter: context.sourceLocationConverter))
+        )]
     }
 
     /// Whether reading `expression` costs nothing more than a load
@@ -91,6 +132,14 @@ final class NoWorkInViewInitializer: LintSyntaxRule<LintOnlyValue>, @unchecked S
 }
 
 fileprivate extension Finding.Message {
+    static let viewTypeConstructedAgain: Finding.Message =
+        "SwiftUI constructs this view type again each time its parent evaluates 'body'"
+
+    static let workInInitialValue: Finding.Message = """
+        SwiftUI evaluates this initial value each time a parent re-creates the view, so the work \
+        repeats. Pass the value in, or create it in a model
+        """
+
     static let workInInitializer: Finding.Message = """
         This view initializer does work. A parent re-creates the view on each of its updates, so \
         the work repeats. Store the inputs and do the work in 'body' or in a model

@@ -384,4 +384,64 @@ struct UseKeyPathTests: RuleTesting {
       ]
     )
   }
+
+  private static func unknownLabelMessage(_ method: String) -> String {
+    "a key path can replace this closure in '\(method)'; pass it with the parameter's argument label"
+  }
+
+  @Test func soleTrailingClosureOfUnknownCallFlagged() {
+    // From jig `IssueSearch.swift`. The rule cannot spell the hidden argument label, so it
+    // reports and leaves the closure in place.
+    assertFormatting(
+      UseKeyPath.self,
+      input: """
+        let ids = IssueSearch.where { $0.match(pattern) }.select 1️⃣{ $0.rowid }
+        """,
+      expected: """
+        let ids = IssueSearch.where { $0.match(pattern) }.select { $0.rowid }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.unknownLabelMessage("select")),
+      ]
+    )
+  }
+
+  @Test func withLockClosureNotFlagged() {
+    // From jig `OverwriteWatch.swift`. The `Mutex.withLock` body takes an `inout` value, so a key
+    // path cannot replace it.
+    assertFormatting(
+      UseKeyPath.self,
+      input: """
+        var all: [RecordOverwrite] { state.withLock { $0.reported } }
+        let value = state.withLock { $0.value }
+        """,
+      expected: """
+        var all: [RecordOverwrite] { state.withLock { $0.reported } }
+        let value = state.withLock { $0.value }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func actionTrailingClosuresOfUnknownCallsNotFlagged() {
+    // A `Void` result cannot take a key path, and an effect or a call needs the closure.
+    assertFormatting(
+      UseKeyPath.self,
+      input: """
+        items.forEach { $0.name }
+        button.onTap { $0.isOn }
+        state.withLock { $0.count += 1 }
+        query.select { $0.name.lowercased() }
+        query.select { [weak self] in $0.name }
+        """,
+      expected: """
+        items.forEach { $0.name }
+        button.onTap { $0.isOn }
+        state.withLock { $0.count += 1 }
+        query.select { $0.name.lowercased() }
+        query.select { [weak self] in $0.name }
+        """,
+      findings: []
+    )
+  }
 }

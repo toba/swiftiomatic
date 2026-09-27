@@ -23,48 +23,43 @@ import SwiftSyntax
 /// the initializer down to its own access level. A hand-written initializer that existed only to
 /// work around that is redundant on Swift 6.4.
 ///
+/// A SwiftUI view is built again on every parent update, so its initializer should only copy its
+/// inputs. The rule reads `_input = input` for a `@Binding` input as a plain copy, because the
+/// synthesized initializer takes a `Binding` for that input too. A private or fileprivate view
+/// whose inputs are `private` only to hide them gets a finding as well. Its inputs can drop
+/// `private` with no loss, because the type already hides them.
+///
 /// Lint: (Non-public) memberwise initializers with the same structure as the synthesized
 /// initializer will yield a lint error.
 final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        var storedProperties: [VariableDeclSyntax] = []
+        // Collect any possible redundant initializers into a list
         var initializers: [InitializerDeclSyntax] = []
 
         for memberItem in node.memberBlock.members {
-            let member = memberItem.decl
-            // Collect all stored variables into a list
-            if let varDecl = member.as(VariableDeclSyntax.self) {
-                guard !varDecl.modifiers.contains(anyOf: [.static]),
-                      !varDecl.isComputed,
-                      !varDecl.isSetUpByWrapperArguments
-                else { continue }
-                storedProperties.append(varDecl)
-                // Collect any possible redundant initializers into a list
-            } else if let initDecl = member.as(InitializerDeclSyntax.self) {
-                guard initDecl.optionalMark == nil else { continue }
-                guard initDecl.signature.effectSpecifiers?.throwsClause == nil else { continue }
-                initializers.append(initDecl)
-            }
+            guard let initDecl = memberItem.decl.as(InitializerDeclSyntax.self),
+                  initDecl.optionalMark == nil,
+                  initDecl.signature.effectSpecifiers?.throwsClause == nil
+            else { continue }
+            initializers.append(initDecl)
         }
 
-        let typeLevel = declaredAccessLevel(node.modifiers) ?? .internal
-        let levels = storedProperties.map { effectiveAccessLevel(of: $0, typeLevel: typeLevel) }
-
-        // SE-0502: a property below the ceiling that also carries an initial value drops out of the
-        // memberwise initializer, so it no longer pulls the initializer down to its own level.
-        let ceiling = levels.max() ?? .internal
-        let kept = zip(storedProperties, levels).filter { property, level in
-            level >= ceiling || !hasInitialValue(property)
-        }
-
-        let memberwiseProperties = kept.map(\.0)
-        let initLevel = synthesizedInitAccessLevel(ofKept: kept.map(\.1))
+        let memberwise = MemberwiseInitializer(of: node)
+        let memberwiseProperties = memberwise.properties
+        let initLevel = memberwise.accessLevel
+        let typeLevel = DeclaredAccessLevel(node.modifiers) ?? .internal
 
         // Collects all of the initializers that could be replaced by the synthesized memberwise
         // initializer(s).
-        var extraneousInitializers: [(InitializerDeclSyntax, suggestions: [String])] = []
+        var extraneousInitializers: [(InitializerDeclSyntax, message: Finding.Message)] = []
+
+        // A property with no modifier has the internal level, so the synthesized initializer is
+        // private only when an input writes `private`.
+        let canWidenInputs = typeLevel <= .fileprivate
+            && initLevel == .private
+            && context.typeMembers(around: node).types[node.name.text]?.isView == true
 
         for initializer in initializers {
             // Attributes signify intent that isn't automatically synthesized by the compiler.
@@ -78,10 +73,18 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
                       matches: matches,
                       initBody: initializer.body
                   ),
-                  matchesAccessLevel(modifiers: initializer.modifiers, synthesized: initLevel)
+                  let accessMessage = accessMessage(
+                      modifiers: initializer.modifiers,
+                      synthesized: initLevel,
+                      canWidenInputs: canWidenInputs
+                  )
             else { continue }
 
-            extraneousInitializers.append((initializer, matches.compactMap(\.suggestion)))
+            let suggestions = matches.compactMap(\.suggestion)
+            extraneousInitializers.append((
+                initializer,
+                suggestions.isEmpty ? accessMessage : .declareBuilderProperties(suggestions)
+            ))
         }
 
         // The synthesized memberwise initializer(s) are only created when there are no
@@ -92,17 +95,33 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
         })
 
         if extraneousInitializers.count == initializersCount {
-            for (initializer, suggestions) in extraneousInitializers {
-                diagnose(
-                    suggestions.isEmpty
-                        ? .removeRedundantInitializer
-                        : .declareBuilderProperties(suggestions),
-                    on: initializer
-                )
+            for (initializer, message) in extraneousInitializers {
+                diagnose(message, on: initializer)
             }
         }
 
         return .visitChildren
+    }
+
+    /// The message for an initializer whose access level matches the synthesized initializer, or
+    /// `nil` when the access levels differ.
+    ///
+    /// A private view whose inputs are all `private` gets a synthesized initializer that is
+    /// `private` too. Its explicit initializer is wider. The inputs can drop `private` because the
+    /// type already hides them, so the rule still reports it with a message that says so.
+    private func accessMessage(
+        modifiers: DeclModifierListSyntax,
+        synthesized: DeclaredAccessLevel,
+        canWidenInputs: Bool
+    ) -> Finding.Message? {
+        if matchesAccessLevel(modifiers: modifiers, synthesized: synthesized) {
+            return .removeRedundantInitializer
+        }
+        guard canWidenInputs,
+              matchesAccessLevel(modifiers: modifiers, synthesized: .internal)
+                || matchesAccessLevel(modifiers: modifiers, synthesized: .fileprivate)
+        else { return nil }
+        return .removeInitializerAndWidenInputs
     }
 
     /// Compares the actual access level of an initializer with the access level of a synthesized
@@ -113,20 +132,11 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
     ///   - synthesized: The access level the synthesized initializer would carry.
     /// - Returns: Whether the initializer has the same access level as the synthesized initializer.
     private func matchesAccessLevel(
-        modifiers: DeclModifierListSyntax?,
-        synthesized: AccessLevel
+        modifiers: DeclModifierListSyntax,
+        synthesized: DeclaredAccessLevel
     ) -> Bool {
-        let accessLevel = modifiers?.accessLevelModifier
-
-        switch synthesized {
-            case .internal:
-                // No explicit access level or internal are equivalent.
-                return accessLevel == nil || accessLevel!.name.tokenKind == .keyword(.internal)
-            case .fileprivate:
-                return accessLevel != nil && accessLevel!.name.tokenKind == .keyword(.fileprivate)
-            case .private:
-                return accessLevel != nil && accessLevel!.name.tokenKind == .keyword(.private)
-        }
+        // No explicit access level and internal are equivalent.
+        (DeclaredAccessLevel(modifiers) ?? .internal) == synthesized
     }
 
     /// Compares initializer parameters to stored properties of the struct.
@@ -186,6 +196,18 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
         let parameterType = parameter.type.withoutEscaping.trimmedDescription
 
         guard !parameter.attributes.isEmpty else {
+            // A `@Binding` input takes a `Binding` in the synthesized initializer, and the
+            // initializer assigns it to the backing storage.
+            if property.attributes.count == 1,
+               let wrapper = propertyAttributes.first,
+               wrapper.arguments == nil,
+               wrapper.attributeName.trimmedDescription == "Binding"
+            {
+                guard parameterType == "Binding<\(propertyType.trimmedDescription)>" else {
+                    return nil
+                }
+                return .backingStorage
+            }
             // A builder property's synthesized parameter carries the builder, so a plain
             // parameter differs from it.
             guard propertyBuilder == nil,
@@ -255,15 +277,24 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
                 else { return false }
 
                 leftName = memberAccessExpr.declName.baseName.text
+            } else if let reference = expr.leftOperand.as(DeclReferenceExprSyntax.self),
+                      reference.baseName.text.hasPrefix("_")
+            {
+                leftName = reference.baseName.text
             } else {
                 return false
             }
+
+            // A `@Binding` input is assigned to its backing storage, `_name`.
+            let assignsStorage = leftName.hasPrefix("_")
+            if assignsStorage { leftName.removeFirst() }
 
             // A builder-evaluating parameter is called once. Every other parameter is assigned
             // as is.
             guard let index = variables.firstIndex(where: {
                 $0.firstIdentifier.identifier.text == leftName
             }) else { return false }
+            guard matches[index].assignsStorage == assignsStorage else { return false }
 
             if matches[index].evaluates {
                 guard let call = expr.rightOperand.as(FunctionCallExprSyntax.self),
@@ -309,6 +340,9 @@ fileprivate extension Finding.Message {
     static let removeRedundantInitializer: Finding.Message =
         "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
 
+    static let removeInitializerAndWidenInputs: Finding.Message =
+        "remove this explicit initializer and drop 'private' from the stored inputs; the private type already hides them, and the synthesized initializer then keeps this initializer's access"
+
     static func declareBuilderProperties(_ declarations: [String]) -> Finding.Message {
         let list = declarations.map { "'\($0)'" }.joined(separator: " and ")
         return "remove this explicit initializer and declare \(list); the synthesized initializer then takes the same builder closure"
@@ -323,6 +357,13 @@ private enum ParameterMatch {
     /// builder closure and false when it stores the closure. `suggestion` is the property
     /// declaration to write when the property lacks the builder.
     case builder(evaluates: Bool, suggestion: String?)
+    /// The parameter is a `Binding` for a `@Binding` property and is assigned to the backing
+    /// storage.
+    case backingStorage
+
+    var assignsStorage: Bool {
+        if case .backingStorage = self { true } else { false }
+    }
 
     var evaluates: Bool {
         if case .builder(true, _) = self { true } else { false }
@@ -331,70 +372,6 @@ private enum ParameterMatch {
     var suggestion: String? {
         if case let .builder(_, suggestion) = self { suggestion } else { nil }
     }
-}
-
-/// Defines the access levels which may be assigned to a synthesized memberwise initializer.
-///
-/// The order runs from most restricted to least. `internal` is the ceiling, because a synthesized
-/// memberwise initializer is never public.
-private enum AccessLevel: Int, Comparable {
-    case `private`, `fileprivate`, `internal`
-
-    static func < (lhs: AccessLevel, rhs: AccessLevel) -> Bool { lhs.rawValue < rhs.rawValue }
-}
-
-/// The access level a declaration's own modifiers state, capped at internal, or `nil` when it
-/// states none.
-///
-/// A modifier with a detail, such as `private(set)`, is ignored. That one restricts the setter
-/// alone and leaves the memberwise initializer untouched.
-private func declaredAccessLevel(_ modifiers: DeclModifierListSyntax) -> AccessLevel? {
-    for modifier in modifiers where modifier.detail == nil {
-        switch modifier.name.tokenKind {
-            case .keyword(.private): return .private
-            case .keyword(.fileprivate): return .fileprivate
-            case .keyword(.internal), .keyword(.package), .keyword(.public), .keyword(.open):
-                return .internal
-            default: continue
-        }
-    }
-    return nil
-}
-
-/// The access level of a property, falling back to the enclosing type's level when the property
-/// states none.
-private func effectiveAccessLevel(
-    of property: VariableDeclSyntax,
-    typeLevel: AccessLevel
-) -> AccessLevel { declaredAccessLevel(property.modifiers) ?? typeLevel }
-
-/// Whether the property is initialised at its own declaration.
-///
-/// SE-0502 drops a less-accessible property from the memberwise initializer only when it has one.
-/// An optional with no written value counts, because the compiler initialises it to nil.
-private func hasInitialValue(_ property: VariableDeclSyntax) -> Bool {
-    if property.firstInitializer != nil { return true }
-    guard let type = property.firstType else { return false }
-    return type.is(OptionalTypeSyntax.self) || type.is(ImplicitlyUnwrappedOptionalTypeSyntax.self)
-        ? true
-        : type.as(IdentifierTypeSyntax.self)?.name.text == "Optional"
-}
-
-/// Computes the access level which would be applied to the synthesized memberwise initializer of a
-/// struct, given the levels of the properties the initializer still takes.
-///
-/// The initializer can be no more accessible than its least accessible parameter, so this is the
-/// minimum. SE-0502 changes the input to this function, not the function itself: a less accessible
-/// property that carries an initial value never reaches here, so it no longer pulls the result
-/// down. A less accessible property with no initial value still does.
-///
-/// The rules for default memberwise initializer access levels are defined in The Swift Programming
-/// Language: https://docs.swift.org/swift-book/LanguageGuide/AccessControl.html#ID21
-///
-/// - Parameter levels: The access levels of the properties the initializer takes.
-/// - Returns: The synthesized memberwise initializer's access level.
-private func synthesizedInitAccessLevel(ofKept levels: [AccessLevel]) -> AccessLevel {
-    levels.min() ?? .internal
 }
 
 // FIXME: Stop using these extensions; they make assumptions about the structure of stored
@@ -418,28 +395,6 @@ fileprivate extension VariableDeclSyntax {
 
     /// Returns the first initializer clause, if present.
     var firstInitializer: InitializerClauseSyntax? { bindings.first?.initializer }
-
-    /// Whether the property is computed. A property with only `willSet` or `didSet` observers
-    /// stays stored.
-    var isComputed: Bool {
-        bindings.contains { binding in
-            switch binding.accessorBlock?.accessors {
-                case .getter: true
-                case let .accessors(list):
-                    list.contains {
-                        ![.keyword(.willSet), .keyword(.didSet)].contains($0.accessorSpecifier.tokenKind)
-                    }
-                case nil: false
-            }
-        }
-    }
-
-    /// Whether a property wrapper's attribute arguments set the property up, as in
-    /// `@Environment(\.dismiss) var dismiss`. The memberwise initializer takes no parameter for it.
-    var isSetUpByWrapperArguments: Bool {
-        firstInitializer == nil
-            && attributes.contains { $0.as(AttributeSyntax.self)?.arguments != nil }
-    }
 }
 
 fileprivate extension AttributeSyntax {

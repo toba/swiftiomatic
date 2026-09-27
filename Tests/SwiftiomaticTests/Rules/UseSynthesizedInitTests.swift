@@ -839,4 +839,223 @@ struct UseSynthesizedInitializerTests: RuleTesting {
       findings: []
     )
   }
+
+  @Test func viewWithStoreOnlyInitializerIsDiagnosed() {
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct MathView: View {
+        let latex: String
+        @State private var cache = RenderCache()
+        private var fontSize: CGFloat = 20
+
+        1️⃣init(latex: String) { self.latex = latex }
+
+        var body: some View { Text(latex) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func publicViewInitializerIsNotDiagnosed() {
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      public struct MathView: View {
+        private let latex: String
+        @State private var cache = RenderCache()
+        private var fontSize: CGFloat = 20
+
+        public init(latex: String) { self.latex = latex }
+
+        public var body: some View { Text(latex) }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  private static let widenMessage =
+    "remove this explicit initializer and drop 'private' from the stored inputs; the private type already hides them, and the synthesized initializer then keeps this initializer's access"
+
+  @Test func bindingInputAssignedThroughBackingStorageIsDiagnosed() {
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Toggle: View {
+        let title: String
+        @Binding var isOn: Bool
+
+        1️⃣init(title: String, isOn: Binding<Bool>) {
+          self.title = title
+          _isOn = isOn
+        }
+
+        var body: some View { Text(title) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func privateViewWithPrivateInputsIsDiagnosed() {
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      private struct FolderMoveMenu: View {
+        private let projectID: Project.ID
+        private let folders: [ProjectFolder]
+        private let current: ProjectFolder.ID?
+        @Binding private var failure: String?
+
+        1️⃣init(
+          projectID: Project.ID,
+          folders: [ProjectFolder],
+          current: ProjectFolder.ID?,
+          failure: Binding<String?>
+        ) {
+          self.projectID = projectID
+          self.folders = folders
+          self.current = current
+          _failure = failure
+        }
+
+        var body: some View { Text("") }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.widenMessage)]
+    )
+  }
+
+  @Test func internalViewWithPrivateInputsIsNotDiagnosed() {
+    // Removing the initializer here would expose the inputs to the whole module.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Card: View {
+        private let title: String
+
+        init(title: String) {
+          self.title = title
+        }
+
+        var body: some View { Text(title) }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func privateNonViewWithPrivateInputsIsNotDiagnosed() {
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      private struct Box {
+        private let title: String
+
+        init(title: String) {
+          self.title = title
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func wrapperSetUpInInitializerIsNotDiagnosed() {
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Counter: View {
+        @State var count: Int
+
+        init(count: Int) {
+          _count = State(initialValue: count)
+        }
+
+        var body: some View { Text("") }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func bindingParameterForNonBindingPropertyIsNotDiagnosed() {
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Counter: View {
+        @Bindable var model: Model
+
+        init(model: Binding<Model>) {
+          _model = model
+        }
+
+        var body: some View { Text("") }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func privateViewWithoutPrivateInputsGetsRedundantMessage() {
+    // No input writes `private`, so the widen message does not apply. The synthesized
+    // initializer is internal, like this one.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      private struct Row: View {
+        let title: String
+
+        1️⃣init(title: String) {
+          self.title = title
+        }
+
+        var body: some View { Text(title) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func privateViewModifierWithPrivateInputsIsDiagnosed() {
+    // The type index knows `ViewModifier` and a conformance in an extension.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      private struct Fade {
+        private let amount: Double
+
+        1️⃣init(amount: Double) {
+          self.amount = amount
+        }
+      }
+
+      extension Fade: ViewModifier {
+        func body(content: Content) -> some View { content.opacity(amount) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.widenMessage)]
+    )
+  }
+
+  @Test func optionalLetWithoutValueIsNotDropped() {
+    // An optional `let` with no initial value does not start as `nil`. SE-0502 keeps it, so the
+    // synthesized initializer takes `subtitle` and is private.
+    assertLint(
+      UseSynthesizedInit.self,
+      """
+      struct Header {
+        let title: String
+        private let subtitle: String?
+
+        init(title: String) {
+          self.title = title
+        }
+      }
+      """,
+      findings: []
+    )
+  }
 }

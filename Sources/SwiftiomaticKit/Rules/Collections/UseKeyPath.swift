@@ -18,6 +18,13 @@ import SwiftSyntax
 /// `onGeometryChange` / `onScrollGeometryChange` ( `of:` ). For the geometry modifiers the
 /// `action:` closure that follows becomes the trailing closure.
 ///
+/// Any other call whose only argument is one trailing closure, such as `select { $0.rowid }` or
+/// `first { $0.isSelected }` , gets a finding and no rewrite. The rule cannot see the argument
+/// label that the rewrite must spell, so the author converts it. A call named for an action, such
+/// as `forEach` , `sink` or `onTap` , is skipped for the same `Void` reason as an action label.
+/// `withLock` is skipped, because its closure takes an `inout` value that a key path cannot read.
+/// The key path can fail to convert when overloads compete, so treat the finding as a suggestion.
+///
 /// Only fires for simple property chains (not method calls, subscripts, or complex expressions).
 ///
 /// Lint: A trivial `{ $0.property }` closure raises a warning.
@@ -48,6 +55,12 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         "operation",
     ]
 
+    /// Call names whose sole trailing closure usually returns `Void` or takes an `inout` value
+    private static let actionCalls: Set<String> = [
+        "forEach", "sink", "task", "Task", "withAnimation", "withTransaction", "perform",
+        "async", "asyncAfter", "sync", "run", "send", "receive", "withLock",
+    ]
+
     static func transform(
         _ callNode: FunctionCallExprSyntax,
         original: FunctionCallExprSyntax,
@@ -62,6 +75,7 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         if let result = convertKnownTrailingClosure(callNode, original: original, context: context) {
             return result
         }
+        reportUnknownTrailingClosure(callNode, original: original, context: context)
         return convertLabeledClosures(callNode, original: original, context: context)
             ?? ExprSyntax(callNode)
     }
@@ -196,6 +210,31 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         return ExprSyntax(result)
     }
 
+    /// Reports the sole trailing closure of a call whose argument label the rule does not know:
+    /// `select { $0.rowid }` . The rule leaves the closure in place.
+    private static func reportUnknownTrailingClosure(
+        _ callNode: FunctionCallExprSyntax,
+        original: FunctionCallExprSyntax,
+        context: Context
+    ) {
+        guard let name = callNode.calleeBaseName,
+              trailingClosureLabels[name] == nil,
+              !eligibleMethods.contains(name),
+              !actionCalls.contains(name),
+              !isActionLabel(name),
+              callNode.arguments.isEmpty,
+              callNode.additionalTrailingClosures.isEmpty,
+              let closure = callNode.trailingClosure,
+              extractPropertyChain(from: closure) != nil
+        else { return }
+
+        Self.diagnose(
+            .useKeyPathWithLabel(method: name),
+            on: original.trailingClosure ?? closure,
+            context: context
+        )
+    }
+
     /// Converts every closure passed with an argument label that does not name an action:
     /// `displayName: { $0.name }` → `displayName: \.name`
     private static func convertLabeledClosures(
@@ -311,5 +350,9 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
 fileprivate extension Finding.Message {
     static func useKeyPath(method: String) -> Finding.Message {
         "use keyPath expression instead of closure in '\(method)'"
+    }
+
+    static func useKeyPathWithLabel(method: String) -> Finding.Message {
+        "a key path can replace this closure in '\(method)'; pass it with the parameter's argument label"
     }
 }

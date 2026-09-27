@@ -8,13 +8,21 @@ struct IsolateTextInputStateTests: RuleTesting {
     "'\(control)' writes '\(state)' on every keystroke, and this 'body' also builds \(count) views that do not read it. Move the field and its '@State' into their own 'View'"
   }
 
+  private static func stateNote(_ state: String) -> String {
+    "The field writes '\(state)' on every keystroke"
+  }
+
+  private static func environmentNote(_ value: String, _ state: String) -> String {
+    "'\(value)' comes from the environment and feeds work that does not use '\(state)'"
+  }
+
   @Test func textFieldBesideUnrelatedSectionsFlagged() {
     assertLint(
       IsolateTextInputState.self,
       """
       struct ProjectSettingsFields: View {
         let project: Project
-        @State private var draftName = ""
+        2️⃣@State private var draftName = ""
         @State private var saveError: String?
 
         var body: some View {
@@ -31,7 +39,13 @@ struct IsolateTextInputStateTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("TextField", "draftName", 3))]
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: Self.message("TextField", "draftName", 3),
+          notes: [NoteSpec("2️⃣", message: Self.stateNote("draftName"))]
+        )
+      ]
     )
   }
 
@@ -79,9 +93,9 @@ struct IsolateTextInputStateTests: RuleTesting {
       """
       struct OutlineRowView: View {
         let row: OutlineRow
-        @Environment(\\.editorTheme) private var theme
+        2️⃣@Environment(\\.editorTheme) private var theme
         @State private var editing = false
-        @State private var draft = ""
+        3️⃣@State private var draft = ""
 
         var body: some View {
           HStack(spacing: 6) {
@@ -109,7 +123,14 @@ struct IsolateTextInputStateTests: RuleTesting {
       }
       """,
       findings: [
-        FindingSpec("1️⃣", message: Self.environmentMessage("TextField", "draft", "theme"))
+        FindingSpec(
+          "1️⃣",
+          message: Self.environmentMessage("TextField", "draft", "theme"),
+          notes: [
+            NoteSpec("3️⃣", message: Self.stateNote("draft")),
+            NoteSpec("2️⃣", message: Self.environmentNote("theme", "draft")),
+          ]
+        )
       ]
     )
   }
@@ -166,6 +187,90 @@ struct IsolateTextInputStateTests: RuleTesting {
         private var preview: some View { Text(theme.name) }
 
         private func close() { dismiss() }
+      }
+      """
+    )
+  }
+
+  @Test func everyEnvironmentValueOfUnrelatedWorkNoted() {
+    assertLint(
+      IsolateTextInputState.self,
+      """
+      private struct ProjectNameSection: View {
+        2️⃣@Environment(\\.userID) private var userID
+        3️⃣@Environment(\\.database) private var database
+        @FocusState private var editingName: Bool
+
+        let projectID: Project.ID
+        let storedName: String
+        @Binding var saveError: String?
+
+        4️⃣@State private var draftName = ""
+        @State private var takenNames: Set<String> = []
+
+        private var nameProblem: NameRule.Problem? {
+          NameRule.project.problem(with: draftName, taken: takenNames)
+        }
+
+        private var writer: JigWriter {
+          .init(database: database, userID: userID, error: $saveError)
+        }
+
+        var body: some View {
+          Section {
+            1️⃣TextField("Project name", text: $draftName)
+              .focused($editingName)
+              .onSubmit(commitName)
+            if let problem = nameProblem {
+              Text(NameRule.project.message(for: problem))
+            }
+          } header: {
+            Text("Name")
+          }
+        }
+
+        private func commitName() {
+          guard nameProblem == nil else { return }
+          let name = NameRule.normalized(draftName)
+          draftName = name
+          if !writer({ try $0.updateProject(projectID.uuidString, name: name) }) {
+            draftName = storedName
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: Self.environmentMessage("TextField", "draftName", "database"),
+          notes: [
+            NoteSpec("4️⃣", message: Self.stateNote("draftName")),
+            NoteSpec("3️⃣", message: Self.environmentNote("database", "draftName")),
+            NoteSpec("2️⃣", message: Self.environmentNote("userID", "draftName")),
+          ]
+        )
+      ]
+    )
+  }
+
+  @Test func discreteControlBesideEnvironmentWorkNotFlagged() {
+    assertLint(
+      IsolateTextInputState.self,
+      """
+      struct PinSection: View {
+        @Environment(\\.database) private var database
+        @State private var pinned = false
+
+        private var summary: String { database.summary() }
+
+        var body: some View {
+          Section {
+            Toggle("Pinned", isOn: $pinned)
+            Text(summary)
+            Text("Other")
+            Text("More")
+          }
+        }
       }
       """
     )

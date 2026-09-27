@@ -15,7 +15,9 @@ final class UseAsyncDeferNotTask: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     override class var group: ConfigurationGroup? { .idioms }
 
     override func visit(_ node: DeferStmtSyntax) -> SyntaxVisitorContinueKind {
-        guard node.isInAsyncScope else { return .visitChildren }
+        guard node.isInAsyncContext(closureIsAsync: { $0.isAsync(ignoring: node) }) else {
+            return .visitChildren
+        }
 
         for statement in node.body.statements {
             guard case let .expr(expression) = statement.item,
@@ -24,34 +26,6 @@ final class UseAsyncDeferNotTask: LintSyntaxRule<LintOnlyValue>, @unchecked Send
             diagnose(.useAsyncDefer, on: anchor)
         }
         return .visitChildren
-    }
-}
-
-fileprivate extension DeferStmtSyntax {
-    /// Whether the nearest enclosing function, initializer, accessor or closure is `async` .
-    ///
-    /// The nearest enclosing scope is the one that decides, so the walk stops at the first of them
-    /// rather than running to the top of the file. A synchronous closure inside an `async` function
-    /// still cannot await.
-    var isInAsyncScope: Bool {
-        var current = Syntax(self).parent
-
-        while let node = current {
-            if let function = node.as(FunctionDeclSyntax.self) {
-                return function.signature.effectSpecifiers?.asyncSpecifier != nil
-            }
-            if let initializer = node.as(InitializerDeclSyntax.self) {
-                return initializer.signature.effectSpecifiers?.asyncSpecifier != nil
-            }
-            if let accessor = node.as(AccessorDeclSyntax.self) {
-                return accessor.effectSpecifiers?.asyncSpecifier != nil
-            }
-            if let closure = node.as(ClosureExprSyntax.self) {
-                return closure.isAsync(ignoring: self)
-            }
-            current = node.parent
-        }
-        return false
     }
 }
 

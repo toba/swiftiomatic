@@ -410,3 +410,69 @@ private extension SyntaxProtocol {
         return children(viewMode: .sourceAccurate).flatMap(\.boundIdentifierNames)
     }
 }
+
+// MARK: - Type names
+
+extension TypeMemberIndex {
+    /// The name token of the type that `declaration` declares or extends
+    ///
+    /// A type declaration gives its own name. An extension gives the name of the first struct,
+    /// class, enum or actor declaration in the same file with the extended simple name. The result
+    /// is `nil` when the file does not declare that type.
+    static func typeNameToken(of declaration: Syntax) -> TokenSyntax? {
+        if let name = declaration.asProtocol(NamedDeclSyntax.self)?.name { return name }
+        guard declaration.is(ExtensionDeclSyntax.self),
+              let name = typeName(of: declaration) else { return nil }
+        let finder = TypeNameFinder(name: name)
+        finder.walk(declaration.root)
+        return finder.token
+    }
+
+    /// Finds the name token of the first nominal type declaration with a given name
+    private final class TypeNameFinder: SyntaxVisitor {
+        let name: String
+        var token: TokenSyntax?
+
+        init(name: String) {
+            self.name = name
+            super.init(viewMode: .sourceAccurate)
+        }
+
+        override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+            match(node.name)
+        }
+
+        override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+            match(node.name)
+        }
+
+        override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+            match(node.name)
+        }
+
+        override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
+            match(node.name)
+        }
+
+        override func visit(_: FunctionDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+
+        override func visit(_: VariableDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
+
+        private func match(_ candidate: TokenSyntax) -> SyntaxVisitorContinueKind {
+            guard token == nil else { return .skipChildren }
+            if candidate.text == name { token = candidate }
+            return token == nil ? .visitChildren : .skipChildren
+        }
+    }
+}
+
+extension TypeMemberIndex.Member {
+    /// The statements that run when the member is read or called, or `nil` for a stored property
+    ///
+    /// A getter written as a bare list of statements and a function or accessor body both give
+    /// their statements.
+    var statements: CodeBlockItemListSyntax? {
+        if let list = body?.as(CodeBlockItemListSyntax.self) { return list }
+        return body?.as(CodeBlockSyntax.self)?.statements
+    }
+}

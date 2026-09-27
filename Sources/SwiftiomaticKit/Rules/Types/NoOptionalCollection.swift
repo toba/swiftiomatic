@@ -10,7 +10,9 @@ final class NoOptionalCollection: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     override class var group: ConfigurationGroup? { .types }
 
     override func visit(_ node: OptionalTypeSyntax) -> SyntaxVisitorContinueKind {
-        if node.wrappedType.isCollectionType { diagnose(.noOptionalCollection, on: node) }
+        if node.wrappedType.isOptionalCheckedCollection {
+            diagnose(.noOptionalCollection, on: node)
+        }
         return .visitChildren
     }
 }
@@ -21,7 +23,8 @@ fileprivate extension Finding.Message {
 }
 
 fileprivate extension TypeSyntax {
-    var isCollectionType: Bool {
+    /// Whether the type is an array, a dictionary or a set, spelled as a literal type or by name
+    var isOptionalCheckedCollection: Bool {
         if `is`(ArrayTypeSyntax.self) || `is`(DictionaryTypeSyntax.self) { return true }
         if let id = self.as(IdentifierTypeSyntax.self) {
             return ["Array", "Dictionary", "Set"].contains(id.name.text)

@@ -166,6 +166,40 @@ struct UseAsyncDeferNotTaskTests: RuleTesting {
         )
     }
 
+    @Test func taskInTaskModifierWithoutAwaitNotFlagged() {
+        // Only a `Task` body counts as async by its call. A `.task` or task group closure counts
+        // only when it awaits.
+        assertLint(
+            UseAsyncDeferNotTask.self,
+            """
+            func content() -> some View {
+              Text("a").task {
+                defer { Task { await close() } }
+                start()
+              }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func taskInClosureWithNestedAwaitFlagged() {
+        // Any `await` in the closure body outside the defer counts, including one in a nested
+        // closure.
+        assertLint(
+            UseAsyncDeferNotTask.self,
+            """
+            func load() {
+              run {
+                defer { 1️⃣Task { await close() } }
+                items.forEach { _ in Task { await step() } }
+              }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
     @Test func taskGroupCallNotFlagged() {
         assertLint(
             UseAsyncDeferNotTask.self,

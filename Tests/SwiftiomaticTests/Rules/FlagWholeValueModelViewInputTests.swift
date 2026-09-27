@@ -12,6 +12,18 @@ struct FlagWholeValueModelViewInputTests: RuleTesting {
     "'\(name)' stores the whole value '\(type)' as an input but reads only \(read). A change to any other property still updates this view. Pass only the properties the view reads"
   }
 
+  private static func rowInput(_ name: String, _ type: String, _ view: String) -> String {
+    "'\(name)' stores the whole value '\(type)' in '\(view)', which a 'ForEach' or 'List' repeats for each element. Each parent update compares the value once per row. Pass only the values the row reads, or keep the data in an '@Observable' class"
+  }
+
+  private static func rowArgument(_ label: String, _ type: String, _ view: String) -> String {
+    "Every '\(view)' row receives the same '\(type)' value as '\(label)'. Each parent update compares it once per row. Pass only the values the row reads, or keep the data in an '@Observable' class"
+  }
+
+  private static func collectionModel(_ type: String, _ count: Int) -> String {
+    "'\(type)' holds \(count) collection properties. A repeated row view that stores it compares every collection on each parent update. Pass rows only the values they read, or keep the data in an '@Observable' class"
+  }
+
   @Test func guidanceIsConsider() {
     #expect(FlagWholeValueModelViewInput.guidance == .consider)
   }
@@ -262,6 +274,213 @@ struct FlagWholeValueModelViewInputTests: RuleTesting {
           Text(store.second)
           Text(store.third)
         }
+      }
+      """
+    )
+  }
+
+  @Test func sharedOutOfFileValueInRepeatedRowFlagged() {
+    // From jig `ProjectList.swift`. `ProjectRowNumbers` lives in another file. Every folder row
+    // stores the same lookup table.
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct ProjectList: View {
+        @State private var collapsed = Set<String>()
+
+        var body: some View {
+          List {
+            let numbers = rowNumbers
+            ForEach(rows) { row in
+              switch row {
+                case let .folder(folder, held):
+                  FolderHeaderRow(
+                    folder: folder,
+                    held: held,
+                    1️⃣numbers: numbers,
+                    collapsed: $collapsed)
+                case let .project(project):
+                  let model = numbers.model(for: project)
+                  ProjectRow(model: model, folders: allFolders)
+              }
+            }
+          }
+        }
+      }
+
+      private struct FolderHeaderRow: View {
+        let folder: ProjectFolder
+        let held: [Project]
+        2️⃣let numbers: ProjectRowNumbers
+        @Binding var collapsed: Set<String>
+
+        var body: some View { Text(numbers.model(for: folder).title) }
+      }
+
+      private struct ProjectRow: View {
+        let model: ProjectRowModel
+        let folders: [ProjectFolder]
+        var body: some View { Text(model.title) }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.rowArgument("numbers", "ProjectRowNumbers", "FolderHeaderRow")),
+        FindingSpec("2️⃣", message: Self.rowInput("numbers", "ProjectRowNumbers", "FolderHeaderRow")),
+      ]
+    )
+  }
+
+  @Test func sharedSameFileCollectionModelInRepeatedRowFlagged() {
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct Lookup {
+        var names: [Int: String]
+        var tags: Set<Int>
+      }
+
+      struct Parent: View {
+        let lookup: Lookup
+        let items: [Item]
+
+        var body: some View {
+          ForEach(items) { item in
+            ItemRow(item: item, 1️⃣lookup: lookup)
+          }
+        }
+      }
+
+      struct ItemRow: View {
+        let item: Item
+        2️⃣let lookup: Lookup
+        var body: some View { Text(lookup.names[item.id] ?? "") }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.rowArgument("lookup", "Lookup", "ItemRow")),
+        FindingSpec("2️⃣", message: Self.rowInput("lookup", "Lookup", "ItemRow")),
+      ]
+    )
+  }
+
+  @Test func elementDerivedAndSmallSharedRowInputsNotFlagged() {
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct Small {
+        var name: String
+        var count: Int
+      }
+
+      final class Store {
+        var names: [Int: String] = [:]
+        var tags: Set<Int> = []
+      }
+
+      struct Parent: View {
+        @Environment(Library.self) private var library
+        @State private var selection: Item.ID?
+        let small: Small
+        let store: Store
+        let title: String
+        let items: [Item]
+
+        var body: some View {
+          ForEach(items) { item in
+            let model = RowModel(item: item)
+            ItemRow(
+              item: item,
+              model: model,
+              small: small,
+              store: store,
+              title: title,
+              library: library,
+              selection: $selection)
+          }
+          ForEach(items) { ItemRow(item: $0, model: RowModel(item: $0)) }
+        }
+      }
+
+      struct ItemRow: View {
+        let item: Item
+        let model: RowModel
+        var small: Small?
+        var store: Store?
+        var title = ""
+        var library: Library?
+        @Binding var selection: Item.ID?
+        var body: some View { Text(item.name) }
+      }
+      """
+    )
+  }
+
+  @Test func sharedValueOutsideRepeatedRowNotFlagged() {
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct Parent: View {
+        let numbers: ProjectRowNumbers
+        var body: some View {
+          VStack { Summary(numbers: numbers) }
+        }
+      }
+
+      struct Summary: View {
+        let numbers: ProjectRowNumbers
+        var body: some View { Text(numbers.total) }
+      }
+      """
+    )
+  }
+
+  @Test func structOfCollectionsInViewFileFlagged() {
+    // From jig `ProjectRow.swift`. The table the sidebar rows receive holds a dictionary per count.
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct 1️⃣ProjectRowNumbers {
+        private let issueCounts: [Project.ID: ProjectIssueCounts]
+        private let versions: [Project.ID: String]
+        private let citations: Dictionary<Project.ID, Int>
+        private let pulling: Set<Project.ID>
+        private let title: String
+        static let empty: [Int] = []
+
+        func isPulling(_ project: Project.ID) -> Bool { pulling.contains(project) }
+      }
+
+      struct ProjectRow: View {
+        let model: ProjectRowModel
+        var body: some View { Text(model.title) }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.collectionModel("ProjectRowNumbers", 4))]
+    )
+  }
+
+  @Test func structOfCollectionsNotFlaggedWhenSmallOrOutsideViewFile() {
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct Filters {
+        var tags: [String]
+        var owners: [String]
+        var title: String
+      }
+
+      struct Page: View {
+        var body: some View { Text("x") }
+      }
+      """
+    )
+    assertLint(
+      FlagWholeValueModelViewInput.self,
+      """
+      struct Tables {
+        var a: [Int: String]
+        var b: [Int: String]
+        var c: Set<Int>
       }
       """
     )

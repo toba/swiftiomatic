@@ -25,8 +25,9 @@ final class FlagDiscardedResult: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
         let collector = DiscardCollector(viewMode: .sourceAccurate)
         collector.walk(node)
 
-        let bareCounts = collector.discards.filter { !$0.isSelfCall }
-            .reduce(into: [String: Int]()) { $0[$1.name, default: 0] += 1 }
+        let bareCounts = collector.discards.reduce(into: [String: Int]()) { counts, discard in
+            if !discard.isSelfCall { counts[discard.name, default: 0] += 1 }
+        }
 
         for discard in collector.discards {
             let report: Bool
@@ -50,8 +51,8 @@ private final class DiscardCollector: SyntaxVisitor {
         let node: InfixOperatorExprSyntax
     }
 
-    /// Maps a function name to `true` when every declaration of that name returns a value
-    /// without `@discardableResult`.
+    /// Maps a function name to `true` when every declaration of that name returns a value without
+    /// `@discardableResult`.
     var declarations: [String: Bool] = [:]
     var discards: [Discard] = []
 
@@ -69,29 +70,15 @@ private final class DiscardCollector: SyntaxVisitor {
               let call = node.rightOperand.unwrappingTryAwait.as(FunctionCallExprSyntax.self)
         else { return .visitChildren }
 
-        if let reference = call.calledExpression.as(DeclReferenceExprSyntax.self) {
-            let name = reference.baseName.text
-            guard name.first?.isLowercase == true else { return .visitChildren }
-            discards.append(Discard(name: name, isSelfCall: false, node: node))
-        } else if let member = call.calledExpression.as(MemberAccessExprSyntax.self),
-                  member.base?.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind
-                      == .keyword(.self)
-        {
-            discards.append(
-                Discard(name: member.declName.baseName.text, isSelfCall: true, node: node))
+        guard let reference = call.calledExpression.selfMemberReference else {
+            return .visitChildren
         }
+        let isSelfCall = call.calledExpression.is(MemberAccessExprSyntax.self)
+        let name = reference.baseName.text
+        // A bare capitalized callee is a type initializer, not a function
+        guard isSelfCall || name.first?.isLowercase == true else { return .visitChildren }
+        discards.append(Discard(name: name, isSelfCall: isSelfCall, node: node))
         return .visitChildren
-    }
-}
-
-fileprivate extension ExprSyntax {
-    /// The expression without any `try` or `await` layers around it.
-    var unwrappingTryAwait: ExprSyntax {
-        if let tryExpr = self.as(TryExprSyntax.self) { return tryExpr.expression.unwrappingTryAwait }
-        if let awaitExpr = self.as(AwaitExprSyntax.self) {
-            return awaitExpr.expression.unwrappingTryAwait
-        }
-        return self
     }
 }
 

@@ -16,6 +16,17 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     "'\(function)' takes the collection '\(collection)' and runs on every 'body' evaluation. Store the derived value and update it when its inputs change"
   }
 
+  private static func owner(_ type: String) -> String {
+    "'\(type)' reaches collection work from 'body'. SwiftUI repeats the work on each update of the view. Store the derived value, or move the work behind a child view"
+  }
+
+  private static func bodyRead(_ member: String) -> String {
+    "'body' reads '\(member)', which walks a collection on every 'body' evaluation. Store the derived value and update it when its inputs change"
+  }
+
+  private static let bodyName =
+    "'body' reaches collection work through a member it reads. SwiftUI repeats that work on each evaluation of 'body'. Store the derived value, or move the work behind a child view"
+
   @Test func sameFileStaticFunctionOnOtherTypeFollowed() {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
@@ -28,11 +39,11 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         }
       }
 
-      struct ProjectList: View {
+      struct 8️⃣ProjectList: View {
         let projects: [Project]
 
-        var body: some View {
-          List(sidebarRows) { row in Text("x") }
+        var 7️⃣body: some View {
+          List(9️⃣sidebarRows) { row in Text("x") }
         }
 
         private var sidebarRows: [SidebarRow] {
@@ -40,7 +51,12 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.call("map", "SidebarRow.rows"))]
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("map", "SidebarRow.rows")),
+        FindingSpec("8️⃣", message: Self.owner("ProjectList")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("9️⃣", message: Self.bodyRead("sidebarRows")),
+      ]
     )
   }
 
@@ -66,11 +82,11 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         }
       }
 
-      struct ProjectList: View {
+      struct 8️⃣ProjectList: View {
         let projects: [Project]
 
-        var body: some View {
-          List(sidebarRows) { row in Text("x") }
+        var 7️⃣body: some View {
+          List(9️⃣sidebarRows) { row in Text("x") }
         }
 
         private var sidebarRows: [SidebarRow] {
@@ -81,6 +97,9 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
       findings: [
         FindingSpec("1️⃣", message: Self.call("sorted", "Grouping.sorted")),
         FindingSpec("2️⃣", message: Self.call("map", "SidebarRow.loose")),
+        FindingSpec("8️⃣", message: Self.owner("ProjectList")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("9️⃣", message: Self.bodyRead("sidebarRows")),
       ]
     )
   }
@@ -89,13 +108,13 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
       """
-      struct ProjectList: View {
+      struct 8️⃣ProjectList: View {
         @FetchAll(ProjectFolder.all) private var folders: [ProjectFolder]
         var projects: [Project]
         let count: Int
 
-        var body: some View {
-          List(sidebarRows) { row in Text("x") }
+        var 7️⃣body: some View {
+          List(9️⃣sidebarRows) { row in Text("x") }
             .font(Font.system(size: CGFloat(count)))
           Text(Formatter.format(count))
         }
@@ -105,7 +124,34 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.opaqueCall("SidebarRow.rows", "projects"))]
+      findings: [
+        FindingSpec("1️⃣", message: Self.opaqueCall("SidebarRow.rows", "projects")),
+        FindingSpec("8️⃣", message: Self.owner("ProjectList")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("9️⃣", message: Self.bodyRead("sidebarRows")),
+      ]
+    )
+  }
+
+  @Test func outOfFileStaticFunctionTakingDequeOrQualifiedArrayFlagged() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct 8️⃣Timeline: View {
+        let events: Deque<Event>
+        let marks: Swift.Array<Mark>
+
+        var body: some View {
+          Text(Summary.1️⃣text(events: events))
+          Text(Summary.2️⃣label(marks: marks))
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.opaqueCall("Summary.text", "events")),
+        FindingSpec("2️⃣", message: Self.opaqueCall("Summary.label", "marks")),
+        FindingSpec("8️⃣", message: Self.owner("Timeline")),
+      ]
     )
   }
 
@@ -113,11 +159,11 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
       """
-      struct EditorGutterView: View {
+      struct 8️⃣EditorGutterView: View {
         @Environment(\\.editorState) private var editorState
 
-        var body: some View {
-          ForEach(visibleMarkers, id: \\.id) { marker in Text(marker.name) }
+        var 7️⃣body: some View {
+          ForEach(9️⃣visibleMarkers, id: \\.id) { marker in Text(marker.name) }
         }
 
         private var visibleMarkers: [GutterMarker] {
@@ -125,7 +171,12 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.call("filter", "visibleMarkers"))]
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("filter", "visibleMarkers")),
+        FindingSpec("8️⃣", message: Self.owner("EditorGutterView")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("9️⃣", message: Self.bodyRead("visibleMarkers")),
+      ]
     )
   }
 
@@ -133,20 +184,25 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
       """
-      struct EditorBreadcrumbBar: View {
+      struct 8️⃣EditorBreadcrumbBar: View {
         let crumbNames: [String]
 
         private var items: [Item] {
           crumbNames.enumerated().1️⃣map { index, name in Item(id: index, label: name) }
         }
 
-        var body: some View {
-          let items = items
+        var 7️⃣body: some View {
+          let items = 9️⃣items
           HStack { ForEach(items) { item in Text(item.label) } }
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.call("map", "items"))]
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("map", "items")),
+        FindingSpec("8️⃣", message: Self.owner("EditorBreadcrumbBar")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("9️⃣", message: Self.bodyRead("items")),
+      ]
     )
   }
 
@@ -154,10 +210,10 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
       """
-      struct Summary: View {
+      struct 8️⃣Summary: View {
         let values: [Int]
 
-        var body: some View { Text(title) }
+        var 7️⃣body: some View { Text(9️⃣title) }
 
         private var title: String { "Total \\(total())" }
 
@@ -174,6 +230,9 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         FindingSpec("1️⃣", message: Self.loop("for", "total")),
         FindingSpec("2️⃣", message: Self.call("reduce", "total")),
         FindingSpec("3️⃣", message: Self.call("sorted", "ordered")),
+        FindingSpec("8️⃣", message: Self.owner("Summary")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("9️⃣", message: Self.bodyRead("title")),
       ]
     )
   }
@@ -182,16 +241,21 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
       """
-      struct Summary: View {
+      struct 8️⃣Summary: View {
         let values: [Int]
 
-        var body: some View { Text(summary()) }
+        var 7️⃣body: some View { Text(9️⃣summary()) }
 
         private func summary() -> String { "" }
         private func summary(_ limit: Int) -> String { values.1️⃣map(String.init).joined() }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.call("map", "summary"))]
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("map", "summary")),
+        FindingSpec("8️⃣", message: Self.owner("Summary")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("9️⃣", message: Self.bodyRead("summary")),
+      ]
     )
   }
 
@@ -226,23 +290,26 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
   @Test func buttonLabelArgumentFollowedAndDeferredClosuresSkipped() {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
-      """
-      struct Toolbar: View {
+      #"""
+      struct 8️⃣Toolbar: View {
         let items: [Item]
 
         var body: some View {
-          Button(action: { save(items.filter(\\.isDirty)) }, label: {
-            Text(items.1️⃣filter(\\.isDirty).first?.name ?? "")
+          Button(action: { save(items.filter(\.isDirty)) }, label: {
+            Text(items.1️⃣filter(\.isDirty).first?.name ?? "")
           })
           Toggle("Dirty", isOn: Binding(get: { true }, set: { _ in save(items.sorted()) }))
           Text("Drag")
-            .draggable(items) { Text(items.map(\\.name).joined()) }
-            .onGeometryChange(for: Int.self) { _ in items.map(\\.id).count } action: { _ in }
+            .draggable(items) { Text(items.map(\.name).joined()) }
+            .onGeometryChange(for: Int.self) { _ in items.map(\.id).count } action: { _ in }
           Color.clear.task { Task.immediateDetached { save(items.sorted()) } }
         }
       }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.call("filter", "body"))]
+      """#,
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("filter", "body")),
+        FindingSpec("8️⃣", message: Self.owner("Toolbar")),
+      ]
     )
   }
 
@@ -250,7 +317,7 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
       """
-      struct Rows: View {
+      struct 8️⃣Rows: View {
         let values: [Int]
 
         var body: some View {
@@ -258,7 +325,10 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.call("map", "body"))]
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("map", "body")),
+        FindingSpec("8️⃣", message: Self.owner("Rows")),
+      ]
     )
   }
 
@@ -266,7 +336,7 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
       """
-      struct WritingActivityHeatMap: View {
+      struct 8️⃣WritingActivityHeatMap: View {
         private let today: Date
         private let calendar: Calendar
 
@@ -297,6 +367,7 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         FindingSpec("1️⃣", message: Self.call("map", "body")),
         FindingSpec("2️⃣", message: Self.call("map", "body")),
         FindingSpec("3️⃣", message: Self.opaqueCall("DailyActivity.currentStreak", "activity")),
+        FindingSpec("8️⃣", message: Self.owner("WritingActivityHeatMap")),
       ]
     )
   }
@@ -305,7 +376,7 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
     assertLint(
       NoCollectionWorkReachableFromBody.self,
       """
-      struct PublishView: View {
+      struct 8️⃣PublishView: View {
         @State private var state: PublicationState = .shared
         @State private var selection: Publication.ID?
 
@@ -322,7 +393,10 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         private func publish(to id: Publication.ID) async {}
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.call("map", "body"))]
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("map", "body")),
+        FindingSpec("8️⃣", message: Self.owner("PublishView")),
+      ]
     )
   }
 
@@ -387,6 +461,200 @@ struct NoCollectionWorkReachableFromBodyTests: RuleTesting {
         let values: [Int]
         var body: String { summary }
         private var summary: String { values.map(String.init).joined() }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func ownerAndBodyReadReportedForContentViewShape() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct 8️⃣ContentView: View {
+        @FetchAll(Project.all) private var fetchedProjects: [Project]
+        @AppStorage(.selectedProjectID) private var selectedProjectID
+
+        private var projects: [Project] { fetchedProjects.1️⃣sorted(by: Sort.text(\\.name)) }
+
+        private var selectedProject: Project? {
+          projects.first { $0.id.uuidString == selectedProjectID }
+        }
+
+        var 7️⃣body: some View {
+          NavigationSplitView {
+            ProjectListView(projects: 9️⃣projects, selection: 0️⃣selectedProject?.id)
+          } detail: {
+            Text(projects.first?.name ?? "")
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("sorted", "projects")),
+        FindingSpec("8️⃣", message: Self.owner("ContentView")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("9️⃣", message: Self.bodyRead("projects")),
+        FindingSpec("0️⃣", message: Self.bodyRead("selectedProject")),
+      ]
+    )
+  }
+
+  @Test func bodyReadReportedOncePerMemberAndOnlyForMembersThatReachWork() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct 8️⃣IssueListView: View {
+        let rows: [Row]
+        private var title: String { "Issues" }
+        private var rowKeys: [KeyedRow] { rows.1️⃣map(KeyedRow.init) }
+
+        var 7️⃣body: some View {
+          List {
+            let lastID = rows.last?.id
+            Text(title)
+            ForEach(9️⃣rowKeys) { keyed in Text(keyed.name) }
+            Text("\\(rowKeys.count)")
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("map", "rowKeys")),
+        FindingSpec("8️⃣", message: Self.owner("IssueListView")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("9️⃣", message: Self.bodyRead("rowKeys")),
+      ]
+    )
+  }
+
+  @Test func ownerReportedForBodyInExtension() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct 8️⃣Picker: View {
+        let names: [String]
+      }
+
+      extension Picker {
+        var body: some View {
+          Text(names.1️⃣sorted().joined())
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("sorted", "body")),
+        FindingSpec("8️⃣", message: Self.owner("Picker")),
+      ]
+    )
+  }
+
+  @Test func smallTransformOverLiteralCollectionNotFlagged() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct Legend: View {
+        private var labels: [String] { ["Open", "Closed"].map { $0.uppercased() } }
+
+        var body: some View {
+          HStack {
+            ForEach(labels, id: \\.self) { Text($0) }
+            ForEach([1, 2, 3].filter { $0 > 1 }, id: \\.self) { Text("\\($0)") }
+            let sizes = ["s": 1, "m": 2].map { $0.key }
+            Text(sizes.first ?? "")
+          }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func viewWithoutReachedWorkHasNoOwnerFinding() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct Badge: View {
+        let count: Int
+        private var label: String { "\\(count)" }
+
+        var body: some View { Text(label) }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func bodyNameReportedWhenBodyReachesWorkThroughMember() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct 8️⃣IssueListView: View {
+        @FetchAll private var rows: [IssueListRow]
+        @Binding var selection: Issue.ID?
+
+        private var showsAvatar: Bool { true }
+
+        private var rowKeys: [KeyedRow] {
+          rows.1️⃣map { KeyedRow(row: $0, showsAvatar: showsAvatar) }
+        }
+
+        var 7️⃣body: some View {
+          List(selection: $selection) {
+            let lastID = rows.last?.id
+            ForEach(9️⃣rowKeys) { keyed in Text(keyed.name) }
+          }
+          .onChange(of: rows.2️⃣map(\\.id), initial: true) { _, ids in
+            selection = ids.first
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("map", "rowKeys")),
+        FindingSpec("2️⃣", message: Self.call("map", "body")),
+        FindingSpec("7️⃣", message: Self.bodyName),
+        FindingSpec("8️⃣", message: Self.owner("IssueListView")),
+        FindingSpec("9️⃣", message: Self.bodyRead("rowKeys")),
+      ]
+    )
+  }
+
+  @Test func bodyNameNotReportedWhenWorkIsOnlyInBody() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct 8️⃣CitationsSheet: View {
+        @FetchAll private var citations: [Citation]
+
+        private var writer: Writer { Writer() }
+
+        var body: some View {
+          let canWrite = writer.canWrite
+          let sorted = citations.1️⃣sorted {
+            $0.url.localizedCaseInsensitiveCompare($1.url) == .orderedAscending
+          }
+          ItemList(items: sorted, canWrite: canWrite)
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.call("sorted", "body")),
+        FindingSpec("8️⃣", message: Self.owner("CitationsSheet")),
+      ]
+    )
+  }
+
+  @Test func bodyNameNotReportedForMemberOverLiteralCollection() {
+    assertLint(
+      NoCollectionWorkReachableFromBody.self,
+      """
+      struct Legend: View {
+        private var labels: [String] { ["Open", "Closed"].map { $0.uppercased() } }
+
+        var body: some View {
+          ForEach(labels, id: \\.self) { Text($0) }
+        }
       }
       """,
       findings: []

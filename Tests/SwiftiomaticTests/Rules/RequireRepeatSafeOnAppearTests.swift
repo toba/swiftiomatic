@@ -8,6 +8,10 @@ struct RequireRepeatSafeOnAppearTests: RuleTesting {
     "'.onAppear' runs each time the view appears, and '\(write)' does not give the same result when it repeats. Guard it, or move it to the owner of the state"
   }
 
+  private static func callMessage(_ call: String) -> String {
+    "'.onAppear' runs each time the view appears, so '\(call)' runs again on each appearance. Make sure the call is repeat-safe, or guard it with state so that it runs once"
+  }
+
   @Test func guidanceIsConsider() {
     #expect(RequireRepeatSafeOnAppear.guidance == .consider)
   }
@@ -112,6 +116,141 @@ struct RequireRepeatSafeOnAppearTests: RuleTesting {
         }
       }
       """
+    )
+  }
+
+  @Test func paginationCallFlagged() {
+    assertLint(
+      RequireRepeatSafeOnAppear.self,
+      """
+      private struct IssueListItem: View {
+        let isLast: Bool
+        let reachedEnd: () -> Void
+
+        var body: some View {
+          IssueRow()
+            .tag(1)
+            .onAppear { if isLast { 1️⃣reachedEnd() } }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.callMessage("reachedEnd()"))]
+    )
+  }
+
+  @Test func selfMethodCallFlagged() {
+    assertLint(
+      RequireRepeatSafeOnAppear.self,
+      """
+      struct Detail: View {
+        var body: some View {
+          Text("x").onAppear(perform: { 1️⃣self.loadDetails(for: id) })
+        }
+
+        func loadDetails(for id: Int) {}
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.callMessage("self.loadDetails(for: id)"))]
+    )
+  }
+
+  @Test func callGuardedByStateNotFlagged() {
+    assertLint(
+      RequireRepeatSafeOnAppear.self,
+      """
+      struct BirdDetailView: View {
+        @State private var displayName = ""
+        @State private var didLoad = false
+
+        var body: some View {
+          Text(displayName)
+            .onAppear {
+              guard displayName.isEmpty else { return }
+              prepareName()
+            }
+            .onDisappear { }
+            .onAppear { if !didLoad { load() } }
+        }
+
+        func prepareName() {}
+        func load() {}
+      }
+      """
+    )
+  }
+
+  @Test func harmlessCallsNotFlagged() {
+    assertLint(
+      RequireRepeatSafeOnAppear.self,
+      """
+      struct Row: View {
+        var body: some View {
+          Text("x").onAppear {
+            print("appeared")
+            withAnimation { isShown = true }
+            proxy.scrollTo(id)
+            Task { await model.refresh() }
+          }
+        }
+      }
+      """
+    )
+  }
+
+  @Test func freeFunctionCallNotFlagged() {
+    assertLint(
+      RequireRepeatSafeOnAppear.self,
+      """
+      struct Gauge: View {
+        let a: Int
+        let b: Int
+
+        var body: some View {
+          Text("x").onAppear { limit = max(a, b) }
+        }
+      }
+      """
+    )
+  }
+
+  @Test func callGuardedByStateInMainDeclarationFromExtensionNotFlagged() {
+    assertLint(
+      RequireRepeatSafeOnAppear.self,
+      """
+      struct Feed: View {
+        @State private var didLoad = false
+
+        var body: some View { content }
+
+        func load() {}
+      }
+
+      extension Feed {
+        var content: some View {
+          Text("x").onAppear { if !didLoad { load() } }
+        }
+      }
+      """
+    )
+  }
+
+  @Test func unguardedMethodCallInExtensionFlagged() {
+    assertLint(
+      RequireRepeatSafeOnAppear.self,
+      """
+      struct Feed: View {
+        var body: some View { content }
+
+        func load() {}
+      }
+
+      extension Feed {
+        var content: some View {
+          Text("x").onAppear { 1️⃣load() }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.callMessage("load()"))]
     )
   }
 }

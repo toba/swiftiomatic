@@ -103,14 +103,10 @@ final class RequireWeakSelfInObservations: LintSyntaxRule<LintOnlyValue>, @unche
 
     /// Whether `expr` , without `try` and `await` , creates an `Observations` sequence.
     private static func isObservationsCall(_ expr: ExprSyntax) -> Bool {
-        guard let call = unwrapped(expr).as(FunctionCallExprSyntax.self) else { return false }
+        guard let call = expr.unwrappingTryAwait.as(FunctionCallExprSyntax.self) else {
+            return false
+        }
         return observationsAnchor(of: call) != nil
-    }
-
-    private static func unwrapped(_ expr: ExprSyntax) -> ExprSyntax {
-        if let tryExpr = expr.as(TryExprSyntax.self) { return unwrapped(tryExpr.expression) }
-        if let awaitExpr = expr.as(AwaitExprSyntax.self) { return unwrapped(awaitExpr.expression) }
-        return expr
     }
 
     /// The trailing closure of `call` , or its first argument when the argument is a closure.
@@ -147,7 +143,7 @@ final class RequireWeakSelfInObservations: LintSyntaxRule<LintOnlyValue>, @unche
     /// Whether the loop iterates an `Observations` sequence that it creates, or a local that an
     /// `Observations` initializer binds in the same function.
     private func iteratesObservations(_ loop: ForStmtSyntax) -> Bool {
-        let sequence = Self.unwrapped(loop.sequence)
+        let sequence = loop.sequence.unwrappingTryAwait
         if Self.isObservationsCall(sequence) { return true }
         guard let ref = sequence.as(DeclReferenceExprSyntax.self), ref.argumentNames == nil
         else { return false }

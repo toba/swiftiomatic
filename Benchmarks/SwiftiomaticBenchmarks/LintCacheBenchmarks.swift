@@ -21,6 +21,43 @@ func registerLintCacheBenchmarks() {
         paths: findingPaths,
         record: recordWithFindings
     )
+    registerParallelLookupBenchmark()
+}
+
+/// Warm-cache lookups from every core at once, the shape of a `--parallel` lint where every file
+/// hits the cache
+///
+/// A hit decodes one JSON record and does nothing else. `LintCache` guards its coders with one
+/// `Mutex`, so this figure shows how much of the parallel run waits on that lock.
+private func registerParallelLookupBenchmark() {
+    Benchmark(
+        "CacheLookupParallelWarm",
+        configuration: .init(thresholds: Tolerance.noisy),
+        closure: { benchmark in
+            benchmark.startMeasurement()
+            DispatchQueue.concurrentPerform(iterations: storesPerBatch) { index in
+                blackHole(
+                    sharedCache.lookup(
+                        absolutePath: findingPaths[index],
+                        contentHash: contentHashes[index],
+                        fingerprint: fingerprint
+                    )
+                )
+            }
+        },
+        setup: {
+            prepareFixtures()
+            for index in 0..<storesPerBatch {
+                sharedCache.store(
+                    absolutePath: findingPaths[index],
+                    contentHash: contentHashes[index],
+                    fingerprint: fingerprint,
+                    record: recordWithFindings
+                )
+            }
+        },
+        teardown: { removeCacheDirectory() }
+    )
 }
 
 /// Registers one benchmark that stores `record` under each of `paths`

@@ -8,6 +8,14 @@ struct NoOnChangeDerivedStateWriteTests: RuleTesting {
     "'.onChange(of: \(source))' writes '\(target)', which makes a second update. Derive '\(target)' from '\(source)' in the same mutation, or compute it where it is read"
   }
 
+  private static func sourceMessage(source: String, target: String) -> String {
+    "'\(source)' drives a write to '\(target)' in '.onChange'. Update '\(target)' in the code that changes '\(source)'"
+  }
+
+  private static func targetMessage(source: String, target: String) -> String {
+    "'\(target)' is set in '.onChange(of: \(source))'. Derive it from '\(source)', or set it in the code that changes '\(source)'"
+  }
+
   @Test func guidanceIsConsider() {
     #expect(NoOnChangeDerivedStateWrite.guidance == .consider)
   }
@@ -17,8 +25,8 @@ struct NoOnChangeDerivedStateWriteTests: RuleTesting {
       NoOnChangeDerivedStateWrite.self,
       """
       struct FontMenu: View {
-        @State private var filter = ""
-        @State private var visibleRows: [FontRow] = []
+        3️⃣@State private var filter = ""
+        2️⃣@State private var visibleRows: [FontRow] = []
         @State private var allRows: [FontRow] = []
 
         var body: some View {
@@ -29,7 +37,11 @@ struct NoOnChangeDerivedStateWriteTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message(source: "filter", target: "visibleRows"))]
+      findings: [
+        FindingSpec("1️⃣", message: Self.message(source: "filter", target: "visibleRows")),
+        FindingSpec("2️⃣", message: Self.targetMessage(source: "filter", target: "visibleRows")),
+        FindingSpec("3️⃣", message: Self.sourceMessage(source: "filter", target: "visibleRows")),
+      ]
     )
   }
 
@@ -38,9 +50,9 @@ struct NoOnChangeDerivedStateWriteTests: RuleTesting {
       NoOnChangeDerivedStateWrite.self,
       """
       struct Editor: View {
-        @State private var text = ""
-        @State private var stats = Stats()
-        var count = 0
+        5️⃣@State private var text = ""
+        3️⃣@State private var stats = Stats()
+        4️⃣var count = 0
 
         var body: some View {
           TextEditor(text: $text)
@@ -54,6 +66,9 @@ struct NoOnChangeDerivedStateWriteTests: RuleTesting {
       findings: [
         FindingSpec("1️⃣", message: Self.message(source: "text", target: "stats")),
         FindingSpec("2️⃣", message: Self.message(source: "text", target: "count")),
+        FindingSpec("3️⃣", message: Self.targetMessage(source: "text", target: "stats")),
+        FindingSpec("4️⃣", message: Self.targetMessage(source: "text", target: "count")),
+        FindingSpec("5️⃣", message: Self.sourceMessage(source: "text", target: "stats")),
       ]
     )
   }
@@ -63,15 +78,19 @@ struct NoOnChangeDerivedStateWriteTests: RuleTesting {
       NoOnChangeDerivedStateWrite.self,
       """
       struct Counter: View {
-        @State private var value = 0
-        @State private var doubled = 0
+        3️⃣@State private var value = 0
+        2️⃣@State private var doubled = 0
 
         var body: some View {
           Text("x").onChange(of: value, initial: true, { 1️⃣doubled = value * 2 })
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message(source: "value", target: "doubled"))]
+      findings: [
+        FindingSpec("1️⃣", message: Self.message(source: "value", target: "doubled")),
+        FindingSpec("2️⃣", message: Self.targetMessage(source: "value", target: "doubled")),
+        FindingSpec("3️⃣", message: Self.sourceMessage(source: "value", target: "doubled")),
+      ]
     )
   }
 
@@ -116,6 +135,82 @@ struct NoOnChangeDerivedStateWriteTests: RuleTesting {
 
         var body: some View {
           Text(selection).onChange(of: selection) { history = [selection] }
+        }
+      }
+      """
+    )
+  }
+
+  @Test func issueListSearchRequestDeclarationsFlagged() {
+    assertLint(
+      NoOnChangeDerivedStateWrite.self,
+      """
+      struct IssueListView: View {
+        var project: Project
+        @Binding var filters: IssueFilters
+
+        /// What the rows are read for.
+        2️⃣@State private var request: ListRequest?
+
+        3️⃣@State private var searchText = ""
+        @State private var showSettings = false
+
+        var body: some View {
+          List {}
+            .task(id: request) { await reload(request) }
+            .onChange(of: ListScope(project: project.id, openOnly: filters.openOnly), initial: true) {
+              _, scope in
+              request = ListRequest(scope: scope, search: searchText)
+            }
+            .onChange(of: searchText) { _, text in
+              1️⃣request = ListRequest(scope: ListScope(project: project.id), search: text)
+            }
+            .searchable(text: $searchText)
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message(source: "searchText", target: "request")),
+        FindingSpec("2️⃣", message: Self.targetMessage(source: "searchText", target: "request")),
+        FindingSpec("3️⃣", message: Self.sourceMessage(source: "searchText", target: "request")),
+      ]
+    )
+  }
+
+  @Test func eachDeclarationFlaggedOnce() {
+    assertLint(
+      NoOnChangeDerivedStateWrite.self,
+      """
+      struct Counter: View {
+        4️⃣@State private var value = 0
+        3️⃣@State private var doubled = 0
+
+        var body: some View {
+          Text("x")
+            .onChange(of: value) { 1️⃣doubled = value * 2 }
+            .onChange(of: value) { 2️⃣doubled += 1 }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message(source: "value", target: "doubled")),
+        FindingSpec("2️⃣", message: Self.message(source: "value", target: "doubled")),
+        FindingSpec("3️⃣", message: Self.targetMessage(source: "value", target: "doubled")),
+        FindingSpec("4️⃣", message: Self.sourceMessage(source: "value", target: "doubled")),
+      ]
+    )
+  }
+
+  @Test func sideEffectWithoutStoredWriteNotFlagged() {
+    assertLint(
+      NoOnChangeDerivedStateWrite.self,
+      """
+      struct Field: View {
+        @State private var text = ""
+        @State private var count = 0
+
+        var body: some View {
+          TextField("x", text: $text).onChange(of: text) { Haptics.play(); print(count) }
         }
       }
       """

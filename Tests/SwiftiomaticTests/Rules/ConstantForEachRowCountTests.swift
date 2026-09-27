@@ -28,6 +28,128 @@ struct ConstantForEachRowCountTests: RuleTesting {
     "'\(name)' row body starts with a branch, so a lazy container runs every row's body to count its rows. Move the branch inside one root view"
   }
 
+  private static let rowBranch =
+    "'ForEach' row content starts with a branch, so a lazy container runs every element's content to count its rows. Filter the data before 'ForEach' or move the branch inside one row view"
+  private static let branchNote = "This branch picks the views of each row"
+  private static func rowNote(_ name: String) -> String {
+    "This 'ForEach' builds one '\(name)' for each element"
+  }
+
+  @Test func rowSwitchAtContentRootFlagged() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      List {
+        let numbers = rowNumbers
+        1️⃣ForEach(SidebarRow.visible(rows, closed: closed)) { row in
+          2️⃣switch row {
+            case let .folder(folder, held):
+              FolderHeaderRow(folder: folder, held: held)
+                .id(folder.id)
+            case let .project(project):
+              let model = numbers.model(for: project)
+
+              ProjectSidebarRow(model: model)
+                .tag(project.id)
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.rowBranch, notes: [NoteSpec("2️⃣", message: Self.branchNote)])
+      ]
+    )
+  }
+
+  @Test func rowIfElseAtContentRootFlagged() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      1️⃣ForEach(items) { item in
+        let label = item.name
+        2️⃣if item.isOn {
+          Text(label).bold()
+        } else {
+          Text(label)
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.rowBranch, notes: [NoteSpec("2️⃣", message: Self.branchNote)])
+      ]
+    )
+  }
+
+  @Test func namedRowBodyGroupWithIfFlagged() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      struct Attachments: View {
+        var body: some View {
+          VStack(alignment: .leading, spacing: 16) {
+            1️⃣ForEach(images) { attachment in AttachmentImage(attachment: attachment) }
+          }
+        }
+      }
+
+      private struct AttachmentImage: View {
+        let attachment: Attachment
+        @State private var image: Image?
+
+        var body: some View {
+          Group {
+            2️⃣if let image {
+              image.resizable()
+            }
+          }
+          .task(id: attachment.id) { image = await load() }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "2️⃣", message: Self.rowBodyIfWithoutElse("AttachmentImage"),
+          notes: [NoteSpec("1️⃣", message: Self.rowNote("AttachmentImage"))])
+      ]
+    )
+  }
+
+  @Test func groupInContentFlagged() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      ForEach(items) { item in
+        Group {
+          1️⃣if item.isVisible { Text(item.name) }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.ifWithoutElse)]
+    )
+  }
+
+  @Test func branchInsideConstantWrapperNotFlagged() {
+    assertLint(
+      ConstantForEachRowCount.self,
+      """
+      ForEach(items) { item in
+        HStack {
+          if item.isOn { Image(systemName: "star") }
+          switch item.kind {
+          case .a: Text("a")
+          case .b: Text("b")
+          }
+        }
+      }
+      ForEach(items) { item in
+        VStack { if item.isOn { Text("on") } else { Text("off") } }
+          .padding()
+      }
+      """,
+      findings: []
+    )
+  }
+
   @Test func namedRowBodyWithSeveralViewsAndIfFlagged() {
     assertLint(
       ConstantForEachRowCount.self,
@@ -37,7 +159,7 @@ struct ConstantForEachRowCountTests: RuleTesting {
 
         var body: some View {
           Section(header: Text("Numbering")) {
-            ForEach(NumberingSettings.numberableTypes, id: \\.rawValue) { type in
+            3️⃣ForEach(NumberingSettings.numberableTypes, id: \\.rawValue) { type in
               NumberingTypeRow(type: type, numbering: binding(for: type))
             }
           }
@@ -61,8 +183,12 @@ struct ConstantForEachRowCountTests: RuleTesting {
       }
       """,
       findings: [
-        FindingSpec("1️⃣", message: Self.rowBodyViews("NumberingTypeRow", 2)),
-        FindingSpec("2️⃣", message: Self.rowBodyIfWithoutElse("NumberingTypeRow")),
+        FindingSpec(
+          "1️⃣", message: Self.rowBodyViews("NumberingTypeRow", 2),
+          notes: [NoteSpec("3️⃣", message: Self.rowNote("NumberingTypeRow"))]),
+        FindingSpec(
+          "2️⃣", message: Self.rowBodyIfWithoutElse("NumberingTypeRow"),
+          notes: [NoteSpec("3️⃣", message: Self.rowNote("NumberingTypeRow"))]),
       ]
     )
   }
@@ -74,7 +200,7 @@ struct ConstantForEachRowCountTests: RuleTesting {
       struct ProjectTree: View {
         var body: some View {
           List {
-            ForEach(items, id: \\.id) { item in
+            2️⃣ForEach(items, id: \\.id) { item in
               ProjectTreeRow(item: item, expandedFolders: $expandedFolders)
             }
           }
@@ -105,7 +231,11 @@ struct ConstantForEachRowCountTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.rowBodyBranch("ProjectTreeRow"))]
+      findings: [
+        FindingSpec(
+          "1️⃣", message: Self.rowBodyBranch("ProjectTreeRow"),
+          notes: [NoteSpec("2️⃣", message: Self.rowNote("ProjectTreeRow"))])
+      ]
     )
   }
 
@@ -141,8 +271,8 @@ struct ConstantForEachRowCountTests: RuleTesting {
       struct ProjectList: View {
         var body: some View {
           List {
-            ForEach(sidebarRows) { row in
-              switch row {
+            2️⃣ForEach(sidebarRows) { row in
+              3️⃣switch row {
                 case let .folder(folder, held): 1️⃣folderRow(folder, holding: held)
                 case let .project(project): projectRow(project)
               }
@@ -162,7 +292,10 @@ struct ConstantForEachRowCountTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.variableHelper("folderRow"))]
+      findings: [
+        FindingSpec("2️⃣", message: Self.rowBranch, notes: [NoteSpec("3️⃣", message: Self.branchNote)]),
+        FindingSpec("1️⃣", message: Self.variableHelper("folderRow")),
+      ]
     )
   }
 
@@ -281,20 +414,6 @@ struct ConstantForEachRowCountTests: RuleTesting {
     assertLint(
       ConstantForEachRowCount.self,
       """
-      ForEach(items) { item in
-        let label = item.name
-        if item.isOn {
-          Text(label).bold()
-        } else {
-          Text(label)
-        }
-      }
-      ForEach(items) { item in
-        switch item.kind {
-        case .a: Text("a")
-        case .b: Text("b")
-        }
-      }
       ForEach(sections) { section in
         HStack {
           ForEach(section.rows) { row in Text(row.name) }

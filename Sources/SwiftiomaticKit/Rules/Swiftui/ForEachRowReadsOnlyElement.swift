@@ -6,17 +6,18 @@ import SwiftSyntax
 /// property or calls a method of the enclosing view, every row depends on that value, and a change
 /// to it re-evaluates every row. Pass what the row needs into a row `View` as a stored input.
 ///
+/// A value that the closure passes into the custom row `View` it builds also counts, such as
+/// `TagRow(tag: tag, isSelected: selection == tag)` or `ItemRow(item: item, error: $error)` . The
+/// closure still reads the value, so every row still depends on it. The row can obtain the value
+/// itself, for example from the environment, or the element can carry it. The rule uses a separate
+/// message for a row that only passes such values.
+///
 /// These reads are allowed:
 ///
 /// - A `private let` or `static` member, because neither can change while the view lives.
 /// - A method or computed property that itself reads only allowed members. It is a pure helper.
-/// - A projected binding such as `$selection` . Forwarding it to a row `View` does not read the
-///   value, and the row that writes the selection needs it.
-/// - A read inside an argument of the custom row `View` the closure builds, such as
-///   `TagRow(tag: tag, isSelected: selection == tag)` or `ItemRow(item: item, canWrite: canWrite)`
-///   . The row stores the value as an input, and SwiftUI skips it when the value does not change.
-///   This is the fix the finding recommends. Whether the input is too large a value is the concern
-///   of `flagWholeValueModelViewInput` .
+/// - A method that the row receives as a function value and does not call, such as
+///   `reachedEnd: showMore` .
 /// - A read inside a closure passed to the custom row `View` , such as
 ///   `copy: { library.copy(theme) }` , or inside a closure that runs after `body` on one of its
 ///   modifiers, such as `.onTapGesture { selection = tag }` . The closure runs later, and the row
@@ -25,7 +26,7 @@ import SwiftSyntax
 ///
 /// The rule reports each row once, at the `ForEach` or `List` call, and adds a note at each read.
 ///
-/// Lint: A row closure reads a same-type member outside those cases.
+/// Lint: A row closure reads or passes on a same-type member outside those cases.
 final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
 
@@ -41,15 +42,18 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
         let stability = StabilityCheck(entry: entry)
         var names: [String] = []
         var notes: [Finding.Note] = []
+        var readsDirectly = false
 
         for reference in references {
-            if reference.spelling.hasPrefix("$") { continue }
             if stability.isStable(reference.members) { continue }
-            if Self.isRowArgument(reference.node, in: closure) { continue }
+            if Self.isUncalledMethod(reference) { continue }
+            let use = Self.use(of: reference.node, in: closure)
+            if use == .captured { continue }
             guard !names.contains(reference.name) else { continue }
             names.append(reference.name)
+            if use == .read { readsDirectly = true }
             notes.append(Finding.Note(
-                message: .readHere(reference.name),
+                message: use == .read ? .readHere(reference.name) : .passedHere(reference.name),
                 location: Finding.Location(reference.node.startLocation(
                     converter: context.sourceLocationConverter)),
                 role: .member
@@ -58,8 +62,29 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
         guard !names.isEmpty else { return .visitChildren }
 
         let call = node.calleeBaseName ?? "ForEach"
-        diagnose(.readsOutsideElement(call, names), on: node.calledExpression, notes: notes)
+        let message: Finding.Message = readsDirectly
+            ? .readsOutsideElement(call, names)
+            : .passesOutsideElement(call, names)
+        diagnose(message, on: node.calledExpression, notes: notes)
         return .visitChildren
+    }
+
+    /// How a row closure uses a member read
+    private enum Use {
+        /// The closure reads the value while it builds the row.
+        case read
+        /// The closure passes the value into the custom row `View` it builds.
+        case passed
+        /// A closure inside the row captures the value and reads it later, or in the row's body.
+        case captured
+    }
+
+    /// Whether `reference` names only methods and uses one as a function value, not as a call
+    private static func isUncalledMethod(_ reference: TypeMemberIndex.Reference) -> Bool {
+        guard reference.members.allSatisfy({ $0.kind == .method }) else { return false }
+        let expression = reference.node.selfQualifiedUse
+        guard let call = expression.parent?.as(FunctionCallExprSyntax.self) else { return true }
+        return call.calledExpression.id != expression.id
     }
 
     /// Memoized stability answers for one `visit` , keyed by member declaration
@@ -105,17 +130,18 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
         }
     }
 
-    /// Whether `node` sits inside an input of the custom row `View` that `closure` builds
+    /// How `closure` uses the member read at `node`
     ///
-    /// An input is an argument of the row `View` , a closure among those arguments included. A
-    /// closure passed to a modifier of the row, such as `.onTapGesture { selection = row }` , also
-    /// counts when the read sits in a closure that runs after `body` . That closure runs later, and
-    /// the named row is already the update boundary the finding asks for. A closure that runs
-    /// during `body` , such as the content of `.background { }` or `.overlay { }` , does not count.
-    private static func isRowArgument(
-        _ node: DeclReferenceExprSyntax,
+    /// A read directly in an argument of the custom row `View` is `passed` . A read in a closure
+    /// among those arguments is `captured` . A read in a closure passed to a modifier of the row,
+    /// such as `.onTapGesture { selection = row }` , is also `captured` when that closure runs after
+    /// `body` . The named row is already the update boundary the finding asks for. A closure that
+    /// runs during `body` , such as the content of `.background { }` or `.overlay { }` , does not
+    /// count. Every other read is a `read` .
+    private static func use(
+        of node: DeclReferenceExprSyntax,
         in closure: ClosureExprSyntax
-    ) -> Bool {
+    ) -> Use {
         var current = Syntax(node)
         var crossedClosure = false
         var crossedDeferredClosure = false
@@ -129,19 +155,19 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
             if let argument = parent.as(LabeledExprSyntax.self),
                let call = argument.parent?.parent?.as(FunctionCallExprSyntax.self)
             {
-                if isCustomRow(call, in: closure) { return true }
-                if crossedDeferredClosure, isModifier(call, ofRowIn: closure) { return true }
+                if isCustomRow(call, in: closure) { return crossedClosure ? .captured : .passed }
+                if crossedDeferredClosure, isModifier(call, ofRowIn: closure) { return .captured }
             }
             // a trailing closure of the row or of one of its modifiers
             if crossedClosure, let call = parent.as(FunctionCallExprSyntax.self),
                call.calledExpression.id != current.id
             {
-                if isCustomRow(call, in: closure) { return true }
-                if crossedDeferredClosure, isModifier(call, ofRowIn: closure) { return true }
+                if isCustomRow(call, in: closure) { return .captured }
+                if crossedDeferredClosure, isModifier(call, ofRowIn: closure) { return .captured }
             }
             current = parent
         }
-        return false
+        return .read
     }
 
     /// Whether `call` applies a modifier to the custom row `View` that `closure` builds
@@ -187,9 +213,16 @@ final class ForEachRowReadsOnlyElement: LintSyntaxRule<LintOnlyValue>, @unchecke
 
 fileprivate extension Finding.Message {
     static func readsOutsideElement(_ call: String, _ names: [String]) -> Finding.Message {
-        let list = names.map { "'\($0)'" }.joined(separator: ", ")
+        let list = names.lazy.map { "'\($0)'" }.joined(separator: ", ")
         return "'\(call)' row reads \(list) from the enclosing view. Extract the row into a 'View' that takes the values as inputs so the row depends only on its element"
     }
 
+    static func passesOutsideElement(_ call: String, _ names: [String]) -> Finding.Message {
+        let list = names.lazy.map { "'\($0)'" }.joined(separator: ", ")
+        return "'\(call)' row passes \(list) from the enclosing view into its row 'View'. Let the row obtain the values itself or carry them in the element so the row depends only on its element"
+    }
+
     static func readHere(_ name: String) -> Finding.Message { "the row reads '\(name)' here" }
+
+    static func passedHere(_ name: String) -> Finding.Message { "the row passes '\(name)' here" }
 }

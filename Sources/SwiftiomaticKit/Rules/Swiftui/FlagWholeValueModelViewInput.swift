@@ -19,9 +19,24 @@ import SwiftSyntax
 /// `@Bindable` or `@Environment(Type.self)` is an `@Observable` class, which SwiftUI tracks by
 /// property, so it is exempt too.
 ///
+/// A `ForEach` or `List` repeats its row view once per element. When the row stores a value that
+/// the parent passes unchanged to every row, SwiftUI compares that value once per row on each
+/// parent update. The rule reports such an input at the row's stored property and at the argument
+/// that passes it. The value counts as shared when the argument names a value that the row closure
+/// does not declare, so the element and values derived from it inside the closure do not count. A
+/// projected binding such as `$selection` does not count either. The type must be a same-file
+/// struct with five or more stored properties or two or more collection properties, or a type from
+/// another file. The exemptions above for framework types, views, generic parameters and
+/// `@Observable` classes apply here too.
+///
+/// A struct that holds three or more collection properties, in a file that declares a view, is a
+/// likely row input of this kind. The rule reports it at its declaration, because the view that
+/// stores it can live in another file.
+///
 /// Lint: A stored input of a view type has the type of a same-file struct with five or more stored
 /// instance properties, or has a type from another file of which the view reads three or more
-/// properties and nothing else.
+/// properties and nothing else. A repeated row view stores a large value that every row shares. A
+/// struct in a view file holds three or more collection properties.
 final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
     override class var guidance: GuidanceLevel { .consider }
@@ -49,8 +64,122 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         return collector.names
     }()
 
+    /// The number of collection properties at which a struct in a view file counts as a lookup table
+    private static let collectionModelPropertyCount = 3
+
+    /// The number of collection properties at which a same-file struct is too large to share
+    /// across rows
+    private static let sharedRowCollectionCount = 2
+
+    /// The stored properties this rule already reported as shared row inputs
+    private var reportedRowInputs = Set<SyntaxIdentifier>()
+
+    override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+        let types = context.typeMembers(around: node).types
+        guard let entry = types[node.name.text], entry.kind == .struct, !entry.isView,
+              types.values.contains(where: \.isView) else { return .visitChildren }
+        let count = entry.collectionPropertyCount
+        guard count >= Self.collectionModelPropertyCount else { return .visitChildren }
+        diagnose(.collectionModel(node.name.text, count), on: node.name)
+        return .visitChildren
+    }
+
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        guard let closure = node.rowContentClosure(includingList: true) else { return .visitChildren }
+        let types = context.typeMembers(around: node).types
+        let contents = RowClosureContents(viewMode: .sourceAccurate)
+        contents.walk(closure)
+        let local = contents.boundNames.union(closure.signature?.parameterNames ?? [])
+
+        for construction in contents.calls {
+            guard let viewName = construction.calledExpression.as(DeclReferenceExprSyntax.self)?
+                .baseName.text,
+                let viewEntry = types[viewName], viewEntry.isView,
+                Self.nearestRowClosure(of: construction)?.id == closure.id else { continue }
+
+            for argument in construction.arguments {
+                guard let label = argument.label?.text,
+                      // A projected binding such as `$selection` does not share the value
+                      let name = argument.expression.selfMemberReference?.baseName.text,
+                      !name.hasPrefix("$"), !local.contains(name),
+                      let property = viewEntry.members[label]?.lazy
+                          .filter({ $0.kind == .storedProperty && !$0.isStatic })
+                          .compactMap({ $0.declaration.as(VariableDeclSyntax.self) }).first,
+                      property.attributes.isEmpty,
+                      let type = property.viewInputs.first(where: { $0.name == label })?.type,
+                      let typeName = type.simpleTypeName,
+                      !property.enclosingGenericParameterNames.contains(typeName),
+                      isLargeSharedValue(typeName, types: types) else { continue }
+
+                diagnose(.sharedRowArgument(label, typeName, viewName), on: argument)
+
+                guard reportedRowInputs.insert(property.id).inserted,
+                      !isReportedAsInput(property, name: label, typeName: typeName, types: types)
+                else { continue }
+                diagnose(.repeatedRowInput(label, typeName, viewName), on: property)
+            }
+        }
+        return .visitChildren
+    }
+
+    /// Whether a value of `typeName` is costly to compare once per row
+    private func isLargeSharedValue(_ typeName: String, types: [String: TypeMemberIndex.TypeEntry])
+        -> Bool
+    {
+        guard !Self.frameworkTypes.contains(typeName), !typeName.hasSuffix("View"),
+              !observableTypeNames.contains(typeName) else { return false }
+        guard let entry = types[typeName] else { return true }
+        guard entry.kind == .struct, !entry.isView else { return false }
+        return entry.storedInstancePropertyCount >= Self.largeModelPropertyCount
+            || entry.collectionPropertyCount >= Self.sharedRowCollectionCount
+    }
+
+    /// Whether the input check below already reports `property` , so a second finding at the same
+    /// place adds nothing
+    private func isReportedAsInput(
+        _ property: VariableDeclSyntax,
+        name: String,
+        typeName: String,
+        types: [String: TypeMemberIndex.TypeEntry]
+    ) -> Bool {
+        if let entry = types[typeName] {
+            return entry.storedInstancePropertyCount >= Self.largeModelPropertyCount
+        }
+        return partialPropertyReads(of: name, typeName: typeName, in: property) != nil
+    }
+
+    /// The calls in a row closure, and each name a pattern binds inside it
+    private final class RowClosureContents: SyntaxVisitor {
+        var calls: [FunctionCallExprSyntax] = []
+        var boundNames = Set<String>()
+
+        override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+            calls.append(node)
+            return .visitChildren
+        }
+
+        override func visit(_ node: IdentifierPatternSyntax) -> SyntaxVisitorContinueKind {
+            boundNames.insert(node.identifier.text)
+            return .visitChildren
+        }
+    }
+
+    /// The innermost `ForEach` or `List` row closure that holds `node`
+    private static func nearestRowClosure(of node: some SyntaxProtocol) -> ClosureExprSyntax? {
+        var current = node.parent
+
+        while let cur = current {
+            if let closure = cur.as(ClosureExprSyntax.self),
+               closure.owningCall?.rowContentClosure(includingList: true)?.id == closure.id {
+                return closure
+            }
+            current = cur.parent
+        }
+        return nil
+    }
+
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        guard context.viewEntry(forMember: node) != nil else { return .skipChildren }
+        guard context.viewEntry(forMember: node) != nil else { return .visitChildren }
         let generics = node.enclosingGenericParameterNames
         let types = context.typeMembers(around: node).types
 
@@ -70,7 +199,8 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
             guard count >= Self.largeModelPropertyCount else { continue }
             diagnose(.wholeValueInput(input.name, typeName, count), on: node)
         }
-        return .skipChildren
+        // the row check reads the calls inside `body`
+        return .visitChildren
     }
 
     /// The properties the view reads of the input `name` , or `nil` when the view uses the value
@@ -177,7 +307,53 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
     }
 }
 
+extension TypeMemberIndex.TypeEntry {
+    /// The number of stored instance properties whose declared type is a collection type
+    fileprivate var collectionPropertyCount: Int {
+        members.reduce(0) { count, pair in
+            let (name, overloads) = pair
+            guard let variable = overloads.first(where: {
+                $0.kind == .storedProperty && !$0.isStatic
+            })?.declaration.as(VariableDeclSyntax.self),
+                let binding = variable.bindings.first(where: {
+                    $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == name
+                }),
+                let type = binding.typeAnnotation?.type,
+                type.isCollectionType else { return count }
+            return count + 1
+        }
+    }
+}
+
 fileprivate extension Finding.Message {
+    static func collectionModel(_ type: String, _ count: Int) -> Finding.Message {
+        """
+        '\(type)' holds \(count) collection properties. A repeated row view that stores it \
+        compares every collection on each parent update. Pass rows only the values they read, or \
+        keep the data in an '@Observable' class
+        """
+    }
+
+    static func sharedRowArgument(_ label: String, _ type: String, _ view: String)
+        -> Finding.Message
+    {
+        """
+        Every '\(view)' row receives the same '\(type)' value as '\(label)'. Each parent update \
+        compares it once per row. Pass only the values the row reads, or keep the data in an \
+        '@Observable' class
+        """
+    }
+
+    static func repeatedRowInput(_ name: String, _ type: String, _ view: String)
+        -> Finding.Message
+    {
+        """
+        '\(name)' stores the whole value '\(type)' in '\(view)', which a 'ForEach' or 'List' \
+        repeats for each element. Each parent update compares the value once per row. Pass only \
+        the values the row reads, or keep the data in an '@Observable' class
+        """
+    }
+
     static func partialReadInput(_ name: String, _ type: String, _ read: String) -> Finding.Message {
         """
         '\(name)' stores the whole value '\(type)' as an input but reads only \(read). A change \

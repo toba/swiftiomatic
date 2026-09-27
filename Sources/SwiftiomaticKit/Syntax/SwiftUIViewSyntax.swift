@@ -424,3 +424,24 @@ enum SwiftUIBuiltInViews {
         "TimelineView", "Toggle", "VStack", "VideoPlayer", "ViewThatFits", "ZStack",
     ]
 }
+
+extension TypeSyntax {
+    /// The simple type names that hold a collection of values
+    static let collectionTypeNames: Set<String> = [
+        "Array", "ContiguousArray", "ArraySlice", "Set", "Dictionary", "OrderedSet",
+        "OrderedDictionary", "IdentifiedArray", "IdentifiedArrayOf", "Deque", "FetchedResults",
+        "SectionedFetchedResults",
+    ]
+
+    /// Whether the type, after optional layers, spells a collection type
+    ///
+    /// An array or dictionary literal type counts. So does a name in `collectionTypeNames` , bare
+    /// or qualified, such as `Deque<Int>` or `Swift.Array<Int>` .
+    var isCollectionType: Bool {
+        let type = unwrappingOptional
+        if type.is(ArrayTypeSyntax.self) || type.is(DictionaryTypeSyntax.self) { return true }
+        let name = type.as(IdentifierTypeSyntax.self)?.name.text
+            ?? type.as(MemberTypeSyntax.self)?.name.text
+        return name.map(Self.collectionTypeNames.contains) ?? false
+    }
+}

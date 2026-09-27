@@ -54,14 +54,110 @@ struct UseCanImportNotOSCheckTests: RuleTesting {
         )
     }
 
-    @Test func osCheckWithCodeNotFlagged() {
+    private static func frameworkMessage(_ framework: String, _ suffix: String = "") -> String {
+        "this '#if os(...)' names exactly the platforms that ship \(framework); check '#if canImport(\(framework))\(suffix)' so the code follows the framework, not the platform list"
+    }
+
+    @Test func osCheckWithCodeFlagged() {
+        assertLint(
+            UseCanImportNotOSCheck.self,
+            """
+            1️⃣#if os(macOS)
+            import AppKit
+
+            final class Scroller: NSScroller {}
+            #endif
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: Self.frameworkMessage("AppKit", " && !targetEnvironment(macCatalyst)")
+                )
+            ]
+        )
+    }
+
+    @Test func wholeFileOSCheckFlagged() {
+        // From jig `ClaudeSession.swift`.
+        assertLint(
+            UseCanImportNotOSCheck.self,
+            """
+            1️⃣#if os(macOS)
+
+            import AppKit
+            import JigKit
+            import SwiftUI
+
+            @MainActor struct ClaudeSession {
+              let folder: URL?
+            }
+
+            #endif
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message: Self.frameworkMessage("AppKit", " && !targetEnvironment(macCatalyst)")
+                )
+            ]
+        )
+    }
+
+    @Test func everyUIKitPlatformWithCodeFlagged() {
+        assertLint(
+            UseCanImportNotOSCheck.self,
+            """
+            1️⃣#if os(iOS) || os(tvOS) || os(visionOS)
+            import UIKit
+
+            func haptic() {}
+            #else
+            func haptic() {}
+            #endif
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.frameworkMessage("UIKit"))]
+        )
+    }
+
+    @Test func subsetOfFrameworkPlatformsWithCodeNotFlagged() {
+        // UIKit ships on more platforms than iOS, so the check is about the platform.
+        assertLint(
+            UseCanImportNotOSCheck.self,
+            """
+            #if os(iOS)
+            import UIKit
+
+            func haptic() {}
+            #endif
+            """,
+            findings: []
+        )
+    }
+
+    @Test func platformBehaviorWithoutFrameworkImportNotFlagged() {
+        assertLint(
+            UseCanImportNotOSCheck.self,
+            """
+            #if os(macOS)
+            import Foundation
+
+            func run() { Process().launch() }
+            #endif
+            """,
+            findings: []
+        )
+    }
+
+    @Test func platformSplitWithCodeNotFlagged() {
         assertLint(
             UseCanImportNotOSCheck.self,
             """
             #if os(macOS)
             import AppKit
-
-            final class Scroller: NSScroller {}
+            typealias PlatformImage = NSImage
+            #else
+            import UIKit
+            typealias PlatformImage = UIImage
             #endif
             """,
             findings: []

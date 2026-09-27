@@ -15,9 +15,19 @@ import SwiftSyntax
 /// Several root views, an `if` without `else` or a branch at the root of that body change the
 /// row's view count, or make a lazy container run the body only to count the rows.
 ///
+/// A row whose content starts with an `if` / `else` or a `switch` also makes a lazy container run
+/// the content of every element to count its rows. Filter the data before `ForEach` , or move the
+/// branch inside one row view such as an `HStack` . A branch inside such a wrapper does not change
+/// the row count, so the rule stays silent there.
+///
+/// A `Group` does not wrap its views into one view. It hands each child to the parent. The rule
+/// counts the children of a `Group` as views of the row.
+///
 /// Lint: A `ForEach` content closure holds an `if` without a final `else` , a `ForEach` at its top
-/// level, more than one top-level view, or a call to a same-type `@ViewBuilder` helper that builds
-/// a variable number of views, or the row is a custom `View` whose `body` root does one of these.
+/// level, more than one top-level view, a branch as its only view, or a call to a same-type
+/// `@ViewBuilder` helper that builds a variable number of views, or the row is a custom `View`
+/// whose `body` root holds several views, an `if` without `else` or a branch. A finding in a row
+/// `View` carries a note at the `ForEach` that builds it.
 final class ConstantForEachRowCount: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
 
@@ -26,11 +36,29 @@ final class ConstantForEachRowCount: LintSyntaxRule<LintOnlyValue>, @unchecked S
 
         let views = Self.views(in: closure.statements)
         if views.count > 1 { diagnose(.severalViews(views.count), on: node.calledExpression) }
+        if views.count == 1, let view = views.first, let keyword = Self.branchKeyword(of: view) {
+            let note = Finding.Note(
+                message: .branchPicksViews,
+                location: Finding.Location(
+                    keyword.startLocation(converter: context.sourceLocationConverter)),
+                role: .branch
+            )
+            diagnose(.rowBranch, on: node.calledExpression, notes: [note])
+        }
 
         let index = context.typeMembers(around: node)
         checkRowViews(views, in: index.enclosingType(of: node))
-        if views.count == 1, let view = views.first { checkNamedRow(view, in: index) }
+        if views.count == 1, let view = views.first { checkNamedRow(view, of: node, in: index) }
         return .visitChildren
+    }
+
+    /// The keyword of `view` when it is a `switch` or an `if` chain that ends in `else`
+    ///
+    /// An `if` without `else` has its own finding, so this returns `nil` for it.
+    private static func branchKeyword(of view: ExprSyntax) -> TokenSyntax? {
+        if let switchExpr = view.as(SwitchExprSyntax.self) { return switchExpr.switchKeyword }
+        if let ifExpr = view.as(IfExprSyntax.self), hasFinalElse(ifExpr) { return ifExpr.ifKeyword }
+        return nil
     }
 
     /// The row `View` bodies the rule already reported, so a recursive row reports once
@@ -42,11 +70,25 @@ final class ConstantForEachRowCount: LintSyntaxRule<LintOnlyValue>, @unchecked S
     /// body holds several root views, an `if` without `else` , or a branch at its root makes the
     /// container run every row's body only to count its rows. A `Form` or `List` also flattens the
     /// views of a multi-view body into separate rows.
-    private func checkNamedRow(_ view: ExprSyntax, in index: TypeMemberIndex) {
+    private func checkNamedRow(
+        _ view: ExprSyntax,
+        of forEach: FunctionCallExprSyntax,
+        in index: TypeMemberIndex
+    ) {
         guard let name = Self.customViewName(view),
               let entry = index.types[name], entry.isView,
               let body = Self.bodyStatements(of: entry),
               checkedRowBodies.insert(body.id).inserted else { return }
+
+        let note = Finding.Note(
+            message: .forEachBuildsRow(name),
+            location: Finding.Location(
+                forEach.startLocation(converter: context.sourceLocationConverter)),
+            role: .closure
+        )
+        func diagnose(_ message: Finding.Message, on node: some SyntaxProtocol) {
+            self.diagnose(message, on: node, notes: [note])
+        }
 
         let views = Self.views(in: body)
         if views.count > 1, let first = views.first {
@@ -79,13 +121,7 @@ final class ConstantForEachRowCount: LintSyntaxRule<LintOnlyValue>, @unchecked S
     private static func bodyStatements(
         of entry: TypeMemberIndex.TypeEntry
     ) -> CodeBlockItemListSyntax? {
-        for member in entry.members["body"] ?? [] where !member.isStatic {
-            guard let body = member.body else { continue }
-            if let statements = body.as(CodeBlockItemListSyntax.self) { return statements }
-            if let block = body.as(AccessorDeclSyntax.self)?.body { return block.statements }
-            if let block = body.as(CodeBlockSyntax.self) { return block.statements }
-        }
-        return nil
+        entry.members["body"]?.lazy.filter { !$0.isStatic }.compactMap(\.statements).first
     }
 
     /// The deepest chain of helper calls the rule follows
@@ -154,14 +190,9 @@ final class ConstantForEachRowCount: LintSyntaxRule<LintOnlyValue>, @unchecked S
         guard let reference = callee.selfMemberReference else { return nil }
 
         for member in owner.members[reference.baseName.text] ?? [] {
-            guard let body = member.body, hasViewBuilder(member.declaration) else { continue }
-            if let block = body.as(CodeBlockSyntax.self) { return (reference, block.statements) }
-            if let block = body.as(AccessorDeclSyntax.self)?.body {
-                return (reference, block.statements)
-            }
-            if let statements = body.as(CodeBlockItemListSyntax.self) {
-                return (reference, statements)
-            }
+            guard let statements = member.statements, hasViewBuilder(member.declaration)
+            else { continue }
+            return (reference, statements)
         }
         return nil
     }
@@ -174,11 +205,26 @@ final class ConstantForEachRowCount: LintSyntaxRule<LintOnlyValue>, @unchecked S
     }
 
     /// The expressions among `statements` , which are the views a result builder collects
+    ///
+    /// A `Group` hands each of its children to the parent, so the children of a `Group` count in
+    /// its place.
     private static func views(in statements: CodeBlockItemListSyntax) -> [ExprSyntax] {
-        statements.compactMap { item -> ExprSyntax? in
-            if let expression = item.item.as(ExprSyntax.self) { return expression }
-            return item.item.as(ExpressionStmtSyntax.self)?.expression
+        statements.flatMap { item -> [ExprSyntax] in
+            guard let expression = item.item.as(ExprSyntax.self)
+                ?? item.item.as(ExpressionStmtSyntax.self)?.expression else { return [] }
+            if let content = groupContent(of: expression) { return views(in: content) }
+            return [expression]
         }
+    }
+
+    /// The statements of the content closure when `expression` is a `Group` , with or without
+    /// modifiers applied to it
+    private static func groupContent(of expression: ExprSyntax) -> CodeBlockItemListSyntax? {
+        guard let call = expression.modifierChainRoot.as(FunctionCallExprSyntax.self),
+              call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "Group",
+              call.arguments.isEmpty,
+              let closure = call.trailingClosure else { return nil }
+        return closure.statements
     }
 
     /// The statements of every branch of an `if` chain that ends in `else`
@@ -236,6 +282,15 @@ fileprivate extension Finding.Message {
 
     static func rowBodyBranch(_ name: String) -> Finding.Message {
         "'\(name)' row body starts with a branch, so a lazy container runs every row's body to count its rows. Move the branch inside one root view"
+    }
+
+    static let rowBranch: Finding.Message =
+        "'ForEach' row content starts with a branch, so a lazy container runs every element's content to count its rows. Filter the data before 'ForEach' or move the branch inside one row view"
+
+    static let branchPicksViews: Finding.Message = "This branch picks the views of each row"
+
+    static func forEachBuildsRow(_ name: String) -> Finding.Message {
+        "This 'ForEach' builds one '\(name)' for each element"
     }
 
     static func severalViews(_ count: Int) -> Finding.Message {

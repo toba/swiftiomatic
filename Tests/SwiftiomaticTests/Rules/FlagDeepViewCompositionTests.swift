@@ -5,7 +5,18 @@ import Testing
 @Suite
 struct FlagDeepViewCompositionTests: RuleTesting {
   private static func message(_ path: String, _ count: Int) -> String {
-    "'body' nests \(count) structural containers (\(path)). Extract an inner level into a 'View' type so SwiftUI can skip it"
+    "'body' nests \(count) structural levels (\(path)). Extract an inner level into a 'View' type so SwiftUI can skip it"
+  }
+
+  private static func note(_ name: String) -> String {
+    "the deepest level, '\(name)', starts here"
+  }
+
+  private static func spec(
+    _ path: String, _ count: Int, deepest: String, at marker: String = "2️⃣"
+  ) -> FindingSpec {
+    .init(
+      "1️⃣", message: message(path, count), notes: [NoteSpec(marker, message: note(deepest))])
   }
 
   @Test func guidanceIsConsider() {
@@ -17,12 +28,12 @@ struct FlagDeepViewCompositionTests: RuleTesting {
       FlagDeepViewComposition.self,
       """
       struct FontMenu: View {
-        var body: some View {
+        var 1️⃣body: some View {
           VStack {
             TextField("Filter by name", text: $filter)
             ScrollView(.vertical) {
               LazyVStack(alignment: .leading, spacing: 1) {
-                1️⃣ForEach(visibleRows) { FontPreview(row: $0) }
+                2️⃣ForEach(visibleRows) { FontPreview(row: $0) }
               }
               .padding(2)
             }
@@ -31,9 +42,7 @@ struct FlagDeepViewCompositionTests: RuleTesting {
         }
       }
       """,
-      findings: [
-        FindingSpec("1️⃣", message: Self.message("VStack > ScrollView > LazyVStack > ForEach", 4))
-      ]
+      findings: [Self.spec("VStack > ScrollView > LazyVStack > ForEach", 4, deepest: "ForEach")]
     )
   }
 
@@ -42,19 +51,19 @@ struct FlagDeepViewCompositionTests: RuleTesting {
       FlagDeepViewComposition.self,
       """
       struct FontList: View {
-        var body: some View {
+        var 1️⃣body: some View {
           ScrollView {
             LazyVStack {
               ForEach(rows) { Text($0.name) }
             }
             HStack {
-              1️⃣ForEach(tags) { Text($0) }
+              2️⃣ForEach(tags) { Text($0) }
             }
           }
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("ScrollView > HStack > ForEach", 3))]
+      findings: [Self.spec("ScrollView > HStack > ForEach", 3, deepest: "ForEach")]
     )
   }
 
@@ -63,12 +72,95 @@ struct FlagDeepViewCompositionTests: RuleTesting {
       FlagDeepViewComposition.self,
       """
       struct Framed: ViewModifier {
-        func body(content: Content) -> some View {
-          HStack { VStack { 1️⃣Group { content } } }
+        func 1️⃣body(content: Content) -> some View {
+          HStack { VStack { 2️⃣Group { content } } }
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("HStack > VStack > Group", 3))]
+      findings: [Self.spec("HStack > VStack > Group", 3, deepest: "Group")]
+    )
+  }
+
+  // From jig `MilestonesSheet.swift`: a background layer that holds no container adds no level.
+  @Test func leafBackgroundLayerNotFlagged() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct MilestoneRow: View {
+        var body: some View {
+          VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+              Text(milestone.shortName)
+                .font(.caption.monospaced())
+                .padding(.horizontal, 5)
+                .background(.quaternary, in: .capsule)
+              Text(milestone.name).font(.headline)
+            }
+            Text(subtitle)
+          }
+        }
+      }
+      """
+    )
+  }
+
+  @Test func colorBackgroundAddsNoLevel() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct Swatch: View {
+        var body: some View {
+          VStack { HStack { Text("a").background(.red) } }
+        }
+      }
+      """
+    )
+  }
+
+  @Test func layerThatHoldsContainerCountsAsLevel() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct Tile: View {
+        var 1️⃣body: some View {
+          VStack {
+            Text("a").overlay { 2️⃣HStack { Text("b") } }
+          }
+        }
+      }
+      """,
+      findings: [Self.spec("VStack > overlay > HStack", 3, deepest: "HStack")]
+    )
+  }
+
+  // From jig `ProjectComposer.swift`: the finding sits on `body`, far above the deepest level.
+  @Test func findingSitsOnBodyFarFromDeepestLevel() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct ProjectComposer: View {
+        var 1️⃣body: some View {
+          NavigationStack {
+            Form {
+              Section("Name") {
+                TextField("Project name", text: $name)
+              }
+              Section {
+                if let repo = detectedRepo {
+                  LabeledContent("GitHub Repo") {
+                    2️⃣HStack(spacing: 6) {
+                      Text(repo.fullName)
+                    }
+                  }
+                }
+              }
+            }
+            .formStyle(.grouped)
+          }
+        }
+      }
+      """,
+      findings: [Self.spec("NavigationStack > Form > Section > HStack", 4, deepest: "HStack")]
     )
   }
 
@@ -107,6 +199,40 @@ struct FlagDeepViewCompositionTests: RuleTesting {
     )
   }
 
+  @Test func backgroundOnOuterContainerNotFlagged() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct Badge: View {
+        var body: some View {
+          VStack {
+            HStack { Text("a") }
+          }
+          .background(.quaternary, in: .capsule)
+        }
+      }
+      """
+    )
+  }
+
+  @Test func chainedLayersDoNotAddUp() {
+    assertLint(
+      FlagDeepViewComposition.self,
+      """
+      struct Chip: View {
+        var body: some View {
+          VStack {
+            Text("a")
+              .padding()
+              .background(.red)
+              .overlay(Color.blue)
+          }
+        }
+      }
+      """
+    )
+  }
+
   @Test func nonViewBodyNotFlagged() {
     assertLint(
       FlagDeepViewComposition.self,
@@ -118,7 +244,7 @@ struct FlagDeepViewCompositionTests: RuleTesting {
     )
   }
 
-  @Test func findingSitsOnTheLastDeepestContainer() {
+  @Test func noteSitsOnTheLastDeepestContainer() {
     // From Thesis `ReferenceFilterForm.swift`
     assertLint(
       FlagDeepViewComposition.self,
@@ -126,7 +252,7 @@ struct FlagDeepViewCompositionTests: RuleTesting {
       struct TagMatchPicker: View {
         @Binding var matchAllTags: Bool
 
-        var body: some View {
+        var 1️⃣body: some View {
           LabeledContent {
             VStack(alignment: .leading, spacing: 0) {
               HStack(spacing: 4) {
@@ -139,7 +265,7 @@ struct FlagDeepViewCompositionTests: RuleTesting {
                 .buttonStyle(PickerButton(isSelected: !matchAllTags))
 
                 Button { matchAllTags = true } label: {
-                  1️⃣HStack(spacing: 3) {
+                  2️⃣HStack(spacing: 3) {
                     Image(systemName: "line.3.horizontal.decrease")
                     Text("All of")
                   }
@@ -152,7 +278,7 @@ struct FlagDeepViewCompositionTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("VStack > HStack > HStack", 3))]
+      findings: [Self.spec("VStack > HStack > HStack", 3, deepest: "HStack")]
     )
   }
 }

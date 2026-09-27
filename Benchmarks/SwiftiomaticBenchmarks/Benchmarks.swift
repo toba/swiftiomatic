@@ -19,6 +19,7 @@ let benchmarks: @Sendable () -> Void = {
     registerFormatBenchmarks()
     registerLintCacheBenchmarks()
     registerWhitespaceBenchmarks()
+    registerHotPathBenchmarks()
 }
 
 /// Tolerances a comparison allows before it reports a regression

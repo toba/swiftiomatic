@@ -222,4 +222,62 @@ struct UseClosureTypeAliasTests: RuleTesting {
       ]
     )
   }
+
+  @Test func repeatedClosureReturnTypeFlagged() {
+    // From jig `Listing.swift`
+    assertLint(
+      UseClosureTypeAlias.self,
+      """
+      public enum Sort {
+        public static func text<Row>(_ key: KeyPath<Row, String>) -> 1️⃣(Row, Row) -> Bool {
+          { $0[keyPath: key] < $1[keyPath: key] }
+        }
+
+        static func newest<Row>(_ key: KeyPath<Row, Date>) -> 2️⃣(Row, Row) -> Bool {
+          { $0[keyPath: key] > $1[keyPath: key] }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.repeatedMessage("text", "(Row, Row) -> Bool")),
+        FindingSpec("2️⃣", message: Self.repeatedMessage("newest", "(Row, Row) -> Bool")),
+      ]
+    )
+  }
+
+  @Test func singleShortClosureReturnTypeNotFlagged() {
+    assertLint(
+      UseClosureTypeAlias.self,
+      """
+      enum Filter {
+        static func matching(_ text: String) -> (String) -> Bool {
+          { $0.contains(text) }
+        }
+      }
+      """
+    )
+  }
+
+  @Test func heavilyDecoratedInitParameterSettingStoredClosureFlagged() {
+    // From jig `AvatarCache.swift`
+    assertLint(
+      UseClosureTypeAlias.self,
+      """
+      public actor AvatarCache {
+        1️⃣private let fetch: @Sendable (URL) async throws -> Data
+
+        public init(
+          directory: URL,
+          2️⃣fetch: @escaping @Sendable (URL) async throws -> Data = AvatarCache.download
+        ) {
+          self.fetch = fetch
+        }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message("fetch")),
+        FindingSpec("2️⃣", message: Self.message("fetch")),
+      ]
+    )
+  }
 }

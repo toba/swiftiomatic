@@ -16,6 +16,9 @@ import SwiftSyntax
 /// `@Environment` value in a member that does not name the state. That work repeats on every
 /// keystroke too.
 ///
+/// The finding carries a note at the `@State` declaration. When environment work is the cause, it
+/// also carries a note at each `@Environment` declaration that the work reads.
+///
 /// Lint: A `TextField` , `SecureField` or `TextEditor` in `body` or a view helper binds `$name` of
 /// a same-type `@State` , and two or more views beside it do not name `name` , or `body` reaches an
 /// `@Environment` read in a member that does not name `name` .
@@ -42,22 +45,61 @@ final class IsolateTextInputState: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
 
         let unrelated = Self.unrelatedSiblingCount(of: node, state: state)
         if unrelated >= Self.unrelatedViewCount {
-            diagnose(.sharedTextInput(callee, state, unrelated), on: node)
-        } else if let value = Self.unrelatedEnvironmentRead(in: entry, state: state) {
-            diagnose(.sharedEnvironmentWork(callee, state, value), on: node)
+            diagnose(
+                .sharedTextInput(callee, state, unrelated), on: node,
+                notes: stateNotes(entry: entry, state: state))
+        } else if let values = Self.unrelatedEnvironmentReads(in: entry, state: state),
+                  let first = values.first {
+            diagnose(
+                .sharedEnvironmentWork(callee, state, first), on: node,
+                notes: stateNotes(entry: entry, state: state)
+                    + environmentNotes(entry: entry, values: values, state: state))
         }
         return .visitChildren
     }
 
-    /// The first `@Environment` property that `body` reads, directly or through the same-type
-    /// members it reaches, in a member whose source does not name `state`
+    /// A note at the `@State` declaration that the field writes
+    private func stateNotes(entry: TypeMemberIndex.TypeEntry, state: String) -> [Finding.Note] {
+        guard let declaration = entry.members[state]?.first(where: { $0.kind == .storedProperty })?
+            .declaration else { return [] }
+        return [Finding.Note(
+            message: .keystrokeState(state),
+            location: Finding.Location(
+                declaration.startLocation(converter: context.sourceLocationConverter)),
+            role: .input
+        )]
+    }
+
+    /// A note at each `@Environment` declaration whose value feeds the unrelated work
+    private func environmentNotes(
+        entry: TypeMemberIndex.TypeEntry,
+        values: [String],
+        state: String
+    ) -> [Finding.Note] {
+        values.compactMap { value in
+            let declaration = entry.members[value]?
+                .first(where: { $0.kind == .storedProperty })?.declaration
+            return declaration.map { declaration in
+                Finding.Note(
+                    message: .unrelatedEnvironmentValue(value, state),
+                    location: Finding.Location(
+                        declaration.startLocation(converter: context.sourceLocationConverter)),
+                    role: .input
+                )
+            }
+        }
+    }
+
+    /// The `@Environment` properties that `body` reads, directly or through the same-type members
+    /// it reaches, in the first member whose source does not name `state` . The list keeps source
+    /// order and holds each name once.
     ///
     /// Closures that run later, such as a `Button` action, an `.onSubmit` body or a
     /// `Task.detached` operation, are not followed, because they do not run during `body` .
-    private static func unrelatedEnvironmentRead(
+    private static func unrelatedEnvironmentReads(
         in entry: TypeMemberIndex.TypeEntry,
         state: String
-    ) -> String? {
+    ) -> [String]? {
         let environment = Set(entry.members.compactMap { name, overloads in
             overloads.contains {
                 $0.kind == .storedProperty
@@ -78,9 +120,11 @@ final class IsolateTextInputState: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
             let references = TypeMemberIndex.references(
                 in: region, of: entry, skipping: { $0.runsAfterBody })
 
-            if !names(state, in: Syntax(region)),
-               let read = references.first(where: { environment.contains($0.name) }) {
-                return read.name
+            if !names(state, in: Syntax(region)) {
+                var seen: Set<String> = []
+                let reads = references.map(\.name)
+                    .filter { environment.contains($0) && seen.insert($0).inserted }
+                if !reads.isEmpty { return reads }
             }
             pending += references.filter { !$0.spelling.hasPrefix("$") }
                 .flatMap { $0.members.filter { $0.kind != .storedProperty } }
@@ -132,6 +176,14 @@ final class IsolateTextInputState: LintSyntaxRule<LintOnlyValue>, @unchecked Sen
 }
 
 fileprivate extension Finding.Message {
+    static func keystrokeState(_ state: String) -> Finding.Message {
+        "The field writes '\(state)' on every keystroke"
+    }
+
+    static func unrelatedEnvironmentValue(_ value: String, _ state: String) -> Finding.Message {
+        "'\(value)' comes from the environment and feeds work that does not use '\(state)'"
+    }
+
     static func sharedEnvironmentWork(_ control: String, _ state: String, _ value: String)
         -> Finding.Message
     {

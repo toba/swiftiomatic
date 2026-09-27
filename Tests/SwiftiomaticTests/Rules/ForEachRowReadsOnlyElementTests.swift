@@ -5,11 +5,18 @@ import Testing
 @Suite
 struct ForEachRowReadsOnlyElementTests: RuleTesting {
   private static func message(_ call: String = "ForEach", _ names: String...) -> String {
-    let list = names.map { "'\($0)'" }.joined(separator: ", ")
+    let list = names.lazy.map { "'\($0)'" }.joined(separator: ", ")
     return "'\(call)' row reads \(list) from the enclosing view. Extract the row into a 'View' that takes the values as inputs so the row depends only on its element"
   }
 
   private static func read(_ name: String) -> String { "the row reads '\(name)' here" }
+
+  private static func forwards(_ call: String = "ForEach", _ names: String...) -> String {
+    let list = names.lazy.map { "'\($0)'" }.joined(separator: ", ")
+    return "'\(call)' row passes \(list) from the enclosing view into its row 'View'. Let the row obtain the values itself or carry them in the element so the row depends only on its element"
+  }
+
+  private static func passed(_ name: String) -> String { "the row passes '\(name)' here" }
 
   @Test func gutterRowReadsEditorState() {
     assertLint(
@@ -136,12 +143,10 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
       ForEachRowReadsOnlyElement.self,
       """
       struct OptionSetList: View {
-        @Binding var selection: Value
         private let cellSize: CGFloat = 16
         static let spacing: CGFloat = 3
 
         var body: some View {
-          List(Value.allCases) { OptionSetRow(value: $0, selection: $selection) }
           ForEach(items) { item in
             Text(item.name)
               .frame(width: cellSize)
@@ -175,7 +180,7 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
     )
   }
 
-  @Test func derivedArgumentOfCustomRowNotFlagged() {
+  @Test func derivedArgumentOfCustomRowFlagged() {
     assertLint(
       ForEachRowReadsOnlyElement.self,
       """
@@ -185,11 +190,11 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         let depth: Int
 
         var body: some View {
-          ForEach(1...8, id: \\.self) { row in
-            TableSizeCell(isSelected: isSelected(row: row, column: 1))
+          0️⃣ForEach(1...8, id: \\.self) { row in
+            TableSizeCell(isSelected: 1️⃣isSelected(row: row, column: 1))
           }
-          ForEach(tags) { tag in TagRow(tag: tag, isSelected: selection == tag).padding(4) }
-          ForEach(children) { child in NodeRow(node: child, depth: depth + 1) }
+          2️⃣ForEach(tags) { tag in TagRow(tag: tag, isSelected: 3️⃣selection == tag).padding(4) }
+          4️⃣ForEach(children) { child in NodeRow(node: child, depth: 5️⃣depth + 1) }
         }
 
         private func isSelected(row: Int, column: Int) -> Bool {
@@ -197,11 +202,21 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         }
       }
       """,
-      findings: []
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.forwards("ForEach", "isSelected"),
+          notes: [NoteSpec("1️⃣", message: Self.passed("isSelected"))]),
+        FindingSpec(
+          "2️⃣", message: Self.forwards("ForEach", "selection"),
+          notes: [NoteSpec("3️⃣", message: Self.passed("selection"))]),
+        FindingSpec(
+          "4️⃣", message: Self.forwards("ForEach", "depth"),
+          notes: [NoteSpec("5️⃣", message: Self.passed("depth"))]),
+      ]
     )
   }
 
-  @Test func bareArgumentOfCustomRowNotFlagged() {
+  @Test func bareArgumentOfCustomRowFlagged() {
     assertLint(
       ForEachRowReadsOnlyElement.self,
       """
@@ -212,16 +227,180 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
         @State private var page = 0
 
         var body: some View {
-          ForEach(citations.indices, id: \\.self) { index in
-            CitationForm(index: index, citations: citations, drag: self.drag)
+          0️⃣ForEach(citations.indices, id: \\.self) { index in
+            CitationForm(index: index, citations: 1️⃣citations, drag: self.2️⃣drag)
           }
-          ForEach(items) { item in
-            ProjectItemRow(item: item, canWrite: canWrite)
+          3️⃣ForEach(items) { item in
+            ProjectItemRow(item: item, canWrite: 4️⃣canWrite)
           }
           ForEach(rowKeys) { keyed in IssueListItem(keyed: keyed, reachedEnd: showMore) }
+          ForEach(rowKeys) { keyed in IssueListItem(keyed: keyed, reachedEnd: self.showMore) }
         }
 
         private func showMore() { page += 1 }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.forwards("ForEach", "citations", "drag"),
+          notes: [
+            NoteSpec("1️⃣", message: Self.passed("citations")),
+            NoteSpec("2️⃣", message: Self.passed("drag")),
+          ]),
+        FindingSpec(
+          "3️⃣", message: Self.forwards("ForEach", "canWrite"),
+          notes: [NoteSpec("4️⃣", message: Self.passed("canWrite"))]),
+      ]
+    )
+  }
+
+  @Test func forwardedProjectedBindingFlagged() {
+    assertLint(
+      ForEachRowReadsOnlyElement.self,
+      """
+      struct AttachmentList: View {
+        @FetchAll private var attachments: [Attachment]
+        @State private var writeError: String?
+
+        var body: some View {
+          List {
+            if attachments.isEmpty {
+              EmptyState()
+            } else {
+              0️⃣ForEach(attachments) { attachment in
+                RemovableAttachmentRow(attachment: attachment, writeError: 1️⃣$writeError)
+              }
+              .onDelete(perform: delete)
+            }
+          }
+        }
+
+        private func delete(_ offsets: IndexSet) {}
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.forwards("ForEach", "writeError"),
+          notes: [NoteSpec("1️⃣", message: Self.passed("writeError"))]),
+      ]
+    )
+  }
+
+  @Test func tabRowForwardingSelectionAndCountsFlagged() {
+    assertLint(
+      ForEachRowReadsOnlyElement.self,
+      """
+      struct InspectorTabBar: View {
+        let issueID: Issue.ID
+        @Binding var selection: IssueGroup
+        @FetchOne private var counts: IssueListRow?
+        @Namespace private var namespace
+
+        private var groups: [IssueGroup] { IssueGroup.allCases }
+
+        var body: some View {
+          HStack(spacing: 2) {
+            0️⃣ForEach(Array(groups.enumerated()), id: \\.element) { index, group in
+              InspectorTabItem(
+                group: group,
+                hasDivider: index > 0,
+                showsDivider: index > 0 && 1️⃣dividerVisible(before: index),
+                badgeText: 2️⃣counts?.badgeText(of: group),
+                selectionPill: group == 3️⃣selection ? 4️⃣namespace : nil,
+                selection: 5️⃣$selection)
+            }
+          }
+        }
+
+        private func dividerVisible(before index: Int) -> Bool {
+          groups[index] != selection && groups[index - 1] != selection
+        }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "0️⃣",
+          message: Self.forwards("ForEach", "dividerVisible", "counts", "selection", "namespace"),
+          notes: [
+            NoteSpec("1️⃣", message: Self.passed("dividerVisible")),
+            NoteSpec("2️⃣", message: Self.passed("counts")),
+            NoteSpec("3️⃣", message: Self.passed("selection")),
+            NoteSpec("4️⃣", message: Self.passed("namespace")),
+          ]),
+      ]
+    )
+  }
+
+  @Test func rowBuiltByClosureInputFlagged() {
+    assertLint(
+      ForEachRowReadsOnlyElement.self,
+      """
+      struct InspectorList<Model: Identifiable, Row: View>: View {
+        let items: [Model]
+        let delete: (IndexSet) -> Void
+        @ViewBuilder let row: (Model) -> Row
+
+        var body: some View {
+          List {
+            0️⃣ForEach(items) { item in InspectorListRow(content: 1️⃣row(item)) }
+              .onDelete(perform: delete)
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.forwards("ForEach", "row"),
+          notes: [NoteSpec("1️⃣", message: Self.passed("row"))]),
+      ]
+    )
+  }
+
+  @Test func mixedReadAndForwardUsesReadMessage() {
+    assertLint(
+      ForEachRowReadsOnlyElement.self,
+      """
+      struct TagList: View {
+        @State private var selection: Tag?
+        @State private var hovered: Tag?
+
+        var body: some View {
+          0️⃣ForEach(tags) { tag in
+            TagRow(tag: tag, isSelected: 1️⃣selection == tag)
+              .bold(2️⃣hovered == tag)
+          }
+        }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "0️⃣", message: Self.message("ForEach", "selection", "hovered"),
+          notes: [
+            NoteSpec("1️⃣", message: Self.passed("selection")),
+            NoteSpec("2️⃣", message: Self.read("hovered")),
+          ]),
+      ]
+    )
+  }
+
+  @Test func forwardedConstantsAndElementOnlyRowsNotFlagged() {
+    assertLint(
+      ForEachRowReadsOnlyElement.self,
+      """
+      struct WalkList: View {
+        let walks: [Walk]
+        private let accent = Color.blue
+        static let spacing: CGFloat = 4
+
+        var body: some View {
+          List(walks) { walk in WalkRow(walk: walk, accent: accent, spacing: Self.spacing) }
+          ForEach(walks) { walk in
+            VStack(alignment: .leading) {
+              Text(walk.name)
+              Text(walk.description).foregroundStyle(.secondary)
+            }
+          }
+        }
       }
       """,
       findings: []
@@ -381,7 +560,6 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
               EditorThemePreview(
                 size: 125,
                 theme: theme,
-                selection: $themeState.selected,
                 copy: { library.copy(theme.wrappedValue) },
                 edit: { editID = theme.id },
                 delete: { library.delete(theme.wrappedValue) }
@@ -397,7 +575,7 @@ struct ForEachRowReadsOnlyElementTests: RuleTesting {
 
         var body: some View {
           List(statuses) { status in
-            NodeStatusRow(status: status, isSelected: selection?.id == status.id)
+            NodeStatusRow(status: status)
               .listRowInsets(.init(top: 0, leading: -6, bottom: 0, trailing: 0))
               .onTapGesture { selection = status }
           }

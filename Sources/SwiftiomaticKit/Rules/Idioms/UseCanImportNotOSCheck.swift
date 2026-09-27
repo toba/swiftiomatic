@@ -17,14 +17,27 @@ import SwiftSyntax
 /// split picks AppKit there, but a Catalyst app uses UIKit. To test for AppKit first, write
 /// `#if canImport(AppKit) && !targetEnvironment(macCatalyst)` .
 ///
-/// Lint: An `#if os(...)` block that guards only framework imports raises a warning.
+/// The rule also fires on a block that holds code, when its `os(...)` checks name exactly the
+/// platforms that ship a framework the block imports. `#if os(macOS)` around `import AppKit` is
+/// one example. The rule stays silent when the check names fewer platforms than the framework
+/// ships on, when the block imports no such framework, and when an `#else` or `#elseif` branch
+/// imports another platform framework.
+///
+/// Lint: An `#if os(...)` block that guards only framework imports raises a warning. An
+/// `#if os(...)` block whose platforms match a framework it imports raises a warning.
 final class UseCanImportNotOSCheck: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
     override class var guidance: GuidanceLevel { .consider }
 
     override func visit(_ node: IfConfigDeclSyntax) -> SyntaxVisitorContinueKind {
         guard let first = node.clauses.first, first.condition != nil,
-              node.clauses.allSatisfy(isOSImportClause) else { return .visitChildren }
+              node.clauses.allSatisfy(isOSImportClause)
+        else {
+            if let framework = frameworkMatchingPlatforms(node) {
+                diagnose(.checkFramework(framework), on: node)
+            }
+            return .visitChildren
+        }
 
         if node.clauses.count > 1, namesPlatformTypeOutsideConditions(node.root) {
             return .visitChildren
@@ -39,6 +52,79 @@ final class UseCanImportNotOSCheck: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         if let condition = clause.condition, !isOSOnly(condition) { return false }
         guard case let .statements(items)? = clause.elements, !items.isEmpty else { return false }
         return items.allSatisfy { $0.item.is(ImportDeclSyntax.self) }
+    }
+
+    /// The platforms that ship each platform framework.
+    private static let frameworkPlatforms: [String: Set<String>] = [
+        "AppKit": ["macOS"],
+        "Cocoa": ["macOS"],
+        "UIKit": ["iOS", "tvOS", "visionOS"],
+        "WatchKit": ["watchOS"],
+    ]
+
+    /// The framework that the first clause imports and whose platforms the first clause's
+    /// condition names exactly, or `nil` when there is none.
+    ///
+    /// Another branch that imports a platform framework marks a platform split, so this returns
+    /// `nil` for it.
+    private func frameworkMatchingPlatforms(_ node: IfConfigDeclSyntax) -> String? {
+        guard let first = node.clauses.first, let condition = first.condition,
+              let platforms = osNames(condition),
+              let framework = importedModules(first).first(where: {
+                  Self.frameworkPlatforms[$0] == platforms
+              })
+        else { return nil }
+
+        let splits = node.clauses.dropFirst().lazy.contains { clause in
+            importedModules(clause).contains { Self.frameworkPlatforms[$0] != nil }
+        }
+        return splits ? nil : framework
+    }
+
+    /// The modules that the clause imports at its top level.
+    private func importedModules(_ clause: IfConfigClauseSyntax) -> [String] {
+        guard case let .statements(items)? = clause.elements else { return [] }
+        return items.compactMap {
+            $0.item.as(ImportDeclSyntax.self)?.path.first?.name.text
+        }
+    }
+
+    /// The platforms that a condition names, when the condition joins only `os(...)` checks with
+    /// `||`.
+    private func osNames(_ expr: ExprSyntax) -> Set<String>? {
+        if let call = expr.as(FunctionCallExprSyntax.self) {
+            guard call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "os",
+                  let argument = call.arguments.firstAndOnly?.expression
+                      .as(DeclReferenceExprSyntax.self)
+            else { return nil }
+            return [argument.baseName.text]
+        }
+        if let tuple = expr.as(TupleExprSyntax.self), let only = tuple.elements.firstAndOnly {
+            return osNames(only.expression)
+        }
+        if let infix = expr.as(InfixOperatorExprSyntax.self) {
+            guard isOr(infix.operator), let left = osNames(infix.leftOperand),
+                  let right = osNames(infix.rightOperand)
+            else { return nil }
+            return left.union(right)
+        }
+        if let sequence = expr.as(SequenceExprSyntax.self) {
+            var names: Set<String> = []
+            for (index, element) in sequence.elements.enumerated() {
+                if index.isMultiple(of: 2) {
+                    guard let found = osNames(element) else { return nil }
+                    names.formUnion(found)
+                } else if !isOr(element) {
+                    return nil
+                }
+            }
+            return names
+        }
+        return nil
+    }
+
+    private func isOr(_ expr: ExprSyntax) -> Bool {
+        expr.as(BinaryOperatorExprSyntax.self)?.operator.text == "||"
     }
 
     /// Whether the file names an `NS` or `UI` type outside every `#if` block
@@ -89,6 +175,13 @@ final class UseCanImportNotOSCheck: LintSyntaxRule<LintOnlyValue>, @unchecked Se
 }
 
 fileprivate extension Finding.Message {
+    static func checkFramework(_ framework: String) -> Finding.Message {
+        let suffix = framework == "AppKit" || framework == "Cocoa"
+            ? " && !targetEnvironment(macCatalyst)"
+            : ""
+        return "this '#if os(...)' names exactly the platforms that ship \(framework); check '#if canImport(\(framework))\(suffix)' so the code follows the framework, not the platform list"
+    }
+
     static let useCanImport: Finding.Message =
         "this '#if os(...)' guards only an import; use '#if canImport(...)' to check for the framework, with 'canImport(UIKit)' first or 'canImport(AppKit) && !targetEnvironment(macCatalyst)' so Mac Catalyst picks UIKit"
 }

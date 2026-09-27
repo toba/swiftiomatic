@@ -8,11 +8,15 @@ struct NoViewFactoryMembersTests: RuleTesting {
     "'\(name)' builds a view outside 'body'. Extract it into a 'View' type with its own inputs"
   }
 
+  private static func ownerMessage(_ name: String) -> String {
+    "'\(name)' builds part of its view in helper members. Move each helper into a focused 'View' type"
+  }
+
   @Test func gutterMarkerViewMethodFlagged() {
     assertLint(
       NoViewFactoryMembers.self,
       """
-      struct EditorGutterView: View {
+      struct 0️⃣EditorGutterView: View {
         var body: some View {
           ForEach(markers, id: \\.id) { marker in markerView(marker) }
         }
@@ -22,7 +26,10 @@ struct NoViewFactoryMembersTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("markerView"))]
+      findings: [
+        FindingSpec("0️⃣", message: Self.ownerMessage("EditorGutterView")),
+        FindingSpec("1️⃣", message: Self.message("markerView")),
+      ]
     )
   }
 
@@ -30,7 +37,7 @@ struct NoViewFactoryMembersTests: RuleTesting {
     assertLint(
       NoViewFactoryMembers.self,
       """
-      private struct TableSizePicker: View {
+      private struct 0️⃣TableSizePicker: View {
         var body: some View {
           ForEach(1...8, id: \\.self) { row in cell(row: row, column: 1) }
         }
@@ -40,7 +47,10 @@ struct NoViewFactoryMembersTests: RuleTesting {
         }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("cell"))]
+      findings: [
+        FindingSpec("0️⃣", message: Self.ownerMessage("TableSizePicker")),
+        FindingSpec("1️⃣", message: Self.message("cell")),
+      ]
     )
   }
 
@@ -48,7 +58,7 @@ struct NoViewFactoryMembersTests: RuleTesting {
     assertLint(
       NoViewFactoryMembers.self,
       """
-      struct Card: View {
+      struct 0️⃣Card: View {
         var body: some View { VStack { header; footer } }
 
         private 1️⃣var header: some View { Text("Header").bold() }
@@ -56,6 +66,7 @@ struct NoViewFactoryMembersTests: RuleTesting {
       }
       """,
       findings: [
+        FindingSpec("0️⃣", message: Self.ownerMessage("Card")),
         FindingSpec("1️⃣", message: Self.message("header")),
         FindingSpec("2️⃣", message: Self.message("footer")),
       ]
@@ -66,7 +77,7 @@ struct NoViewFactoryMembersTests: RuleTesting {
     assertLint(
       NoViewFactoryMembers.self,
       """
-      struct Card: View {
+      struct 0️⃣Card: View {
         var body: some View { header }
       }
 
@@ -74,7 +85,32 @@ struct NoViewFactoryMembersTests: RuleTesting {
         1️⃣func header() -> some View { Text("Header") }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("header"))]
+      findings: [
+        FindingSpec("0️⃣", message: Self.ownerMessage("Card")),
+        FindingSpec("1️⃣", message: Self.message("header")),
+      ]
+    )
+  }
+
+  @Test func ownerReportedOnceForFactoriesInTypeAndExtension() {
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      struct 0️⃣Card: View {
+        var body: some View { VStack { header; footer } }
+
+        private 1️⃣var header: some View { Text("Header") }
+      }
+
+      extension Card {
+        2️⃣var footer: some View { Text("Footer") }
+      }
+      """,
+      findings: [
+        FindingSpec("0️⃣", message: Self.ownerMessage("Card")),
+        FindingSpec("1️⃣", message: Self.message("header")),
+        FindingSpec("2️⃣", message: Self.message("footer")),
+      ]
     )
   }
 
@@ -120,14 +156,44 @@ struct NoViewFactoryMembersTests: RuleTesting {
   }
 
   @Test func fluentViewExtensionNotFlagged() {
+    // From jig `DisplayStyle.swift` and `FieldPickers.swift`.
     assertLint(
       NoViewFactoryMembers.self,
       """
       extension View {
-        func card() -> some View { padding().background(.thinMaterial) }
+        nonisolated func tinted(_ style: some ShapeStyle, when tinted: Bool) -> some View {
+          foregroundStyle(tinted ? AnyShapeStyle(style) : AnyShapeStyle(.secondary))
+        }
+      }
+
+      private extension SwiftUI.View {
+        func pickerChrome(summary: String) -> some View {
+          menuStyle(.button).help(summary)
+        }
       }
       """,
       findings: []
+    )
+  }
+
+  @Test func parameterlessViewExtensionFlagged() {
+    // From jig `SampleData.swift`.
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      extension View {
+        @MainActor 1️⃣func sampleFixture() -> some View {
+          environment(\\.people, SampleAuthor.people)
+            .environment(\\.database, SampleFixture.shared.database)
+        }
+
+        2️⃣var carded: some View { padding().background(.thinMaterial) }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message("sampleFixture")),
+        FindingSpec("2️⃣", message: Self.message("carded")),
+      ]
     )
   }
 
@@ -178,16 +244,37 @@ struct NoViewFactoryMembersTests: RuleTesting {
       NoViewFactoryMembers.self,
       """
       extension Text {
-        func wrappingSubject() -> some View {
-          lineLimit(nil).fixedSize(horizontal: false, vertical: true)
-        }
+        func subject(_ isActive: Bool) -> Text { bold(isActive) }
+        func caption() -> Text { font(.caption) }
       }
 
       extension Shape {
-        func outlined() -> some View { stroke(.red) }
+        func outlined(_ color: Color) -> some View { stroke(color) }
       }
       """,
       findings: []
+    )
+  }
+
+  @Test func concreteReceiverExtensionReturningOtherViewFlagged() {
+    // From jig `WrappingSubject.swift`.
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      extension Text {
+        1️⃣func wrappingSubject() -> some View {
+          lineLimit(nil)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+
+        2️⃣func padded(_ amount: CGFloat) -> some View { padding(amount) }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message("wrappingSubject")),
+        FindingSpec("2️⃣", message: Self.message("padded")),
+      ]
     )
   }
 
@@ -215,7 +302,7 @@ struct NoViewFactoryMembersTests: RuleTesting {
     assertLint(
       NoViewFactoryMembers.self,
       """
-      struct EditorThemeStylesPreview: View {
+      struct 0️⃣EditorThemeStylesPreview: View {
         @Binding var theme: EditorTheme
 
         var body: some View {
@@ -239,9 +326,64 @@ struct NoViewFactoryMembersTests: RuleTesting {
       }
       """,
       findings: [
+        FindingSpec("0️⃣", message: Self.ownerMessage("EditorThemeStylesPreview")),
         FindingSpec("1️⃣", message: Self.message("styleView")),
         FindingSpec("2️⃣", message: Self.message("header")),
         FindingSpec("3️⃣", message: Self.message("scroller")),
+      ]
+    )
+  }
+
+  @Test func viewOwnerOfFactoryMemberFlagged() {
+    // From jig `ProjectList.swift`.
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      private struct 0️⃣AddProjectBar: View {
+        let failure: String?
+        let canWrite: Bool
+        @Binding var typedName: String
+
+        private 1️⃣var buttons: AddProjectButtons {
+          AddProjectButtons(canWrite: canWrite, typedName: $typedName)
+        }
+
+        var body: some View {
+          ViewThatFits(in: .horizontal) {
+            buttons.labelStyle(.titleAndIcon)
+            buttons.labelStyle(.iconOnly)
+          }
+        }
+      }
+
+      private struct AddProjectButtons: View {
+        let canWrite: Bool
+        @Binding var typedName: String
+
+        private var title: Text { Text("Add") }
+
+        var body: some View { HStack { title } }
+      }
+      """,
+      findings: [
+        FindingSpec("0️⃣", message: Self.ownerMessage("AddProjectBar")),
+        FindingSpec("1️⃣", message: Self.message("buttons")),
+      ]
+    )
+  }
+
+  @Test func nonViewOwnerOfFactoryMemberNotFlagged() {
+    assertLint(
+      NoViewFactoryMembers.self,
+      """
+      struct Factory {
+        1️⃣func makeRow() -> some View { Text("x") }
+        2️⃣func makeHeader() -> some View { Text("y") }
+      }
+      """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.message("makeRow")),
+        FindingSpec("2️⃣", message: Self.message("makeHeader")),
       ]
     )
   }
@@ -273,7 +415,7 @@ struct NoViewFactoryMembersTests: RuleTesting {
     assertLint(
       NoViewFactoryMembers.self,
       """
-      struct Card: View {
+      struct 0️⃣Card: View {
         let content: AnyView
         var accessory: AnyView = AnyView(EmptyView())
         let row: RowView
@@ -282,7 +424,10 @@ struct NoViewFactoryMembersTests: RuleTesting {
         var body: some View { VStack { content; accessory; row; footer } }
       }
       """,
-      findings: [FindingSpec("1️⃣", message: Self.message("footer"))]
+      findings: [
+        FindingSpec("0️⃣", message: Self.ownerMessage("Card")),
+        FindingSpec("1️⃣", message: Self.message("footer")),
+      ]
     )
   }
 }
