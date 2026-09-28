@@ -443,7 +443,7 @@ extension TokenStream {
         // Disambiguation: if an item with a `where` clause follows an item without one, the
         // compiler warns. Enforce a soft newline between such items to avoid the warning,
         // especially after `NoCasesWithOnlyFallthrough` transforms that might merge cases.
-        let useAlignment = alignWrappedConditions
+        let useAlignment = conditionWrappingSettings.alignsWrappedConditions
         var hasOpenAlignmentBreak = false
 
         for (index, item) in caseItems.enumerated() {

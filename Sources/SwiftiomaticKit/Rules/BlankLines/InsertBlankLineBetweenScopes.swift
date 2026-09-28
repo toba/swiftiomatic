@@ -17,9 +17,14 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
     override static var group: ConfigurationGroup? { .blankLines }
     override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
+    /// A closing brace counts as a blank line, so no scope can need one and the rule does nothing.
+    private lazy var braceIsBlank = context.configuration[TreatClosingBraceAsBlankLine.self]
+    private lazy var commentIsBlank = context.configuration[TreatCommentAsBlankLine.self]
+
     // In lint mode the pipeline visits every member block itself, so neither visit recurses or
     // builds a new node.
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+        guard !braceIsBlank else { return node }
         guard !context.isLintMode else {
             _ = ensureBlankLines(in: node.statements)
             return node
@@ -30,6 +35,7 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
     }
 
     override func visit(_ node: MemberBlockSyntax) -> MemberBlockSyntax {
+        guard !braceIsBlank else { return node }
         guard !context.isLintMode else {
             _ = ensureBlankLines(inMembers: node.members, diagnosing: node.members)
             return node
@@ -48,15 +54,12 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
         let original = Array(statements)
         var items = original
         var modified = false
-        let braceIsBlank = context.configuration[TreatClosingBraceAsBlankLine.self]
-        let commentIsBlank = context.configuration[TreatCommentAsBlankLine.self]
 
         for i in original.indices.dropLast() {
             guard case let .decl(decl) = original[i].item,
                   hasDeclMultiLineBody(decl) else { continue }
             let nextIndex = i + 1
             guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
-            if braceIsBlank { continue }
             if commentIsBlank, original[nextIndex].leadingTrivia.startsWithComment { continue }
 
             diagnose(.insertBlankLineAfterScope, on: original[nextIndex].item)
@@ -82,13 +85,9 @@ final class InsertBlankLineBetweenScopes: StructuralFormatRule<BasicRuleValue>, 
         var items = original
         var modified = false
 
-        let braceIsBlank = context.configuration[TreatClosingBraceAsBlankLine.self]
-        let commentIsBlank = context.configuration[TreatCommentAsBlankLine.self]
-
         for i in original.indices.dropLast() where hasDeclMultiLineBody(original[i].decl) {
             let nextIndex = i + 1
             guard !original[nextIndex].leadingTrivia.hasBlankLine else { continue }
-            if braceIsBlank { continue }
             if commentIsBlank, original[nextIndex].leadingTrivia.startsWithComment { continue }
 
             diagnose(.insertBlankLineAfterScope, on: diagTargets[nextIndex].decl)

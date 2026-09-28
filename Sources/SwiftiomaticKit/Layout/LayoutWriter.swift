@@ -23,13 +23,12 @@ import SwiftSyntax
 /// structural-node merges happen in Phase 4c/4d/4e.
 func rewriteToken(
     _ node: TokenSyntax,
-    parent _: Syntax?,
+    parent: Syntax?,
     context: Context
 ) -> TokenSyntax {
     // A transform can return a detached token, so every check gates on the original token.
     guard let gate = context.gate(for: node) else { return node }
     var result = node
-    let parent = Syntax(node).parent
 
     // 1. InsertBlankLinesAroundMark — inlined (no `static func transform` ). Adds blank lines
     //    before/after `// MARK:` comments in the token's leading trivia. Token-level: looks at

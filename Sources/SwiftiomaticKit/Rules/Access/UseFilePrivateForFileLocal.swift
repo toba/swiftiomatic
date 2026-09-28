@@ -30,8 +30,10 @@ final class UseFilePrivateForFileLocal: StructuralFormatRule<
             diagnoseCodeBlockItems(node.statements)
             return node
         }
+        let statements = rewrittenCodeBlockItems(node.statements)
+        guard statements.id != node.statements.id else { return node }
         var result = node
-        result.statements = rewrittenCodeBlockItems(node.statements)
+        result.statements = statements
         return result
     }
 
@@ -80,19 +82,22 @@ final class UseFilePrivateForFileLocal: StructuralFormatRule<
     /// configuration.
     ///
     /// - Parameter codeBlockItems: The list of code block items to rewrite.
-    /// - Returns: A new `CodeBlockItemListSyntax` that has possibly been rewritten.
+    /// - Returns: A new `CodeBlockItemListSyntax` that has been rewritten, or `codeBlockItems`
+    ///   itself when no declaration changes.
     private func rewrittenCodeBlockItems(
         _ codeBlockItems: CodeBlockItemListSyntax
     ) -> CodeBlockItemListSyntax {
+        var changed = false
         let newCodeBlockItems = codeBlockItems.map { codeBlockItem -> CodeBlockItemSyntax in
-            switch codeBlockItem.item {
-                case let .decl(decl):
-                    var result = codeBlockItem
-                    result.item = .decl(rewrittenDecl(decl))
-                    return result
-                default: return codeBlockItem
-            }
+            guard case let .decl(decl) = codeBlockItem.item else { return codeBlockItem }
+            let newDecl = rewrittenDecl(decl)
+            guard newDecl.id != decl.id else { return codeBlockItem }
+            changed = true
+            var result = codeBlockItem
+            result.item = .decl(newDecl)
+            return result
         }
+        guard changed else { return codeBlockItems }
         return CodeBlockItemListSyntax(newCodeBlockItems)
     }
 
@@ -116,17 +121,20 @@ final class UseFilePrivateForFileLocal: StructuralFormatRule<
     /// configuration.
     ///
     /// - Parameter ifConfigDecl: The `IfConfigDeclSyntax` to rewrite.
-    /// - Returns: A new `IfConfigDeclSyntax` that has possibly been rewritten.
+    /// - Returns: A new `IfConfigDeclSyntax` that has been rewritten, or `ifConfigDecl` itself
+    ///   when no declaration changes.
     private func rewrittenIfConfigDecl(_ ifConfigDecl: IfConfigDeclSyntax) -> IfConfigDeclSyntax {
+        var changed = false
         let newClauses = ifConfigDecl.clauses.map { clause -> IfConfigClauseSyntax in
-            switch clause.elements {
-                case .statements(let codeBlockItemList)?:
-                    var result = clause
-                    result.elements = .statements(rewrittenCodeBlockItems(codeBlockItemList))
-                    return result
-                default: return clause
-            }
+            guard case .statements(let codeBlockItemList)? = clause.elements else { return clause }
+            let newList = rewrittenCodeBlockItems(codeBlockItemList)
+            guard newList.id != codeBlockItemList.id else { return clause }
+            changed = true
+            var result = clause
+            result.elements = .statements(newList)
+            return result
         }
+        guard changed else { return ifConfigDecl }
 
         var result = ifConfigDecl
         result.clauses = IfConfigClauseListSyntax(newClauses)
