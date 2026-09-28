@@ -23,6 +23,9 @@ protocol RuleTesting {}
 extension RuleTesting {
   /// Performs a lint using the provided linter rule on the provided input and asserts that the
   /// emitted findings are correct.
+  ///
+  /// - Parameter otherFiles: The text of the other files of the project, keyed by path. When it is
+  ///   not empty, the lint reads them through a `ProjectIndex` .
   func assertLint<LintRule: SyntaxRule & SyntaxVisitor>(
     _ type: LintRule.Type,
     _ markedSource: String,
@@ -30,6 +33,7 @@ extension RuleTesting {
     configuration: Configuration? = nil,
     experimentalFeatures: Parser.ExperimentalFeatures = [],
     assumingFileURL: URL = .init(fileURLWithPath: "/tmp/test.swift"),
+    otherFiles: [String: String] = [:],
     sourceLocation: TestSourceLocation = #_sourceLocation
   ) {
     let markedText = MarkedText(textWithMarkers: markedSource)
@@ -54,6 +58,11 @@ extension RuleTesting {
       findingConsumer: { emittedPipelineFindings.append($0) }
     )
     pipeline.debugOptions.insert(.disablePrettyPrint)
+    if !otherFiles.isEmpty {
+      var sources = otherFiles
+      sources[assumingFileURL.path] = unmarkedSource
+      pipeline.projectIndex = ProjectIndex(sources: sources)
+    }
     try! pipeline.lint(
       syntax: sourceFileSyntax,
       source: unmarkedSource,

@@ -21,6 +21,11 @@ import SwiftSyntax
 /// `sortImports.shouldGroupImports` configuration option to limit this rule to lexicographic
 /// ordering.
 ///
+/// The `sortImports.sortOrder` configuration option sets the order in a group. `alphabetical` (the
+/// default) sorts by module name. `length` sorts the shortest module name first and breaks ties
+/// alphabetically, so `import Core`, `import TobaXML`, `import TobaCore`, `import Foundation` is in
+/// `length` order.
+///
 /// By default, imports within conditional compilation blocks ( `#if` , `#elseif` , `#else` ) are
 /// not ordered. This behavior can be controlled via the `sortImports.includeConditionalImports`
 /// configuration option.

@@ -7,6 +7,15 @@ import SwiftSyntax
 /// like the SwiftUI modifiers. The type can then become `private` , and its initializer can change
 /// without an edit at each call site.
 ///
+/// Add the wrapper as `extension View { func cardFrame() -> some View { modifier(CardFrame()) } }`,
+/// and call `.cardFrame()` . Give the method a name that tells the style or behavior. Do not use
+/// implementation terms in the name, such as `applyCardFrameModifier` . Expose only the parameters
+/// that callers must control.
+///
+/// The wrapper gives the most value for a modifier that the app applies at many places. The rule
+/// does not count the call sites, so it also reports a modifier that the app applies once. You can
+/// keep such a call when the modifier is not part of the app's reusable vocabulary.
+///
 /// The rule does not report the `.modifier(...)` call inside a `View` extension, because that call
 /// is the wrapper that the rule asks for. It reports only an argument that constructs a type by
 /// name. A stored or conditional modifier value is not reported.

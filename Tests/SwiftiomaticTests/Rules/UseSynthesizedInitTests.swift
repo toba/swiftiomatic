@@ -10,1052 +10,1065 @@
 //
 //===----------------------------------------------------------------------===//
 
-@testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
 import Testing
+import SwiftiomaticTestSupport
+@testable import SwiftiomaticKit
 
 @Suite
 struct UseSynthesizedInitializerTests: RuleTesting {
-  private static let message =
-    "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+    private static let message =
+        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
 
-  @Test func memberwiseInitializerIsDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
+    @Test func guidanceIsConsider() { #expect(UseSynthesizedInit.guidance == .consider) }
 
-        public var name: String
-        let phoneNumber: String
-        internal let address: String
+    @Test func memberwiseInitializerIsDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        1️⃣init(name: String, phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+              public var name: String
+              let phoneNumber: String
+              internal let address: String
+
+              1️⃣init(name: String, phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func nestedMemberwiseInitializerIsDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct MyContainer {
-        public struct Person {
-          public var name: String
+    @Test func nestedMemberwiseInitializerIsDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct MyContainer {
+              public struct Person {
+                public var name: String
 
-          1️⃣init(name: String) {
-            self.name = name
-          }
-        }
-      }
-      """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                1️⃣init(name: String) {
+                  self.name = name
+                }
+              }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func internalMemberwiseInitializerIsDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
+    @Test func internalMemberwiseInitializerIsDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        public var name: String
-        let phoneNumber: String
-        internal let address: String
+              public var name: String
+              let phoneNumber: String
+              internal let address: String
 
-        1️⃣internal init(name: String, phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+              1️⃣internal init(name: String, phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func memberwiseInitializerWithDefaultArgumentIsDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
+    @Test func memberwiseInitializerWithDefaultArgumentIsDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        public var name: String = "John Doe"
-        let phoneNumber: String
-        internal let address: String
+              public var name: String = "John Doe"
+              let phoneNumber: String
+              internal let address: String
 
-        1️⃣init(name: String = "John Doe", phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+              1️⃣init(name: String = "John Doe", phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                )
+            ]
         )
-      ]
-    )
-  }
+    }
 
-  @Test func customInitializerVoidsSynthesizedInitializerWarning() {
-    // The compiler won't create a memberwise initializer when there are any other initializers.
-    // It's valid to have a memberwise initializer when there are any custom initializers.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
+    @Test func customInitializerVoidsSynthesizedInitializerWarning() {
+        // The compiler won't create a memberwise initializer when there are any other initializers.
+        // It's valid to have a memberwise initializer when there are any custom initializers.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        public var name: String
-        let phoneNumber: String
-        private let address: String
+              public var name: String
+              let phoneNumber: String
+              private let address: String
 
-        init(name: String, phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
+              init(name: String, phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
 
-        init(name: String, address: String) {
-          self.name = name
-          self.phoneNumber = "1234578910"
-          self.address = address
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func memberwiseInitializerWithDefaultArgument() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        public var name: String
-        let phoneNumber: String
-        let address: String
-
-        init(name: String = "Jane Doe", phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func memberwiseInitializerWithNonMatchingDefaultValues() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        public var name: String = "John Doe"
-        let phoneNumber: String
-        let address: String
-
-        init(name: String = "Jane Doe", phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func memberwiseInitializerMissingDefaultValues() {
-    // When the initializer doesn't contain a matching default argument, then it isn't equivalent to
-    // the synthesized memberwise initializer.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        public var name: String
-        var phoneNumber: String = "+15555550101"
-        let address: String
-
-        init(name: String, phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func customInitializerWithMismatchedTypes() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        public var name: String
-        var phoneNumber: String?
-        let address: String
-
-        init(name: String, phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func customInitializerWithExtraParameters() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        public var name: String
-        var phoneNumber: String?
-        let address: String
-
-        init(name: String, phoneNumber: String?, address: String, anotherArg: Int) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func customInitializerWithExtraStatements() {
-    assertLint(
-      UseSynthesizedInit.self,
-      #"""
-      public struct Person {
-
-        public var name: String
-        var phoneNumber: String?
-        let address: String
-
-        init(name: String, phoneNumber: String?, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-
-          print("phoneNumber: \(self.phoneNumber)")
-        }
-      }
-      """#,
-      findings: []
-    )
-  }
-
-  @Test func failableMemberwiseInitializerIsNotDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        public var name: String
-        let phoneNumber: String
-        let address: String
-
-        init?(name: String, phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func throwingMemberwiseInitializerIsNotDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        public var name: String
-        let phoneNumber: String
-        let address: String
-
-        init(name: String, phoneNumber: String, address: String) throws {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func publicMemberwiseInitializerIsNotDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        public var name: String
-        let phoneNumber: String
-        let address: String
-
-        public init(name: String, phoneNumber: String, address: String) {
-          self.name = name
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  // MARK: - SE-0502: a private property with an initial value leaves the memberwise initializer
-
-  @Test func initWorkingAroundPrivateDefaultIsDiagnosed() {
-    // SE-0502 drops `count` from the memberwise initializer, because it is less accessible than
-    // the rest and carries an initial value. The synthesized initializer is therefore
-    // `init(phoneNumber:address:)` at internal, which this hand-written one duplicates.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Person {
-
-        let phoneNumber: String
-        let address: String
-        private var count = 0
-
-        1️⃣init(phoneNumber: String, address: String) {
-          self.phoneNumber = phoneNumber
-          self.address = address
-        }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
-
-  @Test func initWorkingAroundPrivateOptionalIsDiagnosed() {
-    // A private optional with no written value is still default-initialised to nil, so SE-0502
-    // drops it too.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Person {
-
-        let phoneNumber: String
-        private var cache: String?
-
-        1️⃣init(phoneNumber: String) {
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
-
-  @Test func privateDefaultStillInInitIsNotDiagnosed() {
-    // The initializer keeps the dropped property as a parameter, so it does not match the
-    // synthesized one.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Person {
-
-        let phoneNumber: String
-        private var count = 0
-
-        init(phoneNumber: String, count: Int) {
-          self.phoneNumber = phoneNumber
-          self.count = count
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func privatePropertyWithoutInitialValueKeepsInitPrivate() {
-    // `address` has no initial value, so SE-0502 leaves it in and the synthesized initializer
-    // stays private. An internal initializer therefore does not match.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Person {
-
-        let phoneNumber: String
-        private let address: String
-
-        init(phoneNumber: String, address: String) {
-          self.phoneNumber = phoneNumber
-          self.address = address
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func allPrivatePropertiesKeepInitPrivate() {
-    // Nothing is less accessible than the rest, so nothing is dropped and the initializer is
-    // private.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Person {
-
-        private var phoneNumber: String = ""
-        private var address: String = ""
-
-        1️⃣private init(phoneNumber: String = "", address: String = "") {
-          self.phoneNumber = phoneNumber
-          self.address = address
-        }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
-
-  @Test func privateSetDetailDoesNotLowerInitLevel() {
-    // `private(set)` restricts the setter alone, so it neither lowers the initializer's access
-    // level nor drops the property.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Person {
-
-        let phoneNumber: String
-        private(set) var address: String = ""
-
-        1️⃣init(phoneNumber: String, address: String = "") {
-          self.phoneNumber = phoneNumber
-          self.address = address
-        }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
-
-  @Test func defaultMemberwiseInitializerIsNotDiagnosed() {
-    // `address` carries no initial value, so SE-0502 leaves it in the memberwise initializer and
-    // the initializer stays private. An initializer with default access control (i.e. internal) is
-    // therefore not equivalent to the synthesized one.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        let phoneNumber: String
-        private let address: String
-
-        init(phoneNumber: String, address: String) {
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  @Test func privateMemberwiseInitializerWithPrivateMemberIsDiagnosed() {
-    // The synthesized initializer is private when any member is private, so a private initializer
-    // is equivalent to the synthesized initializer.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-
-        let phoneNumber: String
-        private let address: String
-
-        1️⃣private init(phoneNumber: String, address: String) {
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+              init(name: String, address: String) {
+                self.name = name
+                self.phoneNumber = "1234578910"
+                self.address = address
+              }
+            }
+            """,
+            findings: []
         )
-      ]
-    )
-  }
+    }
 
-  @Test func fileprivateMemberwiseInitializerWithFileprivateMemberIsDiagnosed() {
-    // The synthesized initializer is fileprivate when any member is fileprivate, so a fileprivate
-    // initializer is equivalent to the synthesized initializer.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
+    @Test func memberwiseInitializerWithDefaultArgument() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        let phoneNumber: String
-        fileprivate let address: String
+              public var name: String
+              let phoneNumber: String
+              let address: String
 
-        1️⃣fileprivate init(phoneNumber: String, address: String) {
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+              init(name: String = "Jane Doe", phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
         )
-      ]
-    )
-  }
+    }
 
-  @Test func customSetterAccessLevel() {
-    // When a property has a different access level for its setter, the setter's access level
-    // doesn't change the access level of the synthesized initializer.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-        let phoneNumber: String
-        private(set) let address: String
+    @Test func memberwiseInitializerWithNonMatchingDefaultValues() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        1️⃣init(phoneNumber: String, address: String) {
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
+              public var name: String = "John Doe"
+              let phoneNumber: String
+              let address: String
 
-      public struct Person2 {
-        fileprivate let phoneNumber: String
-        private(set) let address: String
-
-        2️⃣fileprivate init(phoneNumber: String, address: String) {
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-
-      public struct Person3 {
-        fileprivate(set) let phoneNumber: String
-        private(set) let address: String
-
-        3️⃣init(phoneNumber: String, address: String) {
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-
-      public struct Person4 {
-        private fileprivate(set) let phoneNumber: String
-        private(set) let address: String
-
-        init(phoneNumber: String, address: String) {
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
-        ),
-        FindingSpec(
-          "2️⃣",
-          message: "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
-        ),
-        FindingSpec(
-          "3️⃣",
-          message: "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
-        ),
-      ]
-    )
-  }
-
-  @Test func memberwiseInitializerWithAttributeIsNotDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Person {
-        let phoneNumber: String
-        let address: String
-
-        @inlinable init(phoneNumber: String, address: String) {
-          self.address = address
-          self.phoneNumber = phoneNumber
-        }
-      }
-      """,
-      findings: []
-    )
-  }
-
-  // MARK: - Views: computed properties and result-builder properties
-
-  @Test func viewWithMemberwiseInitializerIsDiagnosed() {
-    // `body` is computed, so it takes no part in the memberwise initializer.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Plain: View {
-        let name: String
-        1️⃣init(name: String) { self.name = name }
-        var body: some View { Text(name) }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
-
-  @Test func observedComputedAndWrappedPropertiesAreSkipped() {
-    // A `get` accessor makes a property computed. A `didSet` observer keeps it stored. An
-    // environment wrapper set up by its attribute arguments takes no initializer parameter.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Plain: View {
-        @Environment(\\.dismiss) private var dismiss
-        var name: String { didSet { print(name) } }
-        var upper: String { get { name.uppercased() } }
-        1️⃣init(name: String) { self.name = name }
-        var body: some View { Text(name) }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
-
-  @Test func builderEvaluatingInitializerSuggestsBuilderValueProperty() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Built<Content: View>: View {
-        let content: Content
-        1️⃣init(@ViewBuilder content: () -> Content) { self.content = content() }
-        var body: some View { content }
-      }
-      """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this explicit initializer and declare '@ViewBuilder let content: Content'; the synthesized initializer then takes the same builder closure"
+              init(name: String = "Jane Doe", phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
         )
-      ]
-    )
-  }
+    }
 
-  @Test func builderStoringInitializerSuggestsBuilderClosureProperty() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Deferred<Content: View>: View {
-        let content: () -> Content
-        1️⃣init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
-        var body: some View { content() }
-      }
-      """,
-      findings: [
-        FindingSpec(
-          "1️⃣",
-          message: "remove this explicit initializer and declare '@ViewBuilder let content: () -> Content'; the synthesized initializer then takes the same builder closure"
+    @Test func memberwiseInitializerMissingDefaultValues() {
+        // When the initializer doesn't contain a matching default argument, then it isn't
+        // equivalent to the synthesized memberwise initializer.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
+
+              public var name: String
+              var phoneNumber: String = "+15555550101"
+              let address: String
+
+              init(name: String, phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
         )
-      ]
-    )
-  }
+    }
 
-  @Test func builderPropertyWithMatchingInitializerIsDiagnosed() {
-    // The property already carries the builder, so the synthesized initializer is identical.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Built<Content: View>: View {
-        let title: String
-        @ViewBuilder let content: Content
-        1️⃣init(title: String, @ViewBuilder content: () -> Content) {
-          self.title = title
-          self.content = content()
-        }
-        var body: some View { content }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
+    @Test func customInitializerWithMismatchedTypes() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-  @Test func builderInitializerDoesNotSwapEvaluationTiming() {
-    // Each initializer changes when the builder runs, so no stored-property form reproduces it.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Built<Content: View>: View {
-        let content: () -> Content
-        init(@ViewBuilder content: @escaping () -> Content) { self.content = { content() } }
-        var body: some View { content() }
-      }
+              public var name: String
+              var phoneNumber: String?
+              let address: String
 
-      struct Deferred<Content: View>: View {
-        @ViewBuilder let content: Content
-        init(content: Content) { self.content = content }
-        var body: some View { content }
-      }
-      """,
-      findings: []
-    )
-  }
+              init(name: String, phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
+        )
+    }
 
-  @Test func escapingClosureParameterMatchesClosureProperty() {
-    // The synthesized initializer marks a closure parameter `@escaping` itself.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Row: View {
-        let action: () -> Void
-        1️⃣init(action: @escaping () -> Void) { self.action = action }
-        var body: some View { Button("Go", action: action) }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
+    @Test func customInitializerWithExtraParameters() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-  @Test func publicViewInitializersAreNotDiagnosed() {
-    // These mirror the toba-ui views. A synthesized initializer is never public, and several of
-    // them change labels or wrapper setup.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct Checkbox: View {
-        public var isChecked: Bool = false
-        public var size: Double = 18
-        public var cornerRadius = 5.0
+              public var name: String
+              var phoneNumber: String?
+              let address: String
 
-        public init(isChecked: Bool = false, size: Double = 18, cornerRadius: Double = 5) {
-          self.isChecked = isChecked
-          self.size = size
-          self.cornerRadius = cornerRadius
-        }
+              init(name: String, phoneNumber: String?, address: String, anotherArg: Int) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
+        )
+    }
 
-        public var body: some View { EmptyView() }
-      }
+    @Test func customInitializerWithExtraStatements() {
+        assertLint(
+            UseSynthesizedInit.self,
+            #"""
+            public struct Person {
 
-      public struct ConditionalScrollView<Content: View>: View {
-        public var scrollable: Bool
-        @ViewBuilder public var content: (ScrollViewProxy?) -> Content
+              public var name: String
+              var phoneNumber: String?
+              let address: String
 
-        public init(scrollable: Bool, @ViewBuilder content: @escaping (ScrollViewProxy?) -> Content) {
-          self.scrollable = scrollable
-          self.content = content
-        }
+              init(name: String, phoneNumber: String?, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
 
-        public var body: some View { content(nil) }
-      }
+                print("phoneNumber: \(self.phoneNumber)")
+              }
+            }
+            """#,
+            findings: []
+        )
+    }
 
-      public struct FontPicker: View {
-        private var label: LocalizedStringKey
-        @Binding public var selection: String
+    @Test func failableMemberwiseInitializerIsNotDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        public init(_ label: LocalizedStringKey, selection: Binding<String>) {
-          self.label = label
-          _selection = selection
-        }
+              public var name: String
+              let phoneNumber: String
+              let address: String
 
-        public var body: some View { EmptyView() }
-      }
+              init?(name: String, phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
+        )
+    }
 
-      public struct PopoverPicker<Popover: View>: View {
-        private var label: LocalizedStringKey
-        private var popover: Popover
-        private var description: String
-        private let popoverFrame: ViewFrameIntent?
-        @State private var menuPresented = false
+    @Test func throwingMemberwiseInitializerIsNotDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        public init(
-          _ label: LocalizedStringKey,
-          description: String,
-          popoverFrame: ViewFrameIntent? = nil,
-          @ViewBuilder popover: () -> Popover
-        ) {
-          self.label = label
-          self.popover = popover()
-          self.description = description
-          self.popoverFrame = popoverFrame
-        }
+              public var name: String
+              let phoneNumber: String
+              let address: String
 
-        public var body: some View { EmptyView() }
-      }
+              init(name: String, phoneNumber: String, address: String) throws {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
+        )
+    }
 
-      public struct SymbolButton: View {
-        private let help: LocalizedStringKey
-        private let role: ButtonRole?
-        private let action: () -> Void
-        private let symbol: String
+    @Test func publicMemberwiseInitializerIsNotDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        public init(_ symbol: String, tip help: LocalizedStringKey, role: ButtonRole? = nil, action: @escaping () -> Void) {
-          self.role = role
-          self.help = help
-          self.symbol = symbol
-          self.action = action
-        }
+              public var name: String
+              let phoneNumber: String
+              let address: String
 
-        public var body: some View { EmptyView() }
-      }
-      """,
-      findings: []
-    )
-  }
+              public init(name: String, phoneNumber: String, address: String) {
+                self.name = name
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
+        )
+    }
 
-  @Test func viewWithStoreOnlyInitializerIsDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct MathView: View {
-        let latex: String
-        @State private var cache = RenderCache()
-        private var fontSize: CGFloat = 20
+    // MARK: - SE-0502: a private property with an initial value leaves the memberwise initializer
 
-        1️⃣init(latex: String) { self.latex = latex }
+    @Test func initWorkingAroundPrivateDefaultIsDiagnosed() {
+        // SE-0502 drops `count` from the memberwise initializer, because it is less accessible than
+        // the rest and carries an initial value. The synthesized initializer is therefore
+        // `init(phoneNumber:address:)` at internal, which this hand-written one duplicates.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Person {
 
-        var body: some View { Text(latex) }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
+              let phoneNumber: String
+              let address: String
+              private var count = 0
 
-  @Test func publicViewInitializerIsNotDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      public struct MathView: View {
-        private let latex: String
-        @State private var cache = RenderCache()
-        private var fontSize: CGFloat = 20
+              1️⃣init(phoneNumber: String, address: String) {
+                self.phoneNumber = phoneNumber
+                self.address = address
+              }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
 
-        public init(latex: String) { self.latex = latex }
+    @Test func initWorkingAroundPrivateOptionalIsDiagnosed() {
+        // A private optional with no written value is still default-initialised to nil, so SE-0502
+        // drops it too.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Person {
 
-        public var body: some View { Text(latex) }
-      }
-      """,
-      findings: []
-    )
-  }
+              let phoneNumber: String
+              private var cache: String?
 
-  private static let widenMessage =
-    "remove this explicit initializer and drop 'private' from the stored inputs; the private type already hides them, and the synthesized initializer then keeps this initializer's access"
+              1️⃣init(phoneNumber: String) {
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
 
-  @Test func bindingInputAssignedThroughBackingStorageIsDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Toggle: View {
-        let title: String
-        @Binding var isOn: Bool
+    @Test func privateDefaultStillInInitIsNotDiagnosed() {
+        // The initializer keeps the dropped property as a parameter, so it does not match the
+        // synthesized one.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Person {
 
-        1️⃣init(title: String, isOn: Binding<Bool>) {
-          self.title = title
-          _isOn = isOn
-        }
+              let phoneNumber: String
+              private var count = 0
 
-        var body: some View { Text(title) }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
+              init(phoneNumber: String, count: Int) {
+                self.phoneNumber = phoneNumber
+                self.count = count
+              }
+            }
+            """,
+            findings: []
+        )
+    }
 
-  @Test func privateViewWithPrivateInputsIsDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      private struct FolderMoveMenu: View {
-        private let projectID: Project.ID
-        private let folders: [ProjectFolder]
-        private let current: ProjectFolder.ID?
-        @Binding private var failure: String?
+    @Test func privatePropertyWithoutInitialValueKeepsInitPrivate() {
+        // `address` has no initial value, so SE-0502 leaves it in and the synthesized initializer
+        // stays private. An internal initializer therefore does not match.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Person {
 
-        1️⃣init(
-          projectID: Project.ID,
-          folders: [ProjectFolder],
-          current: ProjectFolder.ID?,
-          failure: Binding<String?>
-        ) {
-          self.projectID = projectID
-          self.folders = folders
-          self.current = current
-          _failure = failure
-        }
+              let phoneNumber: String
+              private let address: String
 
-        var body: some View { Text("") }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.widenMessage)]
-    )
-  }
+              init(phoneNumber: String, address: String) {
+                self.phoneNumber = phoneNumber
+                self.address = address
+              }
+            }
+            """,
+            findings: []
+        )
+    }
 
-  @Test func internalViewWithPrivateInputsIsNotDiagnosed() {
-    // Removing the initializer here would expose the inputs to the whole module.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Card: View {
-        private let title: String
+    @Test func allPrivatePropertiesKeepInitPrivate() {
+        // Nothing is less accessible than the rest, so nothing is dropped and the initializer is
+        // private.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Person {
 
-        init(title: String) {
-          self.title = title
-        }
+              private var phoneNumber: String = ""
+              private var address: String = ""
 
-        var body: some View { Text(title) }
-      }
-      """,
-      findings: []
-    )
-  }
+              1️⃣private init(phoneNumber: String = "", address: String = "") {
+                self.phoneNumber = phoneNumber
+                self.address = address
+              }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
 
-  @Test func privateNonViewWithPrivateInputsIsNotDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      private struct Box {
-        private let title: String
+    @Test func privateSetDetailDoesNotLowerInitLevel() {
+        // `private(set)` restricts the setter alone, so it neither lowers the initializer's access
+        // level nor drops the property.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Person {
 
-        init(title: String) {
-          self.title = title
-        }
-      }
-      """,
-      findings: []
-    )
-  }
+              let phoneNumber: String
+              private(set) var address: String = ""
 
-  @Test func wrapperSetUpInInitializerIsNotDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Counter: View {
-        @State var count: Int
+              1️⃣init(phoneNumber: String, address: String = "") {
+                self.phoneNumber = phoneNumber
+                self.address = address
+              }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
 
-        init(count: Int) {
-          _count = State(initialValue: count)
-        }
+    @Test func defaultMemberwiseInitializerIsNotDiagnosed() {
+        // `address` carries no initial value, so SE-0502 leaves it in the memberwise initializer
+        // and the initializer stays private. An initializer with default access control (i.e.
+        // internal) is therefore not equivalent to the synthesized one.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        var body: some View { Text("") }
-      }
-      """,
-      findings: []
-    )
-  }
+              let phoneNumber: String
+              private let address: String
 
-  @Test func bindingParameterForNonBindingPropertyIsNotDiagnosed() {
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Counter: View {
-        @Bindable var model: Model
+              init(phoneNumber: String, address: String) {
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
+        )
+    }
 
-        init(model: Binding<Model>) {
-          _model = model
-        }
+    @Test func privateMemberwiseInitializerWithPrivateMemberIsDiagnosed() {
+        // The synthesized initializer is private when any member is private, so a private
+        // initializer is equivalent to the synthesized initializer.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        var body: some View { Text("") }
-      }
-      """,
-      findings: []
-    )
-  }
+              let phoneNumber: String
+              private let address: String
 
-  @Test func privateViewWithoutPrivateInputsGetsRedundantMessage() {
-    // No input writes `private`, so the widen message does not apply. The synthesized
-    // initializer is internal, like this one.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      private struct Row: View {
-        let title: String
+              1️⃣private init(phoneNumber: String, address: String) {
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                )
+            ]
+        )
+    }
 
-        1️⃣init(title: String) {
-          self.title = title
-        }
+    @Test func fileprivateMemberwiseInitializerWithFileprivateMemberIsDiagnosed() {
+        // The synthesized initializer is fileprivate when any member is fileprivate, so a
+        // fileprivate initializer is equivalent to the synthesized initializer.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
 
-        var body: some View { Text(title) }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.message)]
-    )
-  }
+              let phoneNumber: String
+              fileprivate let address: String
 
-  @Test func privateViewModifierWithPrivateInputsIsDiagnosed() {
-    // The type index knows `ViewModifier` and a conformance in an extension.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      private struct Fade {
-        private let amount: Double
+              1️⃣fileprivate init(phoneNumber: String, address: String) {
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                )
+            ]
+        )
+    }
 
-        1️⃣init(amount: Double) {
-          self.amount = amount
-        }
-      }
+    @Test func customSetterAccessLevel() {
+        // When a property has a different access level for its setter, the setter's access level
+        // doesn't change the access level of the synthesized initializer.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
+              let phoneNumber: String
+              private(set) let address: String
 
-      extension Fade: ViewModifier {
-        func body(content: Content) -> some View { content.opacity(amount) }
-      }
-      """,
-      findings: [FindingSpec("1️⃣", message: Self.widenMessage)]
-    )
-  }
+              1️⃣init(phoneNumber: String, address: String) {
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
 
-  @Test func optionalLetWithoutValueIsNotDropped() {
-    // An optional `let` with no initial value does not start as `nil`. SE-0502 keeps it, so the
-    // synthesized initializer takes `subtitle` and is private.
-    assertLint(
-      UseSynthesizedInit.self,
-      """
-      struct Header {
-        let title: String
-        private let subtitle: String?
+            public struct Person2 {
+              fileprivate let phoneNumber: String
+              private(set) let address: String
 
-        init(title: String) {
-          self.title = title
-        }
-      }
-      """,
-      findings: []
-    )
-  }
+              2️⃣fileprivate init(phoneNumber: String, address: String) {
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+
+            public struct Person3 {
+              fileprivate(set) let phoneNumber: String
+              private(set) let address: String
+
+              3️⃣init(phoneNumber: String, address: String) {
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+
+            public struct Person4 {
+              private fileprivate(set) let phoneNumber: String
+              private(set) let address: String
+
+              init(phoneNumber: String, address: String) {
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                ),
+                FindingSpec(
+                    "2️⃣",
+                    message:
+                        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                ),
+                FindingSpec(
+                    "3️⃣",
+                    message:
+                        "remove this explicit initializer, which is identical to the compiler-synthesized initializer"
+                ),
+            ]
+        )
+    }
+
+    @Test func memberwiseInitializerWithAttributeIsNotDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Person {
+              let phoneNumber: String
+              let address: String
+
+              @inlinable init(phoneNumber: String, address: String) {
+                self.address = address
+                self.phoneNumber = phoneNumber
+              }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    // MARK: - Views: computed properties and result-builder properties
+
+    @Test func viewWithMemberwiseInitializerIsDiagnosed() {
+        // `body` is computed, so it takes no part in the memberwise initializer.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Plain: View {
+              let name: String
+              1️⃣init(name: String) { self.name = name }
+              var body: some View { Text(name) }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
+    @Test func observedComputedAndWrappedPropertiesAreSkipped() {
+        // A `get` accessor makes a property computed. A `didSet` observer keeps it stored. An
+        // environment wrapper set up by its attribute arguments takes no initializer parameter.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Plain: View {
+              @Environment(\\.dismiss) private var dismiss
+              var name: String { didSet { print(name) } }
+              var upper: String { get { name.uppercased() } }
+              1️⃣init(name: String) { self.name = name }
+              var body: some View { Text(name) }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
+    @Test func builderEvaluatingInitializerSuggestsBuilderValueProperty() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Built<Content: View>: View {
+              let content: Content
+              1️⃣init(@ViewBuilder content: () -> Content) { self.content = content() }
+              var body: some View { content }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this explicit initializer and declare '@ViewBuilder let content: Content'; the synthesized initializer then takes the same builder closure"
+                )
+            ]
+        )
+    }
+
+    @Test func builderStoringInitializerSuggestsBuilderClosureProperty() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Deferred<Content: View>: View {
+              let content: () -> Content
+              1️⃣init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
+              var body: some View { content() }
+            }
+            """,
+            findings: [
+                FindingSpec(
+                    "1️⃣",
+                    message:
+                        "remove this explicit initializer and declare '@ViewBuilder let content: () -> Content'; the synthesized initializer then takes the same builder closure"
+                )
+            ]
+        )
+    }
+
+    @Test func builderPropertyWithMatchingInitializerIsDiagnosed() {
+        // The property already carries the builder, so the synthesized initializer is identical.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Built<Content: View>: View {
+              let title: String
+              @ViewBuilder let content: Content
+              1️⃣init(title: String, @ViewBuilder content: () -> Content) {
+                self.title = title
+                self.content = content()
+              }
+              var body: some View { content }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
+    @Test func builderInitializerDoesNotSwapEvaluationTiming() {
+        // Each initializer changes when the builder runs, so no stored-property form reproduces it.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Built<Content: View>: View {
+              let content: () -> Content
+              init(@ViewBuilder content: @escaping () -> Content) { self.content = { content() } }
+              var body: some View { content() }
+            }
+
+            struct Deferred<Content: View>: View {
+              @ViewBuilder let content: Content
+              init(content: Content) { self.content = content }
+              var body: some View { content }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func escapingClosureParameterMatchesClosureProperty() {
+        // The synthesized initializer marks a closure parameter `@escaping` itself.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Row: View {
+              let action: () -> Void
+              1️⃣init(action: @escaping () -> Void) { self.action = action }
+              var body: some View { Button("Go", action: action) }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
+    @Test func publicViewInitializersAreNotDiagnosed() {
+        // These mirror the toba-ui views. A synthesized initializer is never public, and several of
+        // them change labels or wrapper setup.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct Checkbox: View {
+              public var isChecked: Bool = false
+              public var size: Double = 18
+              public var cornerRadius = 5.0
+
+              public init(isChecked: Bool = false, size: Double = 18, cornerRadius: Double = 5) {
+                self.isChecked = isChecked
+                self.size = size
+                self.cornerRadius = cornerRadius
+              }
+
+              public var body: some View { EmptyView() }
+            }
+
+            public struct ConditionalScrollView<Content: View>: View {
+              public var scrollable: Bool
+              @ViewBuilder public var content: (ScrollViewProxy?) -> Content
+
+              public init(scrollable: Bool, @ViewBuilder content: @escaping (ScrollViewProxy?) -> Content) {
+                self.scrollable = scrollable
+                self.content = content
+              }
+
+              public var body: some View { content(nil) }
+            }
+
+            public struct FontPicker: View {
+              private var label: LocalizedStringKey
+              @Binding public var selection: String
+
+              public init(_ label: LocalizedStringKey, selection: Binding<String>) {
+                self.label = label
+                _selection = selection
+              }
+
+              public var body: some View { EmptyView() }
+            }
+
+            public struct PopoverPicker<Popover: View>: View {
+              private var label: LocalizedStringKey
+              private var popover: Popover
+              private var description: String
+              private let popoverFrame: ViewFrameIntent?
+              @State private var menuPresented = false
+
+              public init(
+                _ label: LocalizedStringKey,
+                description: String,
+                popoverFrame: ViewFrameIntent? = nil,
+                @ViewBuilder popover: () -> Popover
+              ) {
+                self.label = label
+                self.popover = popover()
+                self.description = description
+                self.popoverFrame = popoverFrame
+              }
+
+              public var body: some View { EmptyView() }
+            }
+
+            public struct SymbolButton: View {
+              private let help: LocalizedStringKey
+              private let role: ButtonRole?
+              private let action: () -> Void
+              private let symbol: String
+
+              public init(_ symbol: String, tip help: LocalizedStringKey, role: ButtonRole? = nil, action: @escaping () -> Void) {
+                self.role = role
+                self.help = help
+                self.symbol = symbol
+                self.action = action
+              }
+
+              public var body: some View { EmptyView() }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func viewWithStoreOnlyInitializerIsDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct MathView: View {
+              let latex: String
+              @State private var cache = RenderCache()
+              private var fontSize: CGFloat = 20
+
+              1️⃣init(latex: String) { self.latex = latex }
+
+              var body: some View { Text(latex) }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
+    @Test func publicViewInitializerIsNotDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            public struct MathView: View {
+              private let latex: String
+              @State private var cache = RenderCache()
+              private var fontSize: CGFloat = 20
+
+              public init(latex: String) { self.latex = latex }
+
+              public var body: some View { Text(latex) }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    private static let widenMessage =
+        "remove this explicit initializer and drop 'private' from the stored inputs; the private type already hides them, and the synthesized initializer then keeps this initializer's access"
+
+    @Test func bindingInputAssignedThroughBackingStorageIsDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Toggle: View {
+              let title: String
+              @Binding var isOn: Bool
+
+              1️⃣init(title: String, isOn: Binding<Bool>) {
+                self.title = title
+                _isOn = isOn
+              }
+
+              var body: some View { Text(title) }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
+    @Test func privateViewWithPrivateInputsIsDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            private struct FolderMoveMenu: View {
+              private let projectID: Project.ID
+              private let folders: [ProjectFolder]
+              private let current: ProjectFolder.ID?
+              @Binding private var failure: String?
+
+              1️⃣init(
+                projectID: Project.ID,
+                folders: [ProjectFolder],
+                current: ProjectFolder.ID?,
+                failure: Binding<String?>
+              ) {
+                self.projectID = projectID
+                self.folders = folders
+                self.current = current
+                _failure = failure
+              }
+
+              var body: some View { Text("") }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.widenMessage)]
+        )
+    }
+
+    @Test func internalViewWithPrivateInputsIsNotDiagnosed() {
+        // Removing the initializer here would expose the inputs to the whole module.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Card: View {
+              private let title: String
+
+              init(title: String) {
+                self.title = title
+              }
+
+              var body: some View { Text(title) }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func privateNonViewWithPrivateInputsIsNotDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            private struct Box {
+              private let title: String
+
+              init(title: String) {
+                self.title = title
+              }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func wrapperSetUpInInitializerIsNotDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Counter: View {
+              @State var count: Int
+
+              init(count: Int) {
+                _count = State(initialValue: count)
+              }
+
+              var body: some View { Text("") }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func bindingParameterForNonBindingPropertyIsNotDiagnosed() {
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Counter: View {
+              @Bindable var model: Model
+
+              init(model: Binding<Model>) {
+                _model = model
+              }
+
+              var body: some View { Text("") }
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func privateViewWithoutPrivateInputsGetsRedundantMessage() {
+        // No input writes `private`, so the widen message does not apply. The synthesized
+        // initializer is internal, like this one.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            private struct Row: View {
+              let title: String
+
+              1️⃣init(title: String) {
+                self.title = title
+              }
+
+              var body: some View { Text(title) }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
+    @Test func privateViewModifierWithPrivateInputsIsDiagnosed() {
+        // The type index knows `ViewModifier` and a conformance in an extension.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            private struct Fade {
+              private let amount: Double
+
+              1️⃣init(amount: Double) {
+                self.amount = amount
+              }
+            }
+
+            extension Fade: ViewModifier {
+              func body(content: Content) -> some View { content.opacity(amount) }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.widenMessage)]
+        )
+    }
+
+    @Test func optionalLetWithoutValueIsNotDropped() {
+        // An optional `let` with no initial value does not start as `nil`. SE-0502 keeps it, so the
+        // synthesized initializer takes `subtitle` and is private.
+        assertLint(
+            UseSynthesizedInit.self,
+            """
+            struct Header {
+              let title: String
+              private let subtitle: String?
+
+              init(title: String) {
+                self.title = title
+              }
+            }
+            """,
+            findings: []
+        )
+    }
 }

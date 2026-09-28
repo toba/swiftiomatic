@@ -16,6 +16,7 @@ import SwiftSyntax
 /// raises a warning.
 final class UseRawStringForEscapes: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
+    override class var guidance: GuidanceLevel { .consider }
 
     /// The smallest number of escaped quotes and backslashes that the rule reports.
     static let minimumEscapes = 3
@@ -24,6 +25,7 @@ final class UseRawStringForEscapes: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         guard node.openingPounds == nil else { return .visitChildren }
         var count = 0
         var pounds = 1
+
         for segment in node.segments {
             guard let text = segment.as(StringSegmentSyntax.self)?.content.text else { continue }
             guard let scan = Self.scan(text) else { return .visitChildren }
@@ -34,8 +36,8 @@ final class UseRawStringForEscapes: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         return .visitChildren
     }
 
-    /// The number of `\"` and `\\` escapes in `text` and the number of `#` its raw form needs,
-    /// or `nil` when `text` holds any other escape.
+    /// The number of `\"` and `\\` escapes in `text` and the number of `#` its raw form needs, or
+    /// `nil` when `text` holds any other escape.
     ///
     /// A raw string with `n` pounds ends at a `"` that `n` pounds follow, and it starts an escape
     /// at a `\` that `n` pounds follow. The raw form therefore needs one pound more than the
@@ -46,6 +48,7 @@ final class UseRawStringForEscapes: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         // The number of `#` since the last quote or backslash, or `nil` after any other character.
         var run: Int?
         var iterator = text.unicodeScalars.makeIterator()
+
         while let scalar = iterator.next() {
             switch scalar {
                 case "\\":

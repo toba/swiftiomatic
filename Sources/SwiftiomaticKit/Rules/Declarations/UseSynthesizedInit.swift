@@ -15,8 +15,8 @@ import SwiftSyntax
 
 /// When possible, the synthesized `struct` initializer should be used.
 ///
-/// This means the creation of a (non-public) memberwise initializer with the same structure as the
-/// synthesized initializer is forbidden.
+/// A (non-public) initializer that has the same structure as the memberwise initializer adds code
+/// and gives nothing back. Remove it, and let the compiler synthesize the initializer.
 ///
 /// SE-0502 changed which properties the compiler puts in that initializer. A property that is less
 /// accessible than the rest *and* carries an initial value is now left out, so it no longer drags
@@ -29,10 +29,22 @@ import SwiftSyntax
 /// whose inputs are `private` only to hide them gets a finding as well. Its inputs can drop
 /// `private` with no loss, because the type already hides them.
 ///
-/// Lint: (Non-public) memberwise initializers with the same structure as the synthesized
-/// initializer will yield a lint error.
+/// An initializer that takes a result-builder closure also gets a finding when a stored property
+/// with the same builder attribute gives the same initializer. An example is
+/// `init(@ViewBuilder content: () -> Content) { self.content = content() }`. For it, declare
+/// `@ViewBuilder let content: Content`. When the initializer stores the closure, declare
+/// `@ViewBuilder let content: () -> Content`. The finding message names the declaration to write.
+///
+/// Keep the explicit initializer when its removal changes the behavior. The rule stays silent when
+/// the initializer sets up a property wrapper such as `State(initialValue:)`, when a parameter type
+/// differs from its property type, when the initializer changes when a builder closure runs, when
+/// it has extra statements or an attribute, and when it is `public`.
+///
+/// Lint: A (non-public) initializer with the same structure as the synthesized memberwise
+/// initializer raises a warning.
 final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
+    override class var guidance: GuidanceLevel { .consider }
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         // Collect any possible redundant initializers into a list
@@ -40,9 +52,8 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
 
         for memberItem in node.memberBlock.members {
             guard let initDecl = memberItem.decl.as(InitializerDeclSyntax.self),
-                  initDecl.optionalMark == nil,
-                  initDecl.signature.effectSpecifiers?.throwsClause == nil
-            else { continue }
+                initDecl.optionalMark == nil,
+                initDecl.signature.effectSpecifiers?.throwsClause == nil else { continue }
             initializers.append(initDecl)
         }
 
@@ -77,14 +88,14 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
                       modifiers: initializer.modifiers,
                       synthesized: initLevel,
                       canWidenInputs: canWidenInputs
-                  )
-            else { continue }
+                  ) else { continue }
 
             let suggestions = matches.compactMap(\.suggestion)
-            extraneousInitializers.append((
-                initializer,
-                suggestions.isEmpty ? accessMessage : .declareBuilderProperties(suggestions)
-            ))
+            extraneousInitializers.append(
+                (
+                    initializer,
+                    suggestions.isEmpty ? accessMessage : .declareBuilderProperties(suggestions)
+                ))
         }
 
         // The synthesized memberwise initializer(s) are only created when there are no
@@ -119,7 +130,7 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
         }
         guard canWidenInputs,
               matchesAccessLevel(modifiers: modifiers, synthesized: .internal)
-                || matchesAccessLevel(modifiers: modifiers, synthesized: .fileprivate)
+                  || matchesAccessLevel(modifiers: modifiers, synthesized: .fileprivate)
         else { return nil }
         return .removeInitializerAndWidenInputs
     }
@@ -157,8 +168,7 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
             let property = properties[idx]
             let propertyID = property.firstIdentifier
             guard let propertyType = property.firstType,
-                  propertyID.identifier.text == parameter.firstName.text
-            else { return nil }
+                  propertyID.identifier.text == parameter.firstName.text else { return nil }
 
             // Ensure that parameters that correspond to properties declared using 'var' have a
             // default argument that is identical to the property's default value. Otherwise, a
@@ -208,23 +218,22 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
                 }
                 return .backingStorage
             }
-            // A builder property's synthesized parameter carries the builder, so a plain
-            // parameter differs from it.
+            // A builder property's synthesized parameter carries the builder, so a plain parameter
+            // differs from it.
             guard propertyBuilder == nil,
-                  parameterType == propertyType.trimmedDescription
-            else { return nil }
+                  parameterType == propertyType.trimmedDescription else { return nil }
             return .plain
         }
 
         guard parameter.attributes.count == 1,
               let builder = parameter.attributes.first?.as(AttributeSyntax.self),
-              builder.arguments == nil
-        else { return nil }
+              builder.arguments == nil else { return nil }
         let builderName = builder.attributeName.trimmedDescription
 
-        // A property already marked with the same builder needs no suggestion. Any other
-        // attribute, such as a property wrapper, changes the synthesized parameter.
+        // A property already marked with the same builder needs no suggestion. Any other attribute,
+        // such as a property wrapper, changes the synthesized parameter.
         let isMarked: Bool
+
         switch propertyAttributes.count {
             case 0: isMarked = false
             case 1 where propertyBuilder?.attributeName.trimmedDescription == builderName:
@@ -234,13 +243,14 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
         guard propertyAttributes.count == property.attributes.count else { return nil }
 
         let evaluates: Bool
+
         if let closure = parameter.type.withoutEscaping.as(FunctionTypeSyntax.self),
-           closure.parameters.isEmpty,
-           closure.returnClause.type.trimmedDescription == propertyType.trimmedDescription
+            closure.parameters.isEmpty,
+            closure.returnClause.type.trimmedDescription == propertyType.trimmedDescription
         {
             evaluates = true
         } else if propertyType.withoutEscaping.is(FunctionTypeSyntax.self),
-                  parameterType == propertyType.trimmedDescription
+            parameterType == propertyType.trimmedDescription
         {
             evaluates = false
         } else {
@@ -278,7 +288,7 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
 
                 leftName = memberAccessExpr.declName.baseName.text
             } else if let reference = expr.leftOperand.as(DeclReferenceExprSyntax.self),
-                      reference.baseName.text.hasPrefix("_")
+                reference.baseName.text.hasPrefix("_")
             {
                 leftName = reference.baseName.text
             } else {
@@ -289,8 +299,8 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
             let assignsStorage = leftName.hasPrefix("_")
             if assignsStorage { leftName.removeFirst() }
 
-            // A builder-evaluating parameter is called once. Every other parameter is assigned
-            // as is.
+            // A builder-evaluating parameter is called once. Every other parameter is assigned as
+            // is.
             guard let index = variables.firstIndex(where: {
                 $0.firstIdentifier.identifier.text == leftName
             }) else { return false }
@@ -298,10 +308,10 @@ final class UseSynthesizedInit: LintSyntaxRule<LintOnlyValue>, @unchecked Sendab
 
             if matches[index].evaluates {
                 guard let call = expr.rightOperand.as(FunctionCallExprSyntax.self),
-                      call.arguments.isEmpty,
-                      call.trailingClosure == nil,
-                      call.additionalTrailingClosures.isEmpty,
-                      let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)
+                    call.arguments.isEmpty,
+                    call.trailingClosure == nil,
+                    call.additionalTrailingClosures.isEmpty,
+                    let callee = call.calledExpression.as(DeclReferenceExprSyntax.self)
                 else { return false }
                 rightName = callee.baseName.text
             } else if let identifierExpr = expr.rightOperand.as(DeclReferenceExprSyntax.self) {
@@ -361,13 +371,9 @@ private enum ParameterMatch {
     /// storage.
     case backingStorage
 
-    var assignsStorage: Bool {
-        if case .backingStorage = self { true } else { false }
-    }
+    var assignsStorage: Bool { if case .backingStorage = self { true } else { false } }
 
-    var evaluates: Bool {
-        if case .builder(true, _) = self { true } else { false }
-    }
+    var evaluates: Bool { if case .builder(true, _) = self { true } else { false } }
 
     var suggestion: String? {
         if case let .builder(_, suggestion) = self { suggestion } else { nil }
@@ -411,9 +417,8 @@ fileprivate extension TypeSyntax {
         let kept = attributed.attributes.filter {
             $0.as(AttributeSyntax.self)?.attributeName.trimmedDescription != "escaping"
         }
-        guard kept.isEmpty, attributed.specifiers.isEmpty else {
-            return TypeSyntax(attributed.with(\.attributes, kept))
-        }
+        guard kept.isEmpty, attributed.specifiers.isEmpty
+        else { return TypeSyntax(attributed.with(\.attributes, kept)) }
         return attributed.baseType
     }
 }

@@ -2,12 +2,22 @@ import SwiftSyntax
 
 /// Start adjacent awaits together with `async let` when they do not use each other's results.
 ///
-/// Two `let x = try await …` statements in a row run one after another. The second call starts
-/// only when the first one ends. When the second call does not read what the first one returns,
-/// `async let` starts both calls at once and the function waits only for the slower one.
+/// Two `let x = try await …` statements in a row run one after another. The second call starts only
+/// when the first one ends. When the second call does not read what the first one returns,
+/// `async let` starts both calls at once and the function waits only for the slower one:
+///
+/// ```swift
+/// async let flowers = fetchFlowers()
+/// async let pollinators = fetchPollinators()
+/// let (loadedFlowers, loadedPollinators) = try await (flowers, pollinators)
+/// ```
+///
+/// Keep the awaits in order when the calls must happen in that order, even if neither reads the
+/// result of the other. An example is a call that writes data and a call that then reads the same
+/// data. Suppress the finding there.
 ///
 /// The rule reports only bindings. An await whose result the code drops, such as
-/// `try await store.save()` , usually has to finish before the next call, so the rule leaves it
+/// `try await store.save()`, usually has to finish before the next call, so the rule leaves it
 /// alone. A binding that reads a name the earlier binding declares depends on it and is not
 /// reported. `Task.sleep` is not reported, because it waits on purpose.
 ///
@@ -32,9 +42,7 @@ final class UseAsyncLetForIndependentAwaits: LintSyntaxRule<LintOnlyValue>, @unc
             }
             let declared = run.reduce(into: Set<String>()) { $0.formUnion($1.names) }
 
-            if !run.isEmpty, !binding.reads.isDisjoint(with: declared) {
-                flush()
-            }
+            if !run.isEmpty, !binding.reads.isDisjoint(with: declared) { flush() }
             run.append(binding)
         }
         flush()
@@ -75,9 +83,8 @@ private struct AwaitedBinding {
 
     private static func isSleep(_ expression: ExprSyntax) -> Bool {
         guard let call = expression.as(FunctionCallExprSyntax.self),
-              let member = call.calledExpression.as(MemberAccessExprSyntax.self) else {
-            return false
-        }
+              let member = call.calledExpression.as(MemberAccessExprSyntax.self)
+        else { return false }
         return member.declName.baseName.text == "sleep"
             && member.base?.trimmedDescription == "Task"
     }

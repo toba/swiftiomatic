@@ -12,6 +12,28 @@ struct FlagReferenceViewInputTests: RuleTesting {
     #expect(FlagReferenceViewInput.guidance == .consider)
   }
 
+  /// The Thesis `PDFNavigator` shape: the class is declared in another file.
+  @Test func otherFileObservableClassInputFlagged() {
+    assertLint(
+      FlagReferenceViewInput.self,
+      """
+      struct PDFPane: View {
+        1️⃣let navigator: PDFNavigator
+
+        var body: some View { Text("\\(navigator.page)") }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("navigator", "PDFNavigator"))],
+      otherFiles: [
+        "/tmp/PDFNavigator.swift": """
+        @Observable final class PDFNavigator {
+          var page = 0
+        }
+        """
+      ]
+    )
+  }
+
   @Test func observableClassInputFlagged() {
     assertLint(
       FlagReferenceViewInput.self,

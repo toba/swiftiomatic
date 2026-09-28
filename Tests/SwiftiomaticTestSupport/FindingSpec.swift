@@ -37,9 +37,19 @@ package struct NoteSpec {
     /// The message text associated with the note.
     package var message: String
 
+    /// The location of a note in another file than the input, as file path, line and column.
+    package var fileLocation: (file: String, line: Int, column: Int)?
+
     /// Creates a new `NoteSpec` with the given values.
     package init(_ marker: String, message: String) {
         self.marker = marker
         self.message = message
+    }
+
+    /// Creates a `NoteSpec` for a note in another file than the input.
+    package init(file: String, line: Int, column: Int, message: String) {
+        marker = ""
+        self.message = message
+        fileLocation = (file, line, column)
     }
 }

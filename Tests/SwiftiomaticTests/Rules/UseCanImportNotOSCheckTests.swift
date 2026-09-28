@@ -7,6 +7,8 @@ struct UseCanImportNotOSCheckTests: RuleTesting {
     private static let message =
         "this '#if os(...)' guards only an import; use '#if canImport(...)' to check for the framework, with 'canImport(UIKit)' first or 'canImport(AppKit) && !targetEnvironment(macCatalyst)' so Mac Catalyst picks UIKit"
 
+    @Test func guidanceIsConsider() { #expect(UseCanImportNotOSCheck.guidance == .consider) }
+
     @Test func importOnlyOSCheckFlagged() {
         assertLint(
             UseCanImportNotOSCheck.self,
@@ -18,6 +20,19 @@ struct UseCanImportNotOSCheckTests: RuleTesting {
             func haptic() {
               UIImpactFeedbackGenerator(style: .light).impactOccurred()
             }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
+    /// The Thesis shape: `Quartz` and `QuickLook` ship on macOS only.
+    @Test func macOnlyFrameworksFlagged() {
+        assertLint(
+            UseCanImportNotOSCheck.self,
+            """
+            1️⃣#if os(macOS)
+            import Quartz
+            #endif
             """,
             findings: [FindingSpec("1️⃣", message: Self.message)]
         )

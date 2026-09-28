@@ -82,6 +82,10 @@ extension SyntaxRule {
         ruleIndex: Int?,
         context: Context
     ) {
+        // A rule that follows a name into another file of the project reports in the linted file.
+        // A node of a tree loaded from another file has no location here.
+        if let node, context.isForeign(node) { return }
+
         let anchorPosition = node.map { anchorPosition(of: $0, anchor: anchor) }
 
         // Per-finding rule-mask gate: the pipeline gates rule dispatch at the *visited* node's

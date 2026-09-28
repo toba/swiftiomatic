@@ -8,6 +8,8 @@ struct FlagDiscardedResultTests: RuleTesting {
         "the result of '\(name)()' is discarded; mark the function '@discardableResult' if callers often ignore its result"
     }
 
+    @Test func guidanceIsConsider() { #expect(FlagDiscardedResult.guidance == .consider) }
+
     @Test func discardOfFunctionDeclaredInFile() {
         assertLint(
             FlagDiscardedResult.self,

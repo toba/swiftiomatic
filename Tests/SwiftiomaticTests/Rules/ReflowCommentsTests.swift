@@ -32,6 +32,59 @@ struct ReflowCommentsTests: RuleTesting {
         )
     }
 
+    /// A line that ends without terminal punctuation, followed by a line that starts with a capital
+    /// letter, starts a new paragraph. The reflow keeps the two thoughts apart.
+    @Test func keepsParagraphBreakAfterUnpunctuatedLine() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                func f() {
+                    1️⃣// cannot be async or re-entrancy can occur
+                    // Mirror the production import path (`DocX.Provider.import`): suspend the per-row
+                    // full-text-index, history, and word-count triggers for the bulk insert and repopulate
+                    // that derived data once after. Exercises `Node.bulkImporting` so the parity tests guard
+                    // the real path.
+                    let x = 1
+                }
+                """,
+            expected: """
+                func f() {
+                    // cannot be async or re-entrancy can occur
+                    // Mirror the production import path (`DocX.Provider.import`): suspend the per-row
+                    // full-text-index, history, and word-count triggers for the bulk insert and repopulate that
+                    // derived data once after. Exercises `Node.bulkImporting` so the parity tests guard the real
+                    // path.
+                    let x = 1
+                }
+                """,
+            findings: [FindingSpec("1️⃣", message: "reflow comment to fit line length")],
+            configuration: config(maxWidth: 100)
+        )
+    }
+
+    /// A line that ends with terminal punctuation joins the next capitalized line, because both
+    /// lines are sentences of one paragraph.
+    @Test func joinsCapitalizedLineAfterPunctuatedLine() {
+        assertFormatting(
+            ReflowComments.self,
+            input: """
+                func f() {
+                    1️⃣// First sentence.
+                    // Second sentence.
+                    let x = 1
+                }
+                """,
+            expected: """
+                func f() {
+                    // First sentence. Second sentence.
+                    let x = 1
+                }
+                """,
+            findings: [FindingSpec("1️⃣", message: "reflow comment to fit line length")],
+            configuration: config(maxWidth: 100)
+        )
+    }
+
     @Test func leavesAlreadyTightCommentsUnchanged() {
         assertFormatting(
             ReflowComments.self,

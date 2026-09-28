@@ -4,17 +4,28 @@ import SwiftSyntax
 ///
 /// SwiftUI compares a value input as a whole. When a view stores a model with many properties and
 /// reads only a few of them, a change to any other property still makes the input look changed, and
-/// SwiftUI evaluates the view's `body` again. Pass only the properties the view reads.
+/// SwiftUI evaluates the view's `body` again. A view that stores the whole model is also tied to
+/// that model type, so you cannot easily use it with other data.
+///
+/// Pass only the values or identifiers that the view reads. For example, change
+/// `let animal: Animal` to `let habitatID: Habitat.ID` when `body` reads only `animal.habitatID`.
+/// When the view writes to the model, pass a focused binding such as `$animal.name`, not a binding
+/// to the whole value. When many views read a large dataset, you can also move the data into an
+/// `@Observable` class. SwiftUI tracks each property of such a class that `body` reads, so a change
+/// to another property does not update the view.
 ///
 /// A struct counts as large when it and its same-file extensions declare at least five stored
-/// instance properties. A `View` type is not a model, and neither is a type that names a generic
-/// parameter of the view. A property the view owns, such as `@State` , is not an input.
+/// instance properties. A smaller same-file struct counts when the view reads at least three of its
+/// properties, but not all of them, in the way described below for a type from another file. A
+/// qualified type name, such as `Grid.Week` , resolves by its last name when this file declares
+/// that type. A `View` type is not a model, and neither is a type that names a generic parameter of
+/// the view. A property the view owns, such as `@State` , is not an input.
 ///
 /// A type declared in another file has no property count the rule can see. The rule then reports
 /// the input when the view reads at least three of its properties and never uses the value as a
-/// whole: it does not pass it on, call a method on it, compare it or bind it. A use inside a closure
-/// that runs later, such as a `Button` action, does not count as a whole use, and neither does
-/// passing the value to a `View` declared in the same file. Standard library, Foundation and
+/// whole: it does not pass it on, call a method on it, compare it or bind it. A use inside a
+/// closure that runs later, such as a `Button` action, does not count as a whole use, and neither
+/// does passing the value to a `View` declared in the same file. Standard library, Foundation and
 /// SwiftUI types are exempt, and so is a name that ends in `View` . A type that the file uses with
 /// `@Bindable` or `@Environment(Type.self)` is an `@Observable` class, which SwiftUI tracks by
 /// property, so it is exempt too.
@@ -34,12 +45,13 @@ import SwiftSyntax
 /// stores it can live in another file.
 ///
 /// Lint: A stored input of a view type has the type of a same-file struct with five or more stored
-/// instance properties, or has a type from another file of which the view reads three or more
-/// properties and nothing else. A repeated row view stores a large value that every row shares. A
-/// struct in a view file holds three or more collection properties.
+/// instance properties, or has a type of which the view reads three or more properties and nothing
+/// else, and for a smaller same-file struct not all of its properties. A repeated row view stores a
+/// large value that every row shares. A struct in a view file holds three or more collection
+/// properties.
 final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
-    override class var guidance: GuidanceLevel { .consider }
+    override class var guidance: GuidanceLevel { .should }
 
     /// The number of stored instance properties at which a struct counts as a large model
     private static let largeModelPropertyCount = 5
@@ -64,11 +76,12 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         return collector.names
     }()
 
-    /// The number of collection properties at which a struct in a view file counts as a lookup table
+    /// The number of collection properties at which a struct in a view file counts as a lookup
+    /// table
     private static let collectionModelPropertyCount = 3
 
-    /// The number of collection properties at which a same-file struct is too large to share
-    /// across rows
+    /// The number of collection properties at which a same-file struct is too large to share across
+    /// rows
     private static let sharedRowCollectionCount = 2
 
     /// The stored properties this rule already reported as shared row inputs
@@ -76,8 +89,10 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         let types = context.typeMembers(around: node).types
-        guard let entry = types[node.name.text], entry.kind == .struct, !entry.isView,
-              types.values.contains(where: \.isView) else { return .visitChildren }
+        guard let entry = types[node.name.text],
+              entry.kind == .struct,
+              !entry.isView,
+              types.local.values.contains(where: \.isView) else { return .visitChildren }
         let count = entry.collectionPropertyCount
         guard count >= Self.collectionModelPropertyCount else { return .visitChildren }
         diagnose(.collectionModel(node.name.text, count), on: node.name)
@@ -85,7 +100,9 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
     }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        guard let closure = node.rowContentClosure(includingList: true) else { return .visitChildren }
+        guard let closure = node.rowContentClosure(includingList: true) else {
+            return .visitChildren
+        }
         let types = context.typeMembers(around: node).types
         let contents = RowClosureContents(viewMode: .sourceAccurate)
         contents.walk(closure)
@@ -94,15 +111,17 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         for construction in contents.calls {
             guard let viewName = construction.calledExpression.as(DeclReferenceExprSyntax.self)?
                 .baseName.text,
-                let viewEntry = types[viewName], viewEntry.isView,
-                Self.nearestRowClosure(of: construction)?.id == closure.id else { continue }
+                  let viewEntry = types[viewName],
+                  viewEntry.isView,
+                  Self.nearestRowClosure(of: construction)?.id == closure.id else { continue }
 
             for argument in construction.arguments {
                 guard let label = argument.label?.text,
                       // A projected binding such as `$selection` does not share the value
                       let name = argument.expression.selfMemberReference?.baseName.text,
-                      !name.hasPrefix("$"), !local.contains(name),
-                      let property = viewEntry.members[label]?.lazy
+                      !name.hasPrefix("$"),
+                      !local.contains(name),
+                      let property = viewEntry.members(named: label)?.lazy
                           .filter({ $0.kind == .storedProperty && !$0.isStatic })
                           .compactMap({ $0.declaration.as(VariableDeclSyntax.self) }).first,
                       property.attributes.isEmpty,
@@ -123,10 +142,12 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
     }
 
     /// Whether a value of `typeName` is costly to compare once per row
-    private func isLargeSharedValue(_ typeName: String, types: [String: TypeMemberIndex.TypeEntry])
-        -> Bool
-    {
-        guard !Self.frameworkTypes.contains(typeName), !typeName.hasSuffix("View"),
+    private func isLargeSharedValue(
+        _ typeName: String,
+        types: TypeMemberIndex.TypeTable
+    ) -> Bool {
+        guard !Self.frameworkTypes.contains(typeName),
+              !typeName.hasSuffix("View"),
               !observableTypeNames.contains(typeName) else { return false }
         guard let entry = types[typeName] else { return true }
         guard entry.kind == .struct, !entry.isView else { return false }
@@ -140,7 +161,7 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         _ property: VariableDeclSyntax,
         name: String,
         typeName: String,
-        types: [String: TypeMemberIndex.TypeEntry]
+        types: TypeMemberIndex.TypeTable
     ) -> Bool {
         if let entry = types[typeName] {
             return entry.storedInstancePropertyCount >= Self.largeModelPropertyCount
@@ -184,8 +205,13 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         let types = context.typeMembers(around: node).types
 
         for input in node.viewInputs {
-            guard let typeName = input.type.simpleTypeName, !generics.contains(typeName)
-            else { continue }
+            // A qualified type such as `Grid.Week` resolves by its last name, but only to a type of
+            // this file. A qualified type from another file can be a class, which the rule cannot
+            // tell apart from a struct.
+            let lastName = input.type.unwrappingOptional.simpleName
+            guard let typeName = input.type.simpleTypeName
+                ?? lastName.flatMap({ types[$0] == nil ? nil : $0 }),
+                  !generics.contains(typeName) else { continue }
 
             guard let entry = types[typeName] else {
                 if let read = partialPropertyReads(of: input.name, typeName: typeName, in: node) {
@@ -196,7 +222,16 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
             }
             guard entry.kind == .struct, !entry.isView else { continue }
             let count = entry.storedInstancePropertyCount
-            guard count >= Self.largeModelPropertyCount else { continue }
+            guard count >= Self.largeModelPropertyCount else {
+                // A smaller struct counts when the view reads some, but not all, of its properties.
+                if let read = partialPropertyReads(of: input.name, typeName: typeName, in: node),
+                   read.count < count
+                {
+                    let list = read.sorted().lazy.map { "'\($0)'" }.joined(separator: ", ")
+                    diagnose(.partialReadInput(input.name, typeName, list), on: node)
+                }
+                continue
+            }
             diagnose(.wholeValueInput(input.name, typeName, count), on: node)
         }
         // the row check reads the calls inside `body`
@@ -213,7 +248,8 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         typeName: String,
         in node: VariableDeclSyntax
     ) -> Set<String>? {
-        guard !Self.frameworkTypes.contains(typeName), !typeName.hasSuffix("View"),
+        guard !Self.frameworkTypes.contains(typeName),
+              !typeName.hasSuffix("View"),
               !observableTypeNames.contains(typeName),
               let viewEntry = context.viewEntry(forMember: node),
               let viewName = TypeMemberIndex.enclosingTypeName(of: node) else { return nil }
@@ -223,12 +259,11 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         for region in regions {
             for item in region.memberBlock.members where !item.decl.is(InitializerDeclSyntax.self) {
                 for reference in TypeMemberIndex.references(in: item.decl, of: viewEntry)
-                where reference.name == name {
+                    where reference.name == name
+                {
                     if let property = Self.propertyRead(from: reference.node) {
                         read.insert(property)
-                    } else if !isTransparentWholeUse(reference.node, in: node) {
-                        return nil
-                    }
+                    } else if !isTransparentWholeUse(reference.node, in: node) { return nil }
                 }
             }
         }
@@ -246,13 +281,17 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
                 switch attribute.attributeName.trimmedDescription {
                     case "Bindable":
                         for binding in node.bindings {
-                            if let name = binding.typeAnnotation?.type.simpleTypeName { names.insert(name) }
+                            if let name = binding.typeAnnotation?.type.simpleTypeName {
+                                names.insert(name)
+                            }
                         }
                     case "Environment":
                         guard case let .argumentList(arguments) = attribute.arguments,
-                              let member = arguments.first?.expression.as(MemberAccessExprSyntax.self),
+                              let member = arguments.first?.expression.as(
+                                  MemberAccessExprSyntax.self),
                               member.declName.baseName.text == "self",
-                              let base = member.base?.as(DeclReferenceExprSyntax.self) else { continue }
+                              let base = member.base?.as(DeclReferenceExprSyntax.self)
+                        else { continue }
                         names.insert(base.baseName.text)
                     default: continue
                 }
@@ -281,23 +320,20 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
         var current = use.parent
 
         while let cur = current, !cur.is(MemberBlockItemSyntax.self) {
-            if let closure = cur.as(ClosureExprSyntax.self), closure.runsAfterBody {
-                return true
-            }
+            if let closure = cur.as(ClosureExprSyntax.self), closure.runsAfterBody { return true }
             current = cur.parent
         }
         return false
     }
 
-    /// The property name when `reference` is the base of a plain property read such as
-    /// `tag.name` or `self.tag?.name` , or `nil` for any other use of the value
+    /// The property name when `reference` is the base of a plain property read such as `tag.name`
+    /// or `self.tag?.name` , or `nil` for any other use of the value
     private static func propertyRead(from reference: DeclReferenceExprSyntax) -> String? {
         var base = reference.selfQualifiedUse
 
         while let next = base.parent,
-              next.is(OptionalChainingExprSyntax.self) || next.is(ForceUnwrapExprSyntax.self) {
-            base = next
-        }
+              next.is(OptionalChainingExprSyntax.self) || next.is(ForceUnwrapExprSyntax.self)
+        { base = next }
         guard let read = base.parent?.as(MemberAccessExprSyntax.self), read.base?.id == base.id
         else { return nil }
 
@@ -307,14 +343,14 @@ final class FlagWholeValueModelViewInput: LintSyntaxRule<LintOnlyValue>, @unchec
     }
 }
 
-extension TypeMemberIndex.TypeEntry {
+fileprivate extension TypeMemberIndex.TypeEntry {
     /// The number of stored instance properties whose declared type is a collection type
-    fileprivate var collectionPropertyCount: Int {
-        members.reduce(0) { count, pair in
+    var collectionPropertyCount: Int {
+        allMembers.reduce(0) { count, pair in
             let (name, overloads) = pair
-            guard let variable = overloads.first(where: {
-                $0.kind == .storedProperty && !$0.isStatic
-            })?.declaration.as(VariableDeclSyntax.self),
+            guard let variable = overloads
+                .first(where: { $0.kind == .storedProperty && !$0.isStatic })?.declaration.as(
+                    VariableDeclSyntax.self),
                 let binding = variable.bindings.first(where: {
                     $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == name
                 }),
@@ -334,9 +370,11 @@ fileprivate extension Finding.Message {
         """
     }
 
-    static func sharedRowArgument(_ label: String, _ type: String, _ view: String)
-        -> Finding.Message
-    {
+    static func sharedRowArgument(
+        _ label: String,
+        _ type: String,
+        _ view: String
+    ) -> Finding.Message {
         """
         Every '\(view)' row receives the same '\(type)' value as '\(label)'. Each parent update \
         compares it once per row. Pass only the values the row reads, or keep the data in an \
@@ -344,9 +382,11 @@ fileprivate extension Finding.Message {
         """
     }
 
-    static func repeatedRowInput(_ name: String, _ type: String, _ view: String)
-        -> Finding.Message
-    {
+    static func repeatedRowInput(
+        _ name: String,
+        _ type: String,
+        _ view: String
+    ) -> Finding.Message {
         """
         '\(name)' stores the whole value '\(type)' in '\(view)', which a 'ForEach' or 'List' \
         repeats for each element. Each parent update compares the value once per row. Pass only \
@@ -354,7 +394,11 @@ fileprivate extension Finding.Message {
         """
     }
 
-    static func partialReadInput(_ name: String, _ type: String, _ read: String) -> Finding.Message {
+    static func partialReadInput(
+        _ name: String,
+        _ type: String,
+        _ read: String
+    ) -> Finding.Message {
         """
         '\(name)' stores the whole value '\(type)' as an input but reads only \(read). A change \
         to any other property still updates this view. Pass only the properties the view reads

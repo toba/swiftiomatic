@@ -4,7 +4,19 @@ import SwiftSyntax
 ///
 /// SwiftUI compares the stored inputs of a view to decide whether to evaluate its `body` again. It
 /// cannot compare two closures, so a view that stores one looks changed on every update of its
-/// parent. Store the value the closure computes, or keep the action at the call site.
+/// parent. The cost grows with how often the parent updates. A `Binding(get:set:)` input has the
+/// same problem, because it holds two closures.
+///
+/// Pass what the child needs in a form SwiftUI can compare:
+///
+/// - The value that the closure computes.
+/// - A focused binding for a value that the child writes, such as `$model[isFavorite: id]`.
+/// - An `@Observable` model that owns the action, so the child calls a method on it.
+///
+/// A view whose parent seldom updates can keep a closure input. Suppress the finding there.
+///
+/// The rule resolves a function typealias that the same file declares, such as
+/// `typealias SelectNode = (Node.ID) -> Void`, and a generic or optional use of one.
 ///
 /// Builder content is not an input of this kind. A property with a result builder attribute such as
 /// `@ViewBuilder` or `@ContentBuilder` is exempt, and so is a closure whose result type is a
@@ -19,6 +31,7 @@ import SwiftSyntax
 /// member of the view refers to that property, or calls a member that refers to it.
 final class NoClosureInputInView: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
+    override class var guidance: GuidanceLevel { .shouldNot }
 
     /// The closure inputs that each member reaches, cached per view type name
     private var reachCache: [String: [String: Set<String>]] = [:]
@@ -38,7 +51,7 @@ final class NoClosureInputInView: LintSyntaxRule<LintOnlyValue>, @unchecked Send
 
         for binding in node.bindings where binding.accessorBlock == nil {
             guard let type = binding.typeAnnotation?.type,
-                  let function = type.functionType,
+                  let function = closureType(type, in: node),
                   !Self.returnsGenericParameter(function, generics),
                   let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
             else { continue }
@@ -61,13 +74,14 @@ final class NoClosureInputInView: LintSyntaxRule<LintOnlyValue>, @unchecked Send
               !node.modifiers.contains(anyOf: [.static, .class]),
               let typeName = TypeMemberIndex.enclosingTypeName(of: node),
               let entry = context.viewEntry(forMember: node) else { return }
-        let reach = reachability(of: entry, named: typeName)
-        let inputs = Self.closureInputs(of: entry)
+        let reach = reachability(of: entry, named: typeName, at: node)
+        let inputs = closureInputs(of: entry, in: node)
         guard let reached = reach[name], let first = reached.min() else { return }
         diagnose(.closureScope(name, first), on: node)
 
         for reference in TypeMemberIndex.references(in: node, of: entry)
-        where inputs.contains(reference.name) {
+            where inputs.contains(reference.name)
+        {
             diagnose(.closureUse(reference.name), on: reference.node.selfQualifiedUse)
         }
     }
@@ -78,17 +92,19 @@ final class NoClosureInputInView: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     /// that reaches it.
     private func reachability(
         of entry: TypeMemberIndex.TypeEntry,
-        named typeName: String
+        named typeName: String,
+        at node: some SyntaxProtocol
     ) -> [String: Set<String>] {
         if let cached = reachCache[typeName] { return cached }
-        let inputs = Self.closureInputs(of: entry)
+        let inputs = closureInputs(of: entry, in: node)
         var references: [String: Set<String>] = [:]
 
         for (name, overloads) in entry.members {
             for member in overloads where member.kind != .storedProperty && !member.isStatic {
                 guard let body = member.body else { continue }
                 references[name, default: []].formUnion(
-                    TypeMemberIndex.references(in: body, of: entry).map(\.name))
+                    TypeMemberIndex.references(in: body, of: entry).map(\.name)
+                )
             }
         }
         var reach = references.mapValues { $0.intersection(inputs) }
@@ -117,7 +133,10 @@ final class NoClosureInputInView: LintSyntaxRule<LintOnlyValue>, @unchecked Send
     }
 
     /// The names of the stored closure inputs of `entry`
-    private static func closureInputs(of entry: TypeMemberIndex.TypeEntry) -> Set<String> {
+    private func closureInputs(
+        of entry: TypeMemberIndex.TypeEntry,
+        in node: some SyntaxProtocol
+    ) -> Set<String> {
         var names: Set<String> = []
 
         for (name, overloads) in entry.members {
@@ -131,13 +150,34 @@ final class NoClosureInputInView: LintSyntaxRule<LintOnlyValue>, @unchecked Send
                         .text
                         == name,
                           let type = binding.typeAnnotation?.type,
-                          let function = type.functionType,
-                          !returnsGenericParameter(function, generics) else { continue }
+                          let function = closureType(type, in: node),
+                          !Self.returnsGenericParameter(function, generics) else { continue }
                     names.insert(name)
                 }
             }
         }
         return names
+    }
+
+    /// The function type of `type`, directly or through a same-file typealias
+    ///
+    /// Optional and attribute layers around the alias name are removed, and an alias of an alias
+    /// resolves up to a fixed depth.
+    private func closureType(
+        _ type: TypeSyntax,
+        in node: some SyntaxProtocol,
+        depth: Int = 0
+    ) -> FunctionTypeSyntax? {
+        if let function = type.functionType { return function }
+        guard depth < 8 else { return nil }
+        var base = type.unwrappingOptional
+
+        if let attributed = base.as(AttributedTypeSyntax.self) {
+            base = attributed.baseType.unwrappingOptional
+        }
+        guard let name = base.as(IdentifierTypeSyntax.self)?.name.text,
+              let target = context.typeMembers(around: node).typeAliases[name] else { return nil }
+        return closureType(target, in: node, depth: depth + 1)
     }
 
     private static func returnsGenericParameter(
@@ -152,15 +192,17 @@ final class NoClosureInputInView: LintSyntaxRule<LintOnlyValue>, @unchecked Send
 fileprivate extension Finding.Message {
     static func closureInput(_ name: String) -> Finding.Message {
         """
-        '\(name)' stores a closure input. SwiftUI cannot compare a closure, so the view cannot \
-        skip 'body'. Store the value, or keep the action at the call site
+        '\(name)' stores a closure input. SwiftUI cannot compare a closure, so the view evaluates \
+        'body' on each parent update. Pass the value it reads, a focused binding such as \
+        '$model[isFavorite: id]', or an @Observable model
         """
     }
 
     static func closureUse(_ name: String) -> Finding.Message {
         """
         This code uses the stored closure input '\(name)'. SwiftUI cannot compare a closure, so \
-        the view cannot skip 'body'. Pass a value or a binding instead
+        the view cannot skip 'body'. Pass a value, a focused binding or an @Observable model \
+        instead
         """
     }
 

@@ -8,10 +8,14 @@ import SwiftSyntax
 /// first use, so a file costs one walk however many rules read it.
 ///
 /// A type and its extensions in the same file merge into one entry. Every key is a simple name, so
-/// a nested type merges with a top-level type of the same name. The rules stay syntax-only, so a
-/// member declared in another file is unknown and a reference to it resolves to nothing.
-struct TypeMemberIndex {
-    struct Member {
+/// a nested type merges with a top-level type of the same name.
+///
+/// When the run has a `ProjectIndex` , a lookup also reads the other files of the project. The
+/// type-level facts merge, and the members of the other files go into `foreignMembers` . The
+/// `members` of an entry stay the members of this file, so a rule that walks them never reports
+/// on another file.
+struct TypeMemberIndex: Sendable {
+    struct Member: Sendable {
         enum Kind { case storedProperty, computedProperty, method }
 
         let kind: Kind
@@ -26,8 +30,8 @@ struct TypeMemberIndex {
         let body: Syntax?
     }
 
-    struct TypeEntry {
-        enum Kind { case `struct`, `class`, `enum`, actor }
+    struct TypeEntry: Sendable {
+        enum Kind: Sendable { case `struct`, `class`, `enum`, actor }
 
         /// The kind of the type declaration, or `nil` when the file holds only extensions of it
         var kind: Kind?
@@ -35,8 +39,68 @@ struct TypeMemberIndex {
         var isObservable = false
         /// Whether the declaration or a same-file extension conforms to `View` or `ViewModifier`
         var isView = false
-        /// Members keyed by base name. Overloads share one key.
+        /// The last names of the types that the declaration and its same-file extensions inherit
+        var conformances: Set<String> = []
+        /// Whether an enum declares a case with associated values
+        var hasPayloadCases = false
+        /// Members that this file declares, keyed by base name. Overloads share one key.
         var members: [String: [Member]] = [:]
+        /// Members that other files of the project declare, keyed by base name. Their declarations
+        /// belong to trees that `ProjectIndex` loaded.
+        var foreignMembers: [String: [Member]] = [:]
+
+        /// The members of this file and of other files, keyed by base name
+        var allMembers: [String: [Member]] {
+            foreignMembers.isEmpty ? members : members.merging(foreignMembers, uniquingKeysWith: +)
+        }
+
+        /// Every overload of `name` : the members of this file, then those of other files
+        func members(named name: String) -> [Member]? {
+            switch (members[name], foreignMembers[name]) {
+                case (nil, nil): nil
+                case let (local?, nil): local
+                case let (nil, foreign?): foreign
+                case let (local?, foreign?): local + foreign
+            }
+        }
+
+        /// This entry with the facts and members of `foreign` , which other files hold
+        func merging(_ foreign: TypeEntry) -> TypeEntry {
+            var entry = self
+            entry.kind = kind ?? foreign.kind
+            entry.isObservable = isObservable || foreign.isObservable
+            entry.isView = isView || foreign.isView
+            entry.conformances.formUnion(foreign.conformances)
+            entry.hasPayloadCases = hasPayloadCases || foreign.hasPayloadCases
+            entry.foreignMembers = foreign.foreignMembers
+            return entry
+        }
+    }
+
+    /// The types by simple name: the entry of this file, merged with the facts of other files
+    struct TypeTable: Sendable {
+        /// The entries of this file alone
+        let local: [String: TypeEntry]
+        let lookup: ProjectLookup?
+
+        subscript(name: String) -> TypeEntry? {
+            let entry = local[name]
+            guard let lookup,
+                  let foreign = lookup.foreignEntry(named: name, localIsNominal: entry?.kind != nil)
+            else { return entry }
+            return (entry ?? TypeEntry()).merging(foreign)
+        }
+    }
+
+    /// The typealias targets by simple name: those of this file, then one of another file
+    struct TypeAliasTable: Sendable {
+        /// The typealiases of this file alone
+        let local: [String: TypeSyntax]
+        let lookup: ProjectLookup?
+
+        subscript(name: String) -> TypeSyntax? {
+            local[name] ?? lookup?.foreignTypeAlias(named: name)
+        }
     }
 
     /// The protocols that make a type a view for the SwiftUI boundary rules
@@ -44,12 +108,26 @@ struct TypeMemberIndex {
         "View", "SwiftUI.View", "ViewModifier", "SwiftUI.ViewModifier",
     ]
 
-    private(set) var types: [String: TypeEntry] = [:]
+    let types: TypeTable
 
-    init(root: Syntax) {
+    /// The target type of every typealias, keyed by the alias's simple name. A nested alias merges
+    /// with a top-level alias of the same name.
+    let typeAliases: TypeAliasTable
+
+    /// The lookups into other files, or `nil` when the run has no project index
+    let lookup: ProjectLookup?
+
+    init(root: Syntax, lookup: ProjectLookup? = nil) {
         let collector = Collector(viewMode: .sourceAccurate)
         collector.walk(root)
-        types = collector.types
+        types = TypeTable(local: collector.types, lookup: lookup)
+        typeAliases = TypeAliasTable(local: collector.typeAliases, lookup: lookup)
+        self.lookup = lookup
+    }
+
+    /// The names of the project types whose member with the base name `member` names `Binding`
+    func typesWithBindingMember(named member: String) -> [String] {
+        lookup?.typesWithBindingMember(named: member) ?? []
     }
 
     /// The entry for the type whose member block holds `node`
@@ -108,6 +186,12 @@ struct TypeMemberIndex {
 
     private final class Collector: SyntaxVisitor {
         var types: [String: TypeEntry] = [:]
+        var typeAliases: [String: TypeSyntax] = [:]
+
+        override func visit(_ node: TypeAliasDeclSyntax) -> SyntaxVisitorContinueKind {
+            typeAliases[node.name.text] = node.initializer.value
+            return .visitChildren
+        }
 
         override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
             record(
@@ -168,10 +252,19 @@ struct TypeMemberIndex {
                 entry.isObservable = attributes?.attribute(named: "Observable") != nil
             }
 
-            if let inheritance,
-               inheritance.inheritedTypes.contains(where: {
-                   TypeMemberIndex.viewProtocols.contains($0.type.trimmedDescription)
-               }) { entry.isView = true }
+            if let inheritance {
+                if inheritance.inheritedTypes.contains(where: {
+                    TypeMemberIndex.viewProtocols.contains($0.type.trimmedDescription)
+                }) { entry.isView = true }
+                entry.conformances.formUnion(
+                    inheritance.inheritedTypes.compactMap(\.type.simpleName))
+            }
+
+            if let enumDecl = decl.as(EnumDeclSyntax.self),
+               enumDecl.memberBlock.members.contains(where: { item in
+                   item.decl.as(EnumCaseDeclSyntax.self)?.elements
+                       .contains { $0.parameterClause != nil } == true
+               }) { entry.hasPayloadCases = true }
 
             for item in members.members {
                 for (memberName, member) in Self.members(of: item.decl) {
@@ -278,11 +371,11 @@ extension TypeMemberIndex {
         override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
             let spelling = node.baseName.text
             // `_name` is wrapper storage only when no member is declared with that exact name
-            let name = entry.members[spelling] == nil
+            let name = entry.members(named: spelling) == nil
                 && (spelling.hasPrefix("$") || spelling.hasPrefix("_"))
                 ? String(spelling.dropFirst())
                 : spelling
-            guard let members = entry.members[name] else { return .visitChildren }
+            guard let members = entry.members(named: name) else { return .visitChildren }
 
             if node.parent?.is(KeyPathPropertyComponentSyntax.self) == true {
                 return .visitChildren

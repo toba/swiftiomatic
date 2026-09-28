@@ -13,15 +13,20 @@ import SwiftSyntax
 /// silent. When every such type sits inside its own `#if` , `#if canImport(UIKit)` with
 /// `#elseif canImport(AppKit)` states the need.
 ///
-/// Put the UIKit check first. `canImport(AppKit)` is true on Mac Catalyst, so an AppKit-first
-/// split picks AppKit there, but a Catalyst app uses UIKit. To test for AppKit first, write
+/// Put the UIKit check first. `canImport(AppKit)` is true on Mac Catalyst, so an AppKit-first split
+/// picks AppKit there, but a Catalyst app uses UIKit. To test for AppKit first, write
 /// `#if canImport(AppKit) && !targetEnvironment(macCatalyst)` .
 ///
 /// The rule also fires on a block that holds code, when its `os(...)` checks name exactly the
-/// platforms that ship a framework the block imports. `#if os(macOS)` around `import AppKit` is
-/// one example. The rule stays silent when the check names fewer platforms than the framework
-/// ships on, when the block imports no such framework, and when an `#else` or `#elseif` branch
-/// imports another platform framework.
+/// platforms that ship a framework the block imports. `#if os(macOS)` around `import AppKit` is one
+/// example. The rule stays silent when the check names fewer platforms than the framework ships on,
+/// when the block imports no such framework, and when an `#else` or `#elseif` branch imports
+/// another platform framework.
+///
+/// Keep `#if os(...)` when the code depends on the behavior of a platform, not on a framework. An
+/// example is a window or file-system behavior that only macOS has. Also keep it when a Mac
+/// Catalyst build must skip the code, because `canImport(UIKit)` is true there. The rule cannot see
+/// these reasons, so suppress the finding in such a block.
 ///
 /// Lint: An `#if os(...)` block that guards only framework imports raises a warning. An
 /// `#if os(...)` block whose platforms match a framework it imports raises a warning.
@@ -30,7 +35,8 @@ final class UseCanImportNotOSCheck: LintSyntaxRule<LintOnlyValue>, @unchecked Se
     override class var guidance: GuidanceLevel { .consider }
 
     override func visit(_ node: IfConfigDeclSyntax) -> SyntaxVisitorContinueKind {
-        guard let first = node.clauses.first, first.condition != nil,
+        guard let first = node.clauses.first,
+              first.condition != nil,
               node.clauses.allSatisfy(isOSImportClause)
         else {
             if let framework = frameworkMatchingPlatforms(node) {
@@ -58,22 +64,24 @@ final class UseCanImportNotOSCheck: LintSyntaxRule<LintOnlyValue>, @unchecked Se
     private static let frameworkPlatforms: [String: Set<String>] = [
         "AppKit": ["macOS"],
         "Cocoa": ["macOS"],
+        "Quartz": ["macOS"],
+        "QuickLook": ["macOS"],
         "UIKit": ["iOS", "tvOS", "visionOS"],
         "WatchKit": ["watchOS"],
     ]
 
-    /// The framework that the first clause imports and whose platforms the first clause's
-    /// condition names exactly, or `nil` when there is none.
+    /// The framework that the first clause imports and whose platforms the first clause's condition
+    /// names exactly, or `nil` when there is none.
     ///
     /// Another branch that imports a platform framework marks a platform split, so this returns
     /// `nil` for it.
     private func frameworkMatchingPlatforms(_ node: IfConfigDeclSyntax) -> String? {
-        guard let first = node.clauses.first, let condition = first.condition,
+        guard let first = node.clauses.first,
+              let condition = first.condition,
               let platforms = osNames(condition),
               let framework = importedModules(first).first(where: {
                   Self.frameworkPlatforms[$0] == platforms
-              })
-        else { return nil }
+              }) else { return nil }
 
         let splits = node.clauses.dropFirst().lazy.contains { clause in
             importedModules(clause).contains { Self.frameworkPlatforms[$0] != nil }
@@ -84,9 +92,7 @@ final class UseCanImportNotOSCheck: LintSyntaxRule<LintOnlyValue>, @unchecked Se
     /// The modules that the clause imports at its top level.
     private func importedModules(_ clause: IfConfigClauseSyntax) -> [String] {
         guard case let .statements(items)? = clause.elements else { return [] }
-        return items.compactMap {
-            $0.item.as(ImportDeclSyntax.self)?.path.first?.name.text
-        }
+        return items.compactMap { $0.item.as(ImportDeclSyntax.self)?.path.first?.name.text }
     }
 
     /// The platforms that a condition names, when the condition joins only `os(...)` checks with
@@ -95,28 +101,27 @@ final class UseCanImportNotOSCheck: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         if let call = expr.as(FunctionCallExprSyntax.self) {
             guard call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "os",
                   let argument = call.arguments.firstAndOnly?.expression
-                      .as(DeclReferenceExprSyntax.self)
-            else { return nil }
+                      .as(DeclReferenceExprSyntax.self) else { return nil }
             return [argument.baseName.text]
         }
         if let tuple = expr.as(TupleExprSyntax.self), let only = tuple.elements.firstAndOnly {
             return osNames(only.expression)
         }
+
         if let infix = expr.as(InfixOperatorExprSyntax.self) {
-            guard isOr(infix.operator), let left = osNames(infix.leftOperand),
-                  let right = osNames(infix.rightOperand)
-            else { return nil }
+            guard isOr(infix.operator),
+                  let left = osNames(infix.leftOperand),
+                  let right = osNames(infix.rightOperand) else { return nil }
             return left.union(right)
         }
         if let sequence = expr.as(SequenceExprSyntax.self) {
             var names: Set<String> = []
+
             for (index, element) in sequence.elements.enumerated() {
                 if index.isMultiple(of: 2) {
                     guard let found = osNames(element) else { return nil }
                     names.formUnion(found)
-                } else if !isOr(element) {
-                    return nil
-                }
+                } else if !isOr(element) { return nil }
             }
             return names
         }

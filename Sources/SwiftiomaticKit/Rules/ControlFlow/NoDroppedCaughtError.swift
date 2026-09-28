@@ -4,7 +4,12 @@ import SwiftSyntax
 ///
 /// A `catch` that throws a new error without the one it caught removes the original cause. A caller
 /// then sees only the new error and cannot find out which operation failed or why. Store the caught
-/// error in the new error, for example as an associated value, or log it before the throw.
+/// error in the new error, as in `throw LoadError.fetchFailed(underlying: error)`, or log it before
+/// the throw.
+///
+/// Drop the caught error only when the new error crosses a boundary that must hide internal
+/// details, such as a public API or a message that a user sees. In that case, log the caught error
+/// on the private side of the boundary if the cause must stay available for diagnosis.
 ///
 /// The rule applies only when the `catch` has a value to keep: the implicit `error` constant, or a
 /// name that a catch pattern binds. A `catch` that matches a specific case or uses `is` binds no
@@ -14,7 +19,7 @@ import SwiftSyntax
 /// Lint: A `throw` in a `catch` body that never reads the caught error raises a warning.
 final class NoDroppedCaughtError: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .controlFlow }
-    override class var guidance: GuidanceLevel { .should }
+    override class var guidance: GuidanceLevel { .consider }
 
     override func visit(_ node: CatchClauseSyntax) -> SyntaxVisitorContinueKind {
         let names = boundNames(node.catchItems)

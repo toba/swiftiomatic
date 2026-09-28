@@ -20,6 +20,16 @@ struct RuleCatalogTests {
         #expect(try #require(RuleCatalog.info(for: "noNestedWithLock")).guidance == .must)
     }
 
+    @Test func guidanceLevelsMatchTheSwiftFairyScale() throws {
+        #expect(
+            GuidanceLevel.allCases.map(\.rawValue)
+                == ["MUST", "MUST NOT", "SHOULD", "SHOULD NOT", "CONSIDER"]
+        )
+        let encoded = try JSONEncoder().encode([GuidanceLevel.mustNot, .shouldNot])
+        #expect(String(bytes: encoded, encoding: .utf8) == #"["MUST NOT","SHOULD NOT"]"#)
+        #expect(try JSONDecoder().decode(GuidanceLevel.self, from: Data(#""SHOULD NOT""#.utf8)) == .shouldNot)
+    }
+
     @Test func lookupAcceptsKeyQualifiedKeyAndTypeName() throws {
         let byKey = try #require(RuleCatalog.info(for: "dropBacktickedSelf"))
         #expect(byKey.qualifiedKey == "redundancies.dropBacktickedSelf")

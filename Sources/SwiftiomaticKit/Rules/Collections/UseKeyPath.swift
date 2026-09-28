@@ -2,8 +2,9 @@ import SwiftSyntax
 
 /// Convert trivial `map { $0.foo }` closures to keyPath-based syntax.
 ///
-/// When a closure's only expression is a property access on `$0` , the closure can be replaced with
-/// a keyPath expression: `map(\.foo)` . This is more concise and expressive.
+/// When a closure's only expression is a property access on its only parameter, the closure can be
+/// replaced with a keyPath expression: `map(\.foo)` . This is more concise and expressive. The
+/// parameter can be `$0` or a name, as in `map { item in item.foo }` .
 ///
 /// Applies to `map` , `flatMap` , `compactMap` , `allSatisfy` , `filter` , and `contains(where:)` .
 ///
@@ -18,12 +19,15 @@ import SwiftSyntax
 /// `onGeometryChange` / `onScrollGeometryChange` ( `of:` ). For the geometry modifiers the
 /// `action:` closure that follows becomes the trailing closure.
 ///
-/// Any other call whose only argument is one trailing closure, such as `select { $0.rowid }` or
-/// `first { $0.isSelected }` , gets a finding and no rewrite. The rule cannot see the argument
-/// label that the rewrite must spell, so the author converts it. A call named for an action, such
-/// as `forEach` , `sink` or `onTap` , is skipped for the same `Void` reason as an action label.
-/// `withLock` is skipped, because its closure takes an `inout` value that a key path cannot read.
-/// The key path can fail to convert when overloads compete, so treat the finding as a suggestion.
+/// Any other call whose trailing closure reads a property chain, such as `select { $0.rowid }` ,
+/// `first { $0.isSelected }` , `text(condition) { $0.title }` or `state.withLock { $0.count }` ,
+/// gets a finding and no rewrite. The rule cannot see the argument label that the rewrite must
+/// spell, so the author converts it. A call named for an action, such as `forEach` , `sink` or
+/// `onTap` , is skipped for the same `Void` reason as an action label. A key path also converts to
+/// a closure that takes an `inout` value, such as the body of `Mutex.withLock` .
+///
+/// Keep the closure when a key path does not type-check, for example when overloads compete, or
+/// when the closure reads more clearly at the call site. The finding is a suggestion.
 ///
 /// Only fires for simple property chains (not method calls, subscripts, or complex expressions).
 ///
@@ -34,14 +38,15 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     static let rewriteOrder = 560
 
     override class var group: ConfigurationGroup? { .collections }
+    override class var guidance: GuidanceLevel { .consider }
     override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
 
     private static let eligibleMethods: Set<String> = [
         "map", "flatMap", "compactMap", "allSatisfy", "filter", "contains",
     ]
 
-    /// The argument label of the trailing closure for calls whose label the rule knows, and
-    /// whether the call may carry further trailing closures after it
+    /// The argument label of the trailing closure for calls whose label the rule knows, and whether
+    /// the call may carry further trailing closures after it
     private static let trailingClosureLabels: [String: (label: String, allowsLaterClosures: Bool)] =
         [
             "ForEach": ("content", false),
@@ -55,10 +60,10 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         "operation",
     ]
 
-    /// Call names whose sole trailing closure usually returns `Void` or takes an `inout` value
+    /// Call names whose trailing closure usually returns `Void`
     private static let actionCalls: Set<String> = [
         "forEach", "sink", "task", "Task", "withAnimation", "withTransaction", "perform",
-        "async", "asyncAfter", "sync", "run", "send", "receive", "withLock",
+        "async", "asyncAfter", "sync", "run", "send", "receive",
     ]
 
     static func transform(
@@ -72,9 +77,8 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         let converted = convertCollectionMethod(callNode, original: original, context: context)
         guard converted.as(FunctionCallExprSyntax.self) == callNode else { return converted }
 
-        if let result = convertKnownTrailingClosure(callNode, original: original, context: context) {
-            return result
-        }
+        if let result = convertKnownTrailingClosure(callNode, original: original, context: context)
+        { return result }
         reportUnknownTrailingClosure(callNode, original: original, context: context)
         return convertLabeledClosures(callNode, original: original, context: context)
             ?? ExprSyntax(callNode)
@@ -201,8 +205,8 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
             // the closure that followed becomes the trailing closure
             result.rightParen = rightParen.with(\.trailingTrivia, .space)
             result.trailingClosure = next.closure.with(\.leadingTrivia, [])
-            result.additionalTrailingClosures = MultipleTrailingClosureElementListSyntax(
-                Array(callNode.additionalTrailingClosures.dropFirst()))
+            result.additionalTrailingClosures = MultipleTrailingClosureElementListSyntax(Array(
+                callNode.additionalTrailingClosures.dropFirst()))
         } else {
             result.rightParen = rightParen.with(\.trailingTrivia, closure.trailingTrivia)
             result.trailingClosure = nil
@@ -210,8 +214,9 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         return ExprSyntax(result)
     }
 
-    /// Reports the sole trailing closure of a call whose argument label the rule does not know:
-    /// `select { $0.rowid }` . The rule leaves the closure in place.
+    /// Reports the trailing closure of a call whose argument label the rule does not know:
+    /// `select { $0.rowid }` or `text(condition) { $0.title }` . The rule leaves the closure in
+    /// place.
     private static func reportUnknownTrailingClosure(
         _ callNode: FunctionCallExprSyntax,
         original: FunctionCallExprSyntax,
@@ -222,11 +227,9 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
               !eligibleMethods.contains(name),
               !actionCalls.contains(name),
               !isActionLabel(name),
-              callNode.arguments.isEmpty,
               callNode.additionalTrailingClosures.isEmpty,
               let closure = callNode.trailingClosure,
-              extractPropertyChain(from: closure) != nil
-        else { return }
+              extractPropertyChain(from: closure) != nil else { return }
 
         Self.diagnose(
             .useKeyPathWithLabel(method: name),
@@ -244,8 +247,10 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     ) -> ExprSyntax? {
         var changed = false
         let originalArguments = Array(original.arguments)
-        let arguments = callNode.arguments.enumerated().map { index, argument -> LabeledExprSyntax in
-            guard let label = argument.label?.text, !isActionLabel(label),
+        let arguments = callNode.arguments.enumerated().map {
+            index, argument -> LabeledExprSyntax in
+            guard let label = argument.label?.text,
+                  !isActionLabel(label),
                   let closure = argument.expression.as(ClosureExprSyntax.self),
                   let chain = extractPropertyChain(from: closure) else { return argument }
 
@@ -301,31 +306,52 @@ final class UseKeyPath: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
         return ExprSyntax(callNode.with(\.arguments, LabeledExprListSyntax([newArg])))
     }
 
-    /// Extracts the property chain from a `{ $0.foo.bar }` closure, returning `["foo", "bar"]` .
+    /// Extracts the property chain from a `{ $0.foo.bar }` or `{ item in item.foo.bar }` closure,
+    /// returning `["foo", "bar"]` .
     private static func extractPropertyChain(from closure: ClosureExprSyntax) -> [String]? {
-        // Must have no explicit parameters (uses $0 shorthand)
-        guard closure.signature == nil else { return nil }
-
-        // Must have exactly one statement
-        guard closure.statements.count == 1,
+        guard let parameter = soleParameterName(of: closure),
+              closure.statements.count == 1,
               let onlyItem = closure.statements.first,
               let expr = onlyItem.item.as(ExprSyntax.self) else { return nil }
 
-        return extractChain(expr)
+        return extractChain(expr, parameter: parameter)
     }
 
-    /// Recursively extracts property names from a `$0.a.b.c` chain.
-    private static func extractChain(_ expr: ExprSyntax) -> [String]? {
+    /// The name of the only parameter of `closure` : `$0` when it has no signature, or the name its
+    /// signature gives
+    ///
+    /// Returns `nil` for a capture list, attributes, effects, or any number of parameters other
+    /// than one.
+    private static func soleParameterName(of closure: ClosureExprSyntax) -> String? {
+        guard let signature = closure.signature else { return "$0" }
+        guard signature.capture == nil,
+              signature.attributes.isEmpty,
+              signature.effectSpecifiers == nil,
+              let clause = signature.parameterClause else { return nil }
+
+        switch clause {
+            case let .simpleInput(parameters):
+                guard let only = parameters.firstAndOnly else { return nil }
+                return only.name.text
+            case let .parameterClause(clause):
+                guard let only = clause.parameters.firstAndOnly else { return nil }
+                let name = (only.secondName ?? only.firstName).text
+                return name == "_" ? nil : name
+        }
+    }
+
+    /// Recursively extracts property names from a `parameter.a.b.c` chain.
+    private static func extractChain(_ expr: ExprSyntax, parameter: String) -> [String]? {
         guard let memberAccess = expr.as(MemberAccessExprSyntax.self),
               let base = memberAccess.base else { return nil }
 
         let name = memberAccess.declName.baseName.text
 
-        if let ref = base.as(DeclReferenceExprSyntax.self), ref.baseName.text == "$0" {
+        if let ref = base.as(DeclReferenceExprSyntax.self), ref.baseName.text == parameter {
             return [name]
         }
 
-        guard var chain = extractChain(base) else { return nil }
+        guard var chain = extractChain(base, parameter: parameter) else { return nil }
         chain.append(name)
         return chain
     }

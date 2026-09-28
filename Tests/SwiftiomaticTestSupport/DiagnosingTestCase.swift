@@ -147,6 +147,24 @@ private func assertAndRemoveNote(
   context: Context,
   sourceLocation: TestSourceLocation
 ) {
+  if let expected = noteSpec.fileLocation {
+    guard let index = emittedNotes.firstIndex(where: {
+      $0.location?.file.hasSuffix(expected.file) == true
+        && $0.location?.line == expected.line && $0.location?.column == expected.column
+    }) else {
+      Issue.record(
+        """
+        Note '\(noteSpec.message)' was not emitted at \(expected.file):\(expected.line):\
+        \(expected.column). Emitted: \(emittedNotes.map { "\($0.location.map { "\($0.file):\($0.line):\($0.column)" } ?? "nil")" })
+        """,
+        sourceLocation: sourceLocation
+      )
+      return
+    }
+    let matchedNote = emittedNotes.remove(at: index)
+    #expect(matchedNote.message.text == noteSpec.message, sourceLocation: sourceLocation)
+    return
+  }
   guard let utf8Offset = markerLocations[noteSpec.marker] else {
     Issue.record(
       "Marker '\(noteSpec.marker)' was not found in the input",

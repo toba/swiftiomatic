@@ -8,6 +8,8 @@ struct FlagObserverSkippedInInitTests: RuleTesting {
         "this assignment does not run the observer of '\(name)'; assign it in a 'defer' block or a method if the observer must run"
     }
 
+    @Test func guidanceIsConsider() { #expect(FlagObserverSkippedInInit.guidance == .consider) }
+
     @Test func selfAssignmentInClassInit() {
         assertLint(
             FlagObserverSkippedInInit.self,

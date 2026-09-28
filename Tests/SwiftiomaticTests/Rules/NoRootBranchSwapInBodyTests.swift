@@ -11,6 +11,8 @@ struct NoRootBranchSwapInBodyTests: RuleTesting {
 
     private static func note(_ name: String) -> String { "this branch builds '\(name)'" }
 
+    @Test func guidanceIsShouldNot() { #expect(NoRootBranchSwapInBody.guidance == .shouldNot) }
+
     @Test func ifElseWithDifferentRootsFlagged() {
         assertLint(
             NoRootBranchSwapInBody.self,
@@ -93,6 +95,52 @@ struct NoRootBranchSwapInBodyTests: RuleTesting {
                         NoteSpec("3️⃣", message: Self.note("EmptyView")),
                     ]
                 )
+            ]
+        )
+    }
+
+    private static let modifierMessage =
+        "'body(content:)' branches on a runtime condition, so a change of the condition gives 'content' a new identity. Keep one modifier chain, and put the condition in a ternary or an optional-aware modifier"
+
+    /// In a `ViewModifier` , any top-level runtime branch changes the identity of `content` , also
+    /// an `if` without `else` and branches with the same root.
+    @Test func viewModifierBranchWithSameRootFlagged() {
+        assertLint(
+            NoRootBranchSwapInBody.self,
+            """
+            struct Dimmed: ViewModifier {
+              let isOn: Bool
+              func body(content: Content) -> some View {
+                1️⃣if isOn {
+                  content.opacity(0.5)
+                } else {
+                  content
+                }
+              }
+            }
+
+            struct Outlined: ViewModifier {
+              let color: Color?
+              func body(content: Content) -> some View {
+                2️⃣if let color {
+                  content.border(color)
+                }
+              }
+            }
+
+            struct Legacy: ViewModifier {
+              func body(content: Content) -> some View {
+                if #available(macOS 27, *) {
+                  content.glassEffect()
+                } else {
+                  content
+                }
+              }
+            }
+            """,
+            findings: [
+                FindingSpec("1️⃣", message: Self.modifierMessage),
+                FindingSpec("2️⃣", message: Self.modifierMessage),
             ]
         )
     }

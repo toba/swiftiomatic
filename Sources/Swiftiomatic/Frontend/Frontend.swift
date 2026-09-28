@@ -240,13 +240,18 @@ class Frontend: @unchecked Sendable {
         /// the contents, this will be `nil` .
         let sourceText: String?
 
+        /// Whether the text comes from standard input, so it can differ from the file at `url` .
+        let isStandardInput: Bool
+
         init(
             fileHandle: FileHandle,
             url: URL,
             configuration: ConfigurationLoader.Loaded,
-            selection: Selection = .infinite
+            selection: Selection = .infinite,
+            isStandardInput: Bool = false
         ) {
             self.url = url
+            self.isStandardInput = isStandardInput
             self.configuration = configuration.configuration
             configurationKey = configuration.key
             self.selection = selection
@@ -357,7 +362,8 @@ class Frontend: @unchecked Sendable {
             fileHandle: FileHandle.standardInput,
             url: assumedURL ?? URL(fileURLWithPath: "<stdin>"),
             configuration: configuration,
-            selection: selection
+            selection: selection,
+            isStandardInput: true
         )
         processFile(fileToProcess)
     }
@@ -414,6 +420,12 @@ class Frontend: @unchecked Sendable {
             }
         }
         group.wait()
+    }
+
+    /// The glob patterns that the project index walk under `root` skips: the default recursion
+    /// excludes and the `excludes` of the configuration that applies to `root`
+    final func excludePatterns(forProjectRoot root: URL) -> [String] {
+        excludePatterns(forInputs: [root])
     }
 
     /// Loads the configuration that applies to the first input path to obtain the `excludes` list

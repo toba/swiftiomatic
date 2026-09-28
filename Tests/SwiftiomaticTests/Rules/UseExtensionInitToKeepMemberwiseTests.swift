@@ -7,6 +7,10 @@ struct UseExtensionInitToKeepMemberwiseTests: RuleTesting {
     private static let message: String =
         "move this initializer to an extension to keep the synthesized memberwise initializer"
 
+    @Test func guidanceIsConsider() {
+        #expect(UseExtensionInitToKeepMemberwise.guidance == .consider)
+    }
+
     @Test func relabeledInitFlagged() {
         assertLint(
             UseExtensionInitToKeepMemberwise.self,
@@ -80,9 +84,37 @@ struct UseExtensionInitToKeepMemberwiseTests: RuleTesting {
         )
     }
 
+    /// The musup `TrackLyrics` shape: the `guard` picks a path and delegates to `self.init` in
+    /// both, so it does not reject the input.
+    @Test func guardThatDelegatesIsNotACheck() {
+        assertLint(
+            UseExtensionInitToKeepMemberwise.self,
+            """
+            public struct TrackLyrics {
+              public var status: Status
+              public var plainText: String
+
+              public init(status: Status, plainText: String = "") {
+                self.status = status
+                self.plainText = plainText
+              }
+
+              public 1️⃣init(record: Record) {
+                guard !record.instrumental else {
+                  self.init(status: .instrumental)
+                  return
+                }
+                self.init(status: .found, plainText: record.plainLyrics ?? "")
+              }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
     @Test func combiningInitInPublicTypeFlagged() {
-        // From toba-ui `ViewFrameIntent`. The public initializer can move to an extension and
-        // still reach the internal memberwise initializer.
+        // From toba-ui `ViewFrameIntent`. The public initializer can move to an extension and still
+        // reach the internal memberwise initializer.
         assertLint(
             UseExtensionInitToKeepMemberwise.self,
             """
@@ -151,8 +183,8 @@ struct UseExtensionInitToKeepMemberwiseTests: RuleTesting {
     }
 
     @Test func delegatingInitsFlagged() {
-        // From jig `JigService` and `CitationReview`. The type is public, and one stored
-        // property is internal.
+        // From jig `JigService` and `CitationReview`. The type is public, and one stored property
+        // is internal.
         assertLint(
             UseExtensionInitToKeepMemberwise.self,
             """
@@ -377,8 +409,8 @@ struct UseExtensionInitToKeepMemberwiseTests: RuleTesting {
     }
 
     @Test func viewWithPrivateDefaultedStateNotFlagged() {
-        // SE-0502 drops `isExpanded` from the memberwise initializer, because it is private and
-        // has an initial value. The memberwise initializer is `init(title:)`.
+        // SE-0502 drops `isExpanded` from the memberwise initializer, because it is private and has
+        // an initial value. The memberwise initializer is `init(title:)`.
         assertLint(
             UseExtensionInitToKeepMemberwise.self,
             """

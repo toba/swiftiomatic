@@ -28,6 +28,13 @@ package final class LintCoordinator {
     /// general use.
     package var debugOptions: DebugOptions = []
 
+    /// The facts of the other files of the project, or `nil` for rules that see one file.
+    package var projectIndex: ProjectIndex?
+
+    /// The keys of the project index that the last `lint` call read, such as `type:Book` . The lint
+    /// cache stores them with the findings of the file.
+    package private(set) var projectKeys: Set<String> = []
+
     /// Creates a new Swift code linter with the given configuration.
     ///
     /// - Parameters:
@@ -160,8 +167,10 @@ package final class LintCoordinator {
             fileURL: url,
             sourceFileSyntax: syntax,
             source: source,
-            isLintMode: true
+            isLintMode: true,
+            projectIndex: projectIndex
         )
+        defer { projectKeys = context.projectLookup?.keys ?? [] }
 
         // Drive finding emission for compact-pipeline rules (those with `static willEnter` /
         // `transform` hooks but no `override func visit` ). After the `ddi-wtv` cutover, most

@@ -4,8 +4,22 @@ import SwiftSyntax
 ///
 /// A computed property is not stored. It runs again on every `body` evaluation, and so does every
 /// method `body` calls. A `.filter` , `.sorted` , `.map` or loop there walks the whole collection
-/// on each update, even when the collection did not change. Store the derived value and update it
-/// when its inputs change.
+/// on each update, even when the collection did not change. When the view observes state that
+/// changes frequently, this cost adds up and the main actor can drop frames.
+///
+/// Choose a place for the work from its inputs and its lifetime:
+/// - Store the derived value in an `@Observable` model or in view state, and update it when one of
+///   its inputs changes. For example, set `sortedTrails` in the `didSet` of `trails`, and let
+///   `body` read `store.sortedTrails`.
+/// - Move the work into a focused child `View`. SwiftUI does not evaluate the `body` of a child
+///   whose inputs did not change.
+/// - Start the work from `onChange` or `task(id:)` when an event or an input change starts it.
+/// - Run heavy computation off the main actor in a `@concurrent` function, and then store the
+///   result in main-actor state. A `.task` alone runs its code on the main actor until the first
+///   suspension.
+///
+/// A small transform over static data can stay in `body`. The rule allows a transform over an array
+/// or dictionary literal. For other small, static data, suppress the finding.
 ///
 /// The rule checks `body` itself, and follows it into same-type computed properties and the methods
 /// it calls, and from those into further members. Closures that run later, such as a `Button`
@@ -13,14 +27,15 @@ import SwiftSyntax
 /// reference passed to a drop delegate, runs later too, so the rule does not follow it.
 ///
 /// A reached member can call a static function on another type, such as `Row.rows(projects:)` .
-/// When the file declares that type, the rule follows the call into the function body. When the
-/// type is declared in another file, the rule cannot see the body. It then reports the call when an
-/// argument passes a stored collection of the view, because the function most likely walks it.
+/// When the file declares that type, the rule follows the call into the function body. When another
+/// file of the project declares it, the rule reads that body and reports the call when the body
+/// holds work. When no file of the run declares the type, the rule cannot see the body. It then
+/// reports the call when an argument passes a stored collection of the view, because the function
+/// most likely walks it.
 ///
 /// The rule also reports the view type itself, and each member name that `body` reads when that
 /// member leads to work. When `body` reaches work through such a member, the rule also reports the
-/// `body` declaration. These findings mark where the repeated evaluation starts. A small
-/// transform over an array or dictionary literal costs little, so the rule allows it.
+/// `body` declaration. These findings mark where the repeated evaluation starts.
 ///
 /// Lint: `body` , a same-type member that `body` reaches, or a same-file static function it calls,
 /// calls `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` ,
@@ -29,6 +44,7 @@ import SwiftSyntax
 /// member that leads to any of this work, which the rule reports at the read and at `body` .
 final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
+    override class var guidance: GuidanceLevel { .consider }
 
     private static let collectionMethods: Set<String> = [
         "filter", "sorted", "map", "compactMap", "flatMap", "reduce",
@@ -121,7 +137,7 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
         member: String,
         selfType: String,
         view: TypeMemberIndex.TypeEntry,
-        types: [String: TypeMemberIndex.TypeEntry],
+        types: TypeMemberIndex.TypeTable,
         visited: inout Set<SyntaxIdentifier>
     ) -> Bool {
         let (reported, calls) = reportWork(in: body, member: member)
@@ -164,7 +180,7 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
         _ call: WorkFinder.StaticCall,
         selfType: String,
         view: TypeMemberIndex.TypeEntry,
-        types: [String: TypeMemberIndex.TypeEntry],
+        types: TypeMemberIndex.TypeTable,
         visited: inout Set<SyntaxIdentifier>
     ) -> Bool {
         let typeName = call.typeName == "Self" ? selfType : call.typeName
@@ -181,9 +197,22 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
         }
         var found = false
 
-        for member in owner.members[call.method.baseName.text] ?? [] where member.isStatic {
+        for member in owner.members(named: call.method.baseName.text) ?? [] where member.isStatic {
             guard let body = member.body, visited.insert(member.declaration.id).inserted
             else { continue }
+
+            // A body in another file has no location here, so the call site carries the finding
+            if context.isForeign(body) {
+                let finder = WorkFinder(methods: Self.collectionMethods, skipping: {
+                    $0.runsAfterBody
+                })
+                finder.walk(body)
+                if !finder.matches.isEmpty {
+                    diagnose(.foreignStaticCall(function), on: call.method)
+                    found = true
+                }
+                continue
+            }
 
             if reportWorkAndCalls(
                 in: body, member: function, selfType: typeName, view: view, types: types,
@@ -199,7 +228,7 @@ final class NoCollectionWorkReachableFromBody: LintSyntaxRule<LintOnlyValue>, @u
     ) -> String? {
         guard let name = expression.selfMemberReference?.baseName.text else { return nil }
 
-        for member in view.members[name] ?? [] where member.kind == .storedProperty {
+        for member in view.members(named: name) ?? [] where member.kind == .storedProperty {
             let binding = member.declaration.as(VariableDeclSyntax.self)?.bindings.first {
                 $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == name
             }
@@ -331,6 +360,10 @@ fileprivate extension Finding.Message {
 
     static func opaqueStaticCall(_ function: String, _ collection: String) -> Finding.Message {
         "'\(function)' takes the collection '\(collection)' and runs on every 'body' evaluation. Store the derived value and update it when its inputs change"
+    }
+
+    static func foreignStaticCall(_ function: String) -> Finding.Message {
+        "'\(function)' walks a collection in another file and runs on every 'body' evaluation. Store the derived value and update it when its inputs change"
     }
 
     static func collectionLoop(_ keyword: String, _ member: String) -> Finding.Message {

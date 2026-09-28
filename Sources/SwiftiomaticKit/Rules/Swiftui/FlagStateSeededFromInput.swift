@@ -4,13 +4,32 @@ import SwiftSyntax
 ///
 /// SwiftUI creates the state storage once, for the first value of the view's identity. When the
 /// parent later passes a new value for the same view, the initializer runs again but the state
-/// keeps its first value. SwiftUI discards the new value or model. The seed is correct only when
-/// each new input also gives the view a new identity, for example a sheet that opens on a fresh
-/// presentation. When the state must follow the input, create or update it in `task(id:)` or
-/// `onChange(of:)` , keyed by that input.
+/// keeps its first value. SwiftUI discards the new value or model. This applies to
+/// `_name = State(initialValue:)`, to `State(wrappedValue:)`, to `StateObject(wrappedValue:)` and
+/// to `self.name = input`.
 ///
-/// An input whose label or name starts with `initial` , such as `initiallyExpanded` , states that
-/// the copy is initial only. The rule does not flag it.
+/// Give the state a default value in its declaration, remove the seed from the initializer, and
+/// keep the state in step with the input in a modifier keyed by that input:
+///
+/// - For a short synchronous copy, use `onChange(of:initial:)` with `initial: true`. Without
+///   `initial: true`, the action does not run when the view appears, so the first value does not
+///   arrive.
+/// - For work that is asynchronous, such as a load for an identifier, use `task(id:)`. Skip the
+///   load when the state already holds the value for the same id, so that a new run does not
+///   overwrite local edits. Check `Task.isCancelled` before you write the result, so that a load
+///   for an earlier id does not replace the current value.
+///
+/// ```swift
+/// @State private var draft = ""
+///
+/// TextField("Title", text: $draft)
+///     .onChange(of: original, initial: true) { _, newValue in draft = newValue }
+/// ```
+///
+/// The seed is correct when each new input also gives the view a new identity, for example a sheet
+/// that opens on a fresh presentation. Suppress the finding there. An input whose label or name
+/// starts with `initial`, such as `initiallyExpanded`, states that the copy is initial only. The
+/// rule does not flag it.
 ///
 /// Lint: An initializer of a view type assigns `State(initialValue:)` , `State(wrappedValue:)` or
 /// `StateObject(wrappedValue:)` , built from a parameter of the initializer, to a `_name` storage
@@ -19,7 +38,7 @@ import SwiftSyntax
 /// view type that owns it.
 final class FlagStateSeededFromInput: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
-    override class var guidance: GuidanceLevel { .consider }
+    override class var guidance: GuidanceLevel { .shouldNot }
 
     /// The declarations and type names this rule already reported in the file, so that two
     /// initializers that seed the same property report it once
@@ -140,7 +159,7 @@ fileprivate extension Finding.Message {
         _ input: String,
         wrapper: String
     ) -> Finding.Message {
-        "'@\(wrapper)' property '\(state)' takes its first value from the initializer input '\(input)'. A later value of the input does not reach it. Update it in 'task(id:)' or 'onChange(of:)', or name the input as initial only"
+        "'@\(wrapper)' property '\(state)' takes its first value from the initializer input '\(input)'. A later value of the input does not reach it. Update it in 'onChange(of:initial: true)' or 'task(id:)', or name the input as initial only"
     }
 
     static func ownerSeedsState(_ owner: String) -> Finding.Message {

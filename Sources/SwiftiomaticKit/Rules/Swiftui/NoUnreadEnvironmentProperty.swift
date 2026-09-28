@@ -4,7 +4,11 @@ import SwiftSyntax
 ///
 /// The declaration is the subscription. SwiftUI re-evaluates the view on every change to the value,
 /// even when no code reads it. A property that no member reads costs updates and gives nothing
-/// back.
+/// back. Remove the declaration, such as `@Environment(\.dismiss) private var dismiss`.
+///
+/// An unread plain stored input, such as `let title: String`, also has a cost. SwiftUI compares it
+/// as part of the view value, so a change to it evaluates `body` again. This rule does not check
+/// plain inputs.
 ///
 /// A read is a reference to the name, to `self.name` , or to `$name` in any member of the type or
 /// of a same-file extension of the type. A reference inside a nested type does not count. A local

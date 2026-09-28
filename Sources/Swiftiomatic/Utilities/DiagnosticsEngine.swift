@@ -169,7 +169,12 @@ final class DiagnosticsEngine: Sendable {
     /// Replays a previously cached finding (and its notes) through the same emit path
     /// `consumeFinding` uses, so cached and freshly-linted runs produce byte-identical output and
     /// identical exit-code accounting.
-    func consumeCachedEntry(_ cached: LintCache.Entry) {
+    ///
+    /// - Parameters:
+    ///   - cached: The cached finding.
+    ///   - lintedFile: The displayed path of the file in the current run. A cached location in the
+    ///     linted file gets this path, because the record does not depend on the working directory.
+    func consumeCachedEntry(_ cached: LintCache.Entry, lintedFile: String) {
         let severity: Diagnostic.Severity =
             switch cached.severity {
                 case .error: .error
@@ -178,7 +183,9 @@ final class DiagnosticsEngine: Sendable {
         let notes = cached.notes.map { note in
             Diagnostic(
                 severity: .note,
-                location: note.location.map { Diagnostic.Location($0.asFindingLocation) },
+                location: note.location.map {
+                    Diagnostic.Location($0.asFindingLocation(lintedFile: lintedFile))
+                },
                 message: note.message,
                 origin: .ruleNote(cached.category),
                 role: note.role ?? .related
@@ -187,7 +194,9 @@ final class DiagnosticsEngine: Sendable {
         emit(
             Diagnostic(
                 severity: severity,
-                location: cached.location.map { Diagnostic.Location($0.asFindingLocation) },
+                location: cached.location.map {
+                    Diagnostic.Location($0.asFindingLocation(lintedFile: lintedFile))
+                },
                 category: cached.category,
                 message: cached.message
             ),

@@ -5,9 +5,13 @@ import SwiftSyntax
 ///
 /// Swift does not call a property's observers when the type's own initializer assigns the property.
 /// An observer that resets a cache, posts a notification or validates the value is therefore
-/// skipped for the first value. That is often correct, because the rest of the state is not ready
-/// yet. When the observer must run, assign the value from a `defer` block in the initializer, or
-/// from a method that the initializer calls.
+/// skipped for the first value. When the observer must run for the first value, assign the value
+/// from a `defer` block in the initializer, as in `defer { mode = initialMode }`, or from a method
+/// that the initializer calls.
+///
+/// Keep the direct assignment when the observer only reacts to later changes. An example is a
+/// `didSet` that resets state when the new value differs from `oldValue`, and the initializer
+/// already sets that state. Also keep it when the observer needs state that is not ready yet.
 ///
 /// The rule stays silent for a property that a `defer` block in the same initializer assigns, or
 /// that a method the initializer calls assigns. An assignment inside a closure or a nested function

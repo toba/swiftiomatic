@@ -7,6 +7,14 @@ import SwiftSyntax
 /// attribute states that the result is optional, and the call sites lose the `_ =` noise. A
 /// `mutating` reader such as `nextCharacter()` or `readCommand()` is the common case.
 ///
+/// Change `func nextCharacter() -> Character` to
+/// `@discardableResult func nextCharacter() -> Character`, then write `nextCharacter()` in place of
+/// `_ = nextCharacter()`. Callers that need the value still read it.
+///
+/// Keep the explicit `_ =` when the result is a failure signal, such as a success flag or an error
+/// status. Keep it also when the caller must keep the value, such as a token or a handle. In these
+/// cases the compiler warning protects the caller, and the attribute removes that protection.
+///
 /// The rule sees one file at a time, so it reports a discard only with evidence from that file:
 ///
 /// - The file declares the function with a non-`Void` result and without `@discardableResult`.

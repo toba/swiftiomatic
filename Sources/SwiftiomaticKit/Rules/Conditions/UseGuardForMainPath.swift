@@ -19,6 +19,9 @@ import SwiftSyntax
 /// silent for an `if` body with fewer than three statements, because a short conditional step reads
 /// as clearly as a `guard`. `UseEarlyExits` covers the `if ... else { return }` form.
 ///
+/// The rule does not report an `if` that has an `else`. Keep the `if` / `else` when both branches
+/// do substantial, different work, because neither branch is then an early exit.
+///
 /// Lint: A trailing `if` with no `else` and a body of three or more statements raises a warning.
 final class UseGuardForMainPath: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
@@ -49,8 +52,7 @@ final class UseGuardForMainPath: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
 
     private func check(_ body: CodeBlockSyntax?) {
         guard let last = body?.statements.last,
-              let ifExpr = last.item.as(ExpressionStmtSyntax.self)?.expression.as(IfExprSyntax.self)
-                  ?? last.item.as(IfExprSyntax.self),
+              let ifExpr = last.expression?.as(IfExprSyntax.self),
               ifExpr.elseBody == nil,
               ifExpr.body.statements.count >= Self.minimumBodyStatements else { return }
         diagnose(.useGuardForMainPath, on: ifExpr.ifKeyword)

@@ -150,13 +150,35 @@ package final class Context {
     private var typeMemberIndexes: [SyntaxIdentifier: TypeMemberIndex] = [:]
 
     /// The members of every type in the tree that holds `node`
+    ///
+    /// When the run has a project index, a type lookup also reads the other files of the project.
+    /// A tree that the project index loaded from another file answers for that file alone.
     func typeMembers(around node: some SyntaxProtocol) -> TypeMemberIndex {
         let root = node.root
         if let cached = typeMemberIndexes[root.id] { return cached }
 
-        let index = TypeMemberIndex(root: root)
+        if let file = projectLookup?.index.loadedFile(holding: root) { return file.members }
+        let index = TypeMemberIndex(root: root, lookup: projectLookup)
         typeMemberIndexes[root.id] = index
         return index
+    }
+
+    /// The lookups of this file into the other files of the project, or `nil` when the run has no
+    /// project index. The lint cache reads the keys it records.
+    package let projectLookup: ProjectLookup?
+
+    /// Whether `node` belongs to a tree that the project index loaded from another file
+    func isForeign(_ node: some SyntaxProtocol) -> Bool {
+        projectLookup?.index.isForeign(node) ?? false
+    }
+
+    /// The location of `node` , in this file or in the other file whose tree holds it
+    func location(of node: some SyntaxProtocol) -> Finding.Location {
+        let position = node.positionAfterSkippingLeadingTrivia
+        if let file = projectLookup?.index.loadedFile(holding: node) {
+            return Finding.Location(file.converter.location(for: position))
+        }
+        return Finding.Location(sourceLocationConverter.location(for: position))
     }
 
     /// Pre-built `(titlecased, uppercased)` pairs for `UppercaseAcronymsInIdentifiers` , sorted
@@ -182,6 +204,7 @@ package final class Context {
     ///   - isLintMode: When `true` , both rule sets hold the rules whose `lint` is not `.no` . A
     ///     transform-based rule with `rewrite: false, lint: .warn` then still dispatches, which its
     ///     transform-emitted findings need. Set by `LintCoordinator` , which discards the tree.
+    ///   - projectIndex: The facts of the other files of the project, for lint runs.
     package init(
         configuration: Configuration,
         operatorTable: OperatorTable,
@@ -190,9 +213,13 @@ package final class Context {
         selection: Selection = .infinite,
         sourceFileSyntax: SourceFileSyntax,
         source: String? = nil,
-        isLintMode: Bool = false
+        isLintMode: Bool = false,
+        projectIndex: ProjectIndex? = nil
     ) {
         self.configuration = configuration
+        projectLookup = projectIndex.map {
+            ProjectLookup(index: $0, file: ProjectIndex.key(for: fileURL.path))
+        }
         self.isLintMode = isLintMode
         self.operatorTable = operatorTable
         findingEmitter = FindingEmitter(consumer: findingConsumer)

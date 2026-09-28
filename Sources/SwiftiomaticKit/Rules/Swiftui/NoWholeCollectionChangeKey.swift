@@ -1,25 +1,27 @@
 import SwiftSyntax
 
-/// Flag an `.onChange(of:)` or a `.task(id:)` whose key is a whole collection that the view
-/// stores.
+/// Flag an `.onChange(of:)` or a `.task(id:)` whose key is a whole collection that the view stores.
 ///
 /// SwiftUI compares the old key with the new key on each update of the view. A key that is an
 /// array, a set, a dictionary or a query result compares every element, so the cost grows with the
 /// data. A small key costs almost nothing to compare. Examples are a revision counter, the count,
 /// or the IDs and the fields that the work reads. The small key must change each time the work must
-/// run, or the work runs on stale data.
+/// run, or the work runs on stale data. For example, change `.task(id: items)` to
+/// `.task(id: revision)`, where the code that edits `items` also increments `revision`.
 ///
-/// When the work derives state from the collection, it can also move into the code that changes
-/// the collection. Then no change key is necessary.
+/// When the work derives state from the collection, it can also move into the code that changes the
+/// collection. Then no change key is necessary.
+///
+/// Keep the whole collection as the key when the collection is always small, or when no smaller key
+/// changes for each change that the work needs. A missed change costs more than a slow comparison.
 ///
 /// The rule reports the key and the declaration of the collection. It reports a key that is a bare
 /// name or `self.name` of a stored property of the view. The property counts as a collection when
-/// its type is an array, dictionary or set type, or a query result type such as `FetchedResults`
-/// , or when its wrapper is a query wrapper such as `@Query` or `@FetchAll` . A key that reads a
+/// its type is an array, dictionary or set type, or a query result type such as `FetchedResults` ,
+/// or when its wrapper is a query wrapper such as `@Query` or `@FetchAll` . A key that reads a
 /// member, such as `items.count` , is not reported.
 ///
-/// Lint: An `.onChange(of:)` or a `.task(id:)` observes a stored collection of the view as a
-/// whole.
+/// Lint: An `.onChange(of:)` or a `.task(id:)` observes a stored collection of the view as a whole.
 final class NoWholeCollectionChangeKey: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
     override class var guidance: GuidanceLevel { .should }
@@ -70,9 +72,7 @@ final class NoWholeCollectionChangeKey: LintSyntaxRule<LintOnlyValue>, @unchecke
 
         if let wrapper = declaration.attributes.firstAttributeName,
            queryWrappers.contains(wrapper) { return binding }
-        if let type = binding.typeAnnotation?.type {
-            return type.isCollectionType ? binding : nil
-        }
+        if let type = binding.typeAnnotation?.type { return type.isCollectionType ? binding : nil }
 
         guard let value = binding.initializer?.value else { return nil }
         let constructed = value.as(FunctionCallExprSyntax.self)?.calledExpression ?? value
@@ -86,8 +86,11 @@ final class NoWholeCollectionChangeKey: LintSyntaxRule<LintOnlyValue>, @unchecke
 }
 
 fileprivate extension Finding.Message {
-    static func wholeCollectionKey(modifier: String, label: String, key: String) -> Finding.Message
-    {
+    static func wholeCollectionKey(
+        modifier: String,
+        label: String,
+        key: String
+    ) -> Finding.Message {
         """
         '.\(modifier)(\(label): \(key))' compares the whole collection '\(key)' on each update. \
         Observe a small key that changes whenever the work must run, such as a revision or a \

@@ -7,6 +7,8 @@ struct NoDroppedCaughtErrorTests: RuleTesting {
     private static let message =
         "keep the caught error in the error this 'catch' throws; store it in the new error or log it"
 
+    @Test func guidanceIsConsider() { #expect(NoDroppedCaughtError.guidance == .consider) }
+
     @Test func implicitErrorDropped() {
         assertLint(
             NoDroppedCaughtError.self,

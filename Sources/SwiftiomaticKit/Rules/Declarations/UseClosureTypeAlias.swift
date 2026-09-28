@@ -4,19 +4,25 @@ import SwiftSyntax
 ///
 /// A closure type that takes or returns another closure, or that spells several nested types, is
 /// hard to read in a declaration. A `typealias` names what the closure does and keeps the stored
-/// property on one short line.
+/// property on one short line. When several declarations share the type, a change to the signature
+/// then occurs in one place. For example, write
+/// `typealias CompletionHandler = (Result<String, Error>) -> Void`, then declare
+/// `var completionHandler: CompletionHandler?`.
+///
+/// Keep a short closure type spelled out, such as `() -> Void` or `(Int) -> String`. A name for a
+/// simple type adds a lookup and does not make the declaration clearer.
 ///
 /// A closure type counts as complex when a parameter or the result is itself a closure type, or
 /// when it spells five or more types in total. `(Item?, Binding<Bool>) -> Editor` spells five:
 /// `Item?` , `Item` , `Binding<Bool>` , `Bool` and `Editor` .
 ///
-/// A closure type also earns a name when the file spells it more than once, in stored properties
-/// or in function and initializer parameters. Two spellings match when they differ only in
-/// parameter labels, attributes such as `@escaping` , or an outer optional. Two closure types with
-/// the same list of two or more parameters also match, so `(ID, Edge, ID) -> Bool` and
+/// A closure type also earns a name when the file spells it more than once, in stored properties or
+/// in function and initializer parameters. Two spellings match when they differ only in parameter
+/// labels, attributes such as `@escaping` , or an outer optional. Two closure types with the same
+/// list of two or more parameters also match, so `(ID, Edge, ID) -> Bool` and
 /// `(ID, Edge, ID) -> Void` both report. `() -> Void` never counts as a repeat. An initializer
-/// parameter that sets a stored property of the same name and closure type does not count, and
-/// does not report, because the language requires that second spelling.
+/// parameter that sets a stored property of the same name and closure type does not count, and does
+/// not report, because the language requires that second spelling.
 ///
 /// Two closure types of two or more parameters that differ in exactly one parameter type share a
 /// shape, as in `(Item, Importable) -> Void` and `(Item, Exportable) -> Void` . A generic
@@ -29,12 +35,12 @@ import SwiftSyntax
 /// A function that returns a closure type spells that type too. The return types count toward
 /// repeats, so functions that all return `(Row, Row) -> Bool` report.
 ///
-/// An initializer parameter that sets a stored property still reports when its own closure type
-/// is heavily decorated. One `typealias` then serves both spellings.
+/// An initializer parameter that sets a stored property still reports when its own closure type is
+/// heavily decorated. One `typealias` then serves both spellings.
 ///
 /// Lint: A stored property of a type has a complex closure type, a parameter has a heavily
-/// decorated closure type, or a stored property, parameter or function result spells a closure type or a closure
-/// shape that the file repeats.
+/// decorated closure type, or a stored property, parameter or function result spells a closure type
+/// or a closure shape that the file repeats.
 final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
     override class var guidance: GuidanceLevel { .consider }
@@ -58,10 +64,14 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
         for function in collector.functions {
             let spelling = Self.normalized(function)
             if spelling.type != "() -> Void" { typeCounts[spelling.type, default: 0] += 1 }
+
             if let parameters = spelling.parameters {
                 parameterListCounts[parameters, default: 0] += 1
             }
-            for shape in Self.shapes(function) { shapeSpellings[shape, default: []].insert(spelling.type) }
+
+            for shape in Self.shapes(function) {
+                shapeSpellings[shape, default: []].insert(spelling.type)
+            }
         }
         return .visitChildren
     }
@@ -126,14 +136,13 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
         _ function: FunctionTypeSyntax
     ) -> Bool {
         guard let initializer = parameter.ancestorOrSelf(mapping: {
-                  $0.as(InitializerDeclSyntax.self)
-              }),
+            $0.as(InitializerDeclSyntax.self)
+        }),
               initializer.signature.parameterClause.parameters.contains(where: {
                   $0.id == parameter.id
               }),
               let members = initializer.parent?.as(MemberBlockItemSyntax.self)?.parent?
-                  .as(MemberBlockItemListSyntax.self)
-        else { return false }
+                  .as(MemberBlockItemListSyntax.self) else { return false }
         let name = (parameter.secondName ?? parameter.firstName).text
         let type = normalized(function).type
 
@@ -151,6 +160,7 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
     private func repeatedSpelling(_ function: FunctionTypeSyntax) -> String? {
         let spelling = Self.normalized(function)
         if typeCounts[spelling.type, default: 0] >= 2 { return spelling.type }
+
         if let parameters = spelling.parameters, parameterListCounts[parameters, default: 0] >= 2 {
             return spelling.type
         }
@@ -167,7 +177,8 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
     private static func shapes(_ function: FunctionTypeSyntax) -> [String] {
         let parameters = parameterTypes(function)
         guard parameters.count >= 2 else { return [] }
-        let tail = effects(function) + " -> " + collapsed(function.returnClause.type.trimmedDescription)
+        let tail = effects(function) + " -> "
+            + collapsed(function.returnClause.type.trimmedDescription)
 
         return parameters.indices.map { index in
             var shape = parameters
@@ -186,7 +197,9 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
 
     /// The closure type without parameter labels or parameter attributes, and its parameter list
     /// when it has two or more parameters
-    private static func normalized(_ function: FunctionTypeSyntax) -> (type: String, parameters: String?) {
+    private static func normalized(
+        _ function: FunctionTypeSyntax
+    ) -> (type: String, parameters: String?) {
         let parameters = parameterTypes(function)
         let list = "(" + parameters.joined(separator: ", ") + ")"
         let result = collapsed(function.returnClause.type.trimmedDescription)
@@ -204,7 +217,10 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
     }
 
     /// Whether `type` , which wraps `function` , spells three or more attributes and effects
-    private static func isHeavilyDecorated(_ type: TypeSyntax, _ function: FunctionTypeSyntax) -> Bool {
+    private static func isHeavilyDecorated(
+        _ type: TypeSyntax,
+        _ function: FunctionTypeSyntax
+    ) -> Bool {
         var count = 0
         var current = type
 
@@ -214,8 +230,10 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
                 current = attributed.baseType
             } else if let optional = current.as(OptionalTypeSyntax.self) {
                 current = optional.wrappedType
-            } else if let tuple = current.as(TupleTypeSyntax.self), tuple.elements.count == 1,
-                      let element = tuple.elements.first {
+            } else if let tuple = current.as(TupleTypeSyntax.self),
+               tuple.elements.count == 1,
+               let element = tuple.elements.first
+            {
                 current = element.type
             } else {
                 break
@@ -268,27 +286,27 @@ final class UseClosureTypeAlias: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
     private final class TypeCounter: SyntaxVisitor {
         var count = 0
 
-        override func visit(_ node: IdentifierTypeSyntax) -> SyntaxVisitorContinueKind {
+        override func visit(_: IdentifierTypeSyntax) -> SyntaxVisitorContinueKind {
             count += 1
             return .visitChildren
         }
 
-        override func visit(_ node: MemberTypeSyntax) -> SyntaxVisitorContinueKind {
+        override func visit(_: MemberTypeSyntax) -> SyntaxVisitorContinueKind {
             count += 1
             return .skipChildren
         }
 
-        override func visit(_ node: OptionalTypeSyntax) -> SyntaxVisitorContinueKind {
+        override func visit(_: OptionalTypeSyntax) -> SyntaxVisitorContinueKind {
             count += 1
             return .visitChildren
         }
 
-        override func visit(_ node: ArrayTypeSyntax) -> SyntaxVisitorContinueKind {
+        override func visit(_: ArrayTypeSyntax) -> SyntaxVisitorContinueKind {
             count += 1
             return .visitChildren
         }
 
-        override func visit(_ node: DictionaryTypeSyntax) -> SyntaxVisitorContinueKind {
+        override func visit(_: DictionaryTypeSyntax) -> SyntaxVisitorContinueKind {
             count += 1
             return .visitChildren
         }

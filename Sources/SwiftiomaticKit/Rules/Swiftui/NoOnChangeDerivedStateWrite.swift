@@ -1,23 +1,31 @@
 import SwiftSyntax
 
-/// Flag an `.onChange(of:)` whose source is a `@State` of the view and whose action assigns
-/// another stored property of the same view.
+/// Flag an `.onChange(of:)` whose source is a `@State` of the view and whose action assigns another
+/// stored property of the same view.
 ///
 /// The write lands one update after the change it follows. SwiftUI evaluates `body` once with the
-/// new source and the old derived value, then again after the action runs. When the view owns both
-/// values, it can derive the second one in the same mutation, for example in a `didSet` of a model
-/// value, or compute it where it is read.
+/// new source and the old derived value, then again after the action runs. The write is also not
+/// part of the transaction of the source change. When the source changes in `withAnimation`, the
+/// derived value does not animate with it.
 ///
-/// The rule only reports a source that the view owns as `@State` . An environment value or a
-/// `Binding` from a parent changes outside the view, so `onChange` is the correct reaction to it.
+/// When the view owns both values, derive the second one in the same mutation. If the target is a
+/// cheap, pure function of the source, replace it with a computed property, for example
+/// `private var subtotal: Int { quantity * unitPrice }`. If both values need storage, set the
+/// target in a `didSet` of the source, or in one model method that every writer calls.
+///
+/// The source can be a `@State` property or a member path on one, such as `settings.type` . The
+/// rule only reports a source that the view owns as `@State` . An environment value or a `Binding`
+/// from a parent changes outside the view, so `onChange` is the correct reaction to it. Keep
+/// `onChange` also when the action is a real side effect and not a relation between two stored
+/// values, when the work depends on the lifetime of the view, or when the source changes rarely and
+/// the target does not need to change in the same transaction.
 ///
 /// The rule also reports the declaration of the source and the declaration of the target. The fix
-/// often changes those declarations, for example when the target becomes a computed property.
-/// Each declaration gets one finding, also when more than one write links it.
+/// often changes those declarations, for example when the target becomes a computed property. Each
+/// declaration gets one finding, also when more than one write links it.
 ///
-/// Lint: An `.onChange(of:)` of a `@State` property assigns a different stored property of the
-/// same view type. The write, the source declaration, and the target declaration each get a
-/// warning.
+/// Lint: An `.onChange(of:)` of a `@State` property assigns a different stored property of the same
+/// view type. The write, the source declaration, and the target declaration each get a warning.
 final class NoOnChangeDerivedStateWrite: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
     override class var guidance: GuidanceLevel { .consider }
@@ -28,13 +36,16 @@ final class NoOnChangeDerivedStateWrite: LintSyntaxRule<LintOnlyValue>, @uncheck
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard node.modifierName == "onChange",
               let source = node.arguments.first(where: { $0.label?.text == "of" })?.expression,
-              let sourceName = source.selfMemberReference?.baseName.text,
+              let sourceName = source.assignmentRoot.selfMemberReference?.baseName.text,
               let entry = context.typeMembers(around: node).enclosingType(of: node),
               entry.isView,
               entry.isStateProperty(sourceName),
               !TypeMemberIndex.references(in: source, of: entry).isEmpty,
               let action = node.actionClosure(labels: ["action"]) else { return .visitChildren }
 
+        // The path as written, such as `settings.type` , for the messages that quote the argument
+        let written = source.trimmedDescription
+        let sourcePath = written.hasPrefix("self.") ? String(written.dropFirst(5)) : written
         let writes = InfixOperatorExprSyntax.assignments(
             in: action, compound: true, enteringClosures: true)
 
@@ -44,10 +55,10 @@ final class NoOnChangeDerivedStateWrite: LintSyntaxRule<LintOnlyValue>, @uncheck
                   target != sourceName,
                   entry.isStoredInstanceProperty(target),
                   !TypeMemberIndex.references(in: root, of: entry).isEmpty else { continue }
-            diagnose(.derivedWrite(source: sourceName, target: target), on: write)
+            diagnose(.derivedWrite(source: sourcePath, target: target), on: write)
             diagnoseDeclaration(
                 of: target, in: entry, near: node,
-                message: .derivedTarget(source: sourceName, target: target))
+                message: .derivedTarget(source: sourcePath, target: target))
             diagnoseDeclaration(
                 of: sourceName, in: entry, near: node,
                 message: .derivedSource(source: sourceName, target: target))

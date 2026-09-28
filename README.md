@@ -84,7 +84,7 @@ The `agent` report has two keys. `rules` gives the guidance level and applicabil
                                 { "role": "finding", "line": 5, "column": 13, "status": "introduced" } ] } ] }
 ```
 
-The guidance level says how strong the advice of a rule is. It is separate from the severity that the `lint` value sets. `MUST` means the code can deadlock, hang, leak or crash. `SHOULD` means the change improves the code in almost every case. `CONSIDER` means a judgment call, such as a `metrics` threshold. `sm explain <rule>` prints the full documentation of a rule.
+The guidance level says how strong the advice of a rule is. It is separate from the severity that the `lint` value sets. The five levels follow the SwiftFairy scale. `MUST` means the change is required: without it the code can deadlock, hang, leak or crash, or it breaks a contract of the language or framework. `SHOULD` means the change improves the code in almost every case. `MUST NOT` and `SHOULD NOT` have the same strength as `MUST` and `SHOULD`, for a rule whose advice is to remove or avoid a code shape. `CONSIDER` means a judgment call, such as a `metrics` threshold. `sm explain <rule>` prints the full documentation of a rule.
 
 `sm lint --changed-lines start:end` labels each finding `introduced` when its line is in a changed range and `existing` otherwise. Repeat the option for more ranges. It is valid for a single file. The `text` reporter appends the label to each diagnostic, the `agent` reporter sets `status`, and the `sarif` reporter sets `baselineState` to `new` or `unchanged`.
 

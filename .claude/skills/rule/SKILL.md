@@ -62,7 +62,7 @@ A custom value struct lives **in the rule's own file** and is `package`. There i
 | generated files | `Sources/SwiftiomaticKit/Generated/`, never edited by hand |
 | base classes | `Sources/SwiftiomaticKit/Syntax/` |
 
-The `<Group>` directory matches the `ConfigurationGroup` the rule declares. Rule sources indent with **4 spaces**. Test files indent with **2 spaces**.
+The `<Group>` directory matches the `ConfigurationGroup` the rule declares. The `sm` configuration of the repository sets the indentation of rule sources and tests. Run `sm format` on each new or changed file, and do not indent by hand.
 
 Groups: `access` `blankLines` `closures` `collections` `comments` `conditions` `controlFlow` `declarations` `generics` `hoist` `idioms` `indentation` `lineBreaks` `literals` `memory` `metrics` `naming` `redundancies` `sort` `spaces` `swiftui` `testing` `types` `unsafety` `wrap`.
 

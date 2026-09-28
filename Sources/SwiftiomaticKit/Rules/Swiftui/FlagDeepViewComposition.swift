@@ -2,18 +2,28 @@ import SwiftSyntax
 
 /// Flag a view `body` that nests three or more structural levels inside each other.
 ///
-/// SwiftUI evaluates the whole `body` of a view as one unit. A body that nests stacks, scroll
-/// views, lists and `ForEach` several levels deep rebuilds every level when any value it reads
-/// changes. An inner level extracted into its own `View` type gets its own inputs, and SwiftUI
-/// skips it when they do not change.
+/// Deep nesting is a sign that one body holds more than one responsibility. Review the nested
+/// regions. When a region has its own responsibility or its own dependencies, move it into a
+/// focused `View` type, such as `struct HabitatSection: View { let habitatID: Habitat.ID }`. Give
+/// the child only the values and the environment or observable dependencies that its `body` reads.
 ///
-/// A container counts as a level when it sits inside the content of another level. A
-/// `.background` or `.overlay` layer also counts as a level, one deeper than the view it decorates,
-/// when its content holds a container, or when it fills a shape, as in
+/// A focused child makes its responsibility and its inputs clear at its initializer. It also gives
+/// SwiftUI an update boundary. SwiftUI evaluates the whole `body` of a view as one unit, and a deep
+/// body evaluates every level when any value it reads changes. SwiftUI skips the `body` of a child
+/// `View` type when its inputs do not change. A helper that returns `some View` does not make this
+/// boundary.
+///
+/// Keep cohesive composition together. When the levels only arrange one piece of interface and read
+/// the same values, the depth alone is not a reason to extract. Do not extract every stack or
+/// modifier chain.
+///
+/// A container counts as a level when it sits inside the content of another level. A `.background`
+/// or `.overlay` layer also counts as a level, one deeper than the view it decorates, when its
+/// content holds a container, or when it fills a shape, as in
 /// `.background(.quaternary, in: .capsule)` . A shape layer composes a shape view with its own
-/// style. A leaf layer such as `.background(.red)` adds no level.
-/// Levels that sit side by side do not add up: two containers in sibling modifiers, or two layers
-/// in one modifier chain, each count only once.
+/// style. A leaf layer such as `.background(.red)` adds no level. Levels that sit side by side do
+/// not add up: two containers in sibling modifiers, or two layers in one modifier chain, each count
+/// only once.
 ///
 /// The rule reports once per body, on the `body` declaration. A note marks the innermost level of
 /// the deepest path, because that level is the one to extract. When several paths reach the same
@@ -33,7 +43,8 @@ final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked S
         "VStack", "HStack", "ZStack", "LazyVStack", "LazyHStack", "LazyVGrid", "LazyHGrid", "Grid",
         "GridRow", "ScrollView", "ScrollViewReader", "List", "Form", "Section", "Group", "GroupBox",
         "ForEach", "NavigationStack", "NavigationSplitView", "NavigationView", "TabView",
-        "GeometryReader", "ViewThatFits", "ControlGroup", "DisclosureGroup", "OutlineGroup", "Table",
+        "GeometryReader", "ViewThatFits", "ControlGroup", "DisclosureGroup", "OutlineGroup",
+        "Table",
     ]
 
     /// The modifiers that stack a layer on the view they decorate
@@ -44,7 +55,8 @@ final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked S
 
         for binding in node.bindings {
             guard let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier,
-                  name.text == "body", let accessors = binding.accessorBlock else { continue }
+                  name.text == "body",
+                  let accessors = binding.accessorBlock else { continue }
             check(accessors, reportingOn: name)
         }
         return .skipChildren
@@ -53,7 +65,9 @@ final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked S
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         let labels = node.signature.parameterClause.parameters.map(\.firstName.text)
 
-        if node.name.text == "body", labels == ["content"], let body = node.body,
+        if node.name.text == "body",
+           labels == ["content"],
+           let body = node.body,
            context.viewEntry(forMember: node) != nil { check(body, reportingOn: node.name) }
         return .skipChildren
     }
@@ -61,17 +75,15 @@ final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked S
     private func check(_ body: some SyntaxProtocol, reportingOn name: TokenSyntax) {
         let finder = DepthFinder(viewMode: .sourceAccurate)
         finder.walk(body)
-        guard finder.deepest.count >= Self.threshold, let innermost = finder.deepest.last else {
-            return
-        }
+        guard finder.deepest.count >= Self.threshold, let innermost = finder.deepest.last
+        else { return }
         let path = finder.deepest.map(\.name).joined(separator: " > ")
         let note = Finding.Note(
             message: .deepestLevel(innermost.name),
-            location: Finding.Location(
-                innermost.anchor.startLocation(converter: context.sourceLocationConverter))
+            location: Finding.Location(innermost.anchor.startLocation(
+                converter: context.sourceLocationConverter))
         )
-        diagnose(
-            .deepComposition(path: path, count: finder.deepest.count), on: name, notes: [note])
+        diagnose(.deepComposition(path: path, count: finder.deepest.count), on: name, notes: [note])
     }
 
     private final class DepthFinder: SyntaxVisitor {
@@ -108,9 +120,11 @@ final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked S
         /// The modifier name in `view.background(...)` or `view.overlay(...)` , when the layer
         /// fills a shape or its content holds a container
         private static func layerModifier(of call: FunctionCallExprSyntax) -> TokenSyntax? {
-            guard let name = call.modifierName, FlagDeepViewComposition.layers.contains(name),
+            guard let name = call.modifierName,
+                  FlagDeepViewComposition.layers.contains(name),
                   let member = call.calledExpression.as(MemberAccessExprSyntax.self),
-                  member.base != nil, fillsShape(call) || holdsContainer(call) else { return nil }
+                  member.base != nil,
+                  fillsShape(call) || holdsContainer(call) else { return nil }
             return member.declName.baseName
         }
 
@@ -148,6 +162,7 @@ final class FlagDeepViewComposition: LintSyntaxRule<LintOnlyValue>, @unchecked S
 
         private static func containerName(of call: FunctionCallExprSyntax) -> String? {
             var callee = call.calledExpression
+
             if let specialized = callee.as(GenericSpecializationExprSyntax.self) {
                 callee = specialized.expression
             }

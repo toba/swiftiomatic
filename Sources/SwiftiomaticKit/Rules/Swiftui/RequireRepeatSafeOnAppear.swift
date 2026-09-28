@@ -8,21 +8,23 @@ import SwiftSyntax
 /// once, or move it to the owner of the state.
 ///
 /// A call to a method of the view or to a closure it holds, such as `loadMore()` , runs again on
-/// each appearance too. A row of a lazy list that asks for the next page when it appears asks
-/// again each time it scrolls back into view. Make the call repeat-safe, or guard it with a flag
-/// the view keeps in state. The rule reports a call only when its name is a member that the view
-/// or a same-file extension declares. A free function such as `max(a, b)` is not reported.
+/// each appearance too. A row of a lazy list that asks for the next page when it appears asks again
+/// each time it scrolls back into view. Make the call repeat-safe, or guard it with a flag the view
+/// keeps in state, as in `guard !didLoad else { return }` followed by `didLoad = true` . A `@State`
+/// flag means once for this view identity. When SwiftUI removes the view and inserts it again, the
+/// flag starts fresh. The rule reports a call only when its name is a member that the view or a
+/// same-file extension declares. A free function such as `max(a, b)` is not reported.
 ///
 /// An assignment of a fixed value, such as `isFocused = true` , is repeat-safe and is not reported.
-/// A call is not reported when an `if` or `guard` in the closure reads a property the view keeps
-/// in state, such as `@State` or `@Binding` , because that check can make the call run once. The
-/// rule reads these properties from the view and from its same-file extensions. A call inside a
-/// nested closure, a call on another value, and a call to `print` or `withAnimation` are not
-/// reported. `UseTaskModifierNotOnAppear` covers a `Task` that starts from `.onAppear` .
+/// A call is not reported when an `if` or `guard` in the closure reads a property the view keeps in
+/// state, such as `@State` or `@Binding` , because that check can make the call run once. The rule
+/// reads these properties from the view and from its same-file extensions. A call inside a nested
+/// closure, a call on another value, and a call to `print` or `withAnimation` are not reported.
+/// `UseTaskModifierNotOnAppear` covers a `Task` that starts from `.onAppear` .
 ///
 /// Lint: An `.onAppear` closure holds a compound assignment, a self-referential arithmetic
-/// assignment, a call to a mutating collection method such as `append` , or a call to a method
-/// of the view or a closure it holds that no state check guards.
+/// assignment, a call to a mutating collection method such as `append` , or a call to a method of
+/// the view or a closure it holds that no state check guards.
 final class RequireRepeatSafeOnAppear: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
     override class var guidance: GuidanceLevel { .consider }
@@ -33,20 +35,18 @@ final class RequireRepeatSafeOnAppear: LintSyntaxRule<LintOnlyValue>, @unchecked
         let finder = WriteFinder(viewMode: .sourceAccurate)
         finder.walk(action.statements)
 
-        for write in finder.writes {
-            diagnose(.repeatedWrite(write.trimmedDescription), on: write)
+        for write in finder.writes { diagnose(.repeatedWrite(write.trimmedDescription), on: write) }
+        guard let entry = context.typeMembers(around: node).enclosingType(of: node) else {
+            return .visitChildren
         }
-        guard let entry = context.typeMembers(around: node).enclosingType(of: node)
-        else { return .visitChildren }
         let calls = finder.calls.filter { call in
-            guard let name = call.calledExpression.selfMemberReference?.baseName.text
-            else { return false }
+            guard let name = call.calledExpression.selfMemberReference?.baseName.text else {
+                return false
+            }
             return entry.members[name]?.contains { !$0.isStatic } == true
         }
         if !calls.isEmpty, !checksState(action, names: Self.stateNames(of: entry)) {
-            for call in calls {
-                diagnose(.repeatedCall(call.trimmedDescription), on: call)
-            }
+            for call in calls { diagnose(.repeatedCall(call.trimmedDescription), on: call) }
         }
         return .visitChildren
     }
@@ -110,12 +110,12 @@ final class RequireRepeatSafeOnAppear: LintSyntaxRule<LintOnlyValue>, @unchecked
 
         private var closureDepth = 0
 
-        override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+        override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
             closureDepth += 1
             return .visitChildren
         }
 
-        override func visitPost(_ node: ClosureExprSyntax) { closureDepth -= 1 }
+        override func visitPost(_: ClosureExprSyntax) { closureDepth -= 1 }
 
         override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
             if node.operator.isCompoundAssignmentOperator || Self.isSelfReferential(node) {
@@ -126,23 +126,23 @@ final class RequireRepeatSafeOnAppear: LintSyntaxRule<LintOnlyValue>, @unchecked
 
         override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
             if let member = node.calledExpression.as(MemberAccessExprSyntax.self),
-               member.base != nil,
-               Self.accumulatingMethods.contains(member.declName.baseName.text) {
+                member.base != nil,
+                Self.accumulatingMethods.contains(member.declName.baseName.text)
+            {
                 writes.append(ExprSyntax(node))
             } else if closureDepth == 0,
-                      let name = node.calledExpression.selfMemberReference?.baseName.text,
-                      name.first?.isLowercase == true, !Self.harmlessFunctions.contains(name) {
-                calls.append(node)
-            }
+               let name = node.calledExpression.selfMemberReference?.baseName.text,
+               name.first?.isLowercase == true,
+               !Self.harmlessFunctions.contains(name) { calls.append(node) }
             return .visitChildren
         }
 
         /// Whether `node` is `x = x + y` or another arithmetic update of the target
         private static func isSelfReferential(_ node: InfixOperatorExprSyntax) -> Bool {
             guard node.operator.is(AssignmentExprSyntax.self),
-                  let value = node.rightOperand.as(InfixOperatorExprSyntax.self),
-                  let op = value.operator.as(BinaryOperatorExprSyntax.self),
-                  arithmeticOperators.contains(op.operator.text) else { return false }
+                let value = node.rightOperand.as(InfixOperatorExprSyntax.self),
+                let op = value.operator.as(BinaryOperatorExprSyntax.self),
+                arithmeticOperators.contains(op.operator.text) else { return false }
             return normalized(value.leftOperand) == normalized(node.leftOperand)
         }
 

@@ -582,6 +582,36 @@ struct SortImportsTests: RuleTesting {
     )
   }
 
+  /// The `length` order puts the shortest module name first and breaks ties alphabetically.
+  @Test func lengthSortOrderSortsShortestModuleNameFirst() {
+    var configuration = Configuration.forTesting
+    configuration[SortImports.self].sortOrder = .length
+
+    assertFormatting(
+      SortImports.self,
+      input: """
+        import TobaCore
+        1️⃣import Core
+        import TobaXML
+        import Foundation
+
+        foo()
+        """,
+      expected: """
+        import Core
+        import TobaXML
+        import TobaCore
+        import Foundation
+
+        foo()
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "sort import statements lexicographically"),
+      ],
+      configuration: configuration
+    )
+  }
+
   @Test func conditionalImportsWhenEnabled() {
     var configuration = Configuration.forTesting
     configuration[SortImports.self].includeConditionalImports = true

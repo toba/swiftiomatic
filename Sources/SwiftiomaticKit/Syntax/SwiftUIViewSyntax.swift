@@ -18,16 +18,16 @@ extension Context {
 }
 
 extension TypeMemberIndex.TypeEntry {
-    /// The number of stored instance properties the type and its same-file extensions declare
+    /// The number of stored instance properties the type declares, in this file or another one
     var storedInstancePropertyCount: Int {
-        members.values.reduce(0) { count, overloads in
+        allMembers.values.reduce(0) { count, overloads in
             count + overloads.count(where: { $0.kind == .storedProperty && !$0.isStatic })
         }
     }
 
     /// Whether the member named `name` is a stored property that carries the `@State` wrapper
     func isStateProperty(_ name: String) -> Bool {
-        members[name]?.contains {
+        members(named: name)?.contains {
             $0.kind == .storedProperty
                 && $0.declaration.as(VariableDeclSyntax.self)?.attributes
                     .attribute(named: "State") != nil
@@ -36,7 +36,7 @@ extension TypeMemberIndex.TypeEntry {
 
     /// Whether the member named `name` is a stored instance property
     func isStoredInstanceProperty(_ name: String) -> Bool {
-        members[name]?.contains { $0.kind == .storedProperty && !$0.isStatic } == true
+        members(named: name)?.contains { $0.kind == .storedProperty && !$0.isStatic } == true
     }
 }
 
@@ -440,8 +440,6 @@ extension TypeSyntax {
     var isCollectionType: Bool {
         let type = unwrappingOptional
         if type.is(ArrayTypeSyntax.self) || type.is(DictionaryTypeSyntax.self) { return true }
-        let name = type.as(IdentifierTypeSyntax.self)?.name.text
-            ?? type.as(MemberTypeSyntax.self)?.name.text
-        return name.map(Self.collectionTypeNames.contains) ?? false
+        return type.simpleName.map(Self.collectionTypeNames.contains) ?? false
     }
 }

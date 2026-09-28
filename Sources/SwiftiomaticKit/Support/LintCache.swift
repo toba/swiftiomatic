@@ -92,14 +92,33 @@ package final class LintCache: Sendable {
     /// On-disk record for one file. Empty `entries` means "linted clean".
     package struct Record: Codable, Sendable {
         /// Bumped whenever the on-disk schema changes incompatibly.
-        package static let currentVersion = 1
+        ///
+        /// Version 2 stores the linted file of a location as an empty path. Version 1 records hold
+        /// the path relative to the working directory of the run that wrote them. Version 3 adds
+        /// the project index keys that the findings depend on.
+        package static let currentVersion = 3
 
         package var version: Int
         package var entries: [Entry]
 
-        package init(version: Int = Self.currentVersion, entries: [Entry]) {
+        /// The keys of the project index that the lint of the file read, such as `type:Book` .
+        /// Empty when the findings depend on the file alone.
+        package var dependencies: [String]
+
+        /// The `ProjectIndex.digest(of:from:)` of `dependencies` when the record was written. A
+        /// lookup whose current digest differs is a miss.
+        package var dependencyDigest: String?
+
+        package init(
+            version: Int = Self.currentVersion,
+            entries: [Entry],
+            dependencies: [String] = [],
+            dependencyDigest: String? = nil
+        ) {
             self.version = version
             self.entries = entries
+            self.dependencies = dependencies
+            self.dependencyDigest = dependencyDigest
         }
     }
 
@@ -358,16 +377,27 @@ package final class LintCache: Sendable {
 
 package extension LintCache.Location {
     /// Round-trips a `Finding.Location` through the cache schema.
-    init(_ findingLocation: Finding.Location) {
+    ///
+    /// A location in the linted file stores an empty path. The displayed path of the linted file
+    /// depends on the working directory, but the record key does not. The replay supplies the path
+    /// of the current run.
+    ///
+    /// - Parameters:
+    ///   - findingLocation: The location to store.
+    ///   - lintedFile: The displayed path of the file that the run lints.
+    init(_ findingLocation: Finding.Location, lintedFile: String) {
         self.init(
-            file: findingLocation.file,
+            file: findingLocation.file == lintedFile ? "" : findingLocation.file,
             line: findingLocation.line,
             column: findingLocation.column
         )
     }
 
     /// Materializes the cached location as a `Finding.Location` .
-    var asFindingLocation: Finding.Location {
-        Finding.Location(file: file, line: line, column: column)
+    ///
+    /// - Parameter lintedFile: The displayed path of the file that the current run lints. It
+    ///   replaces the empty path that marks the linted file.
+    func asFindingLocation(lintedFile: String) -> Finding.Location {
+        Finding.Location(file: file.isEmpty ? lintedFile : file, line: line, column: column)
     }
 }

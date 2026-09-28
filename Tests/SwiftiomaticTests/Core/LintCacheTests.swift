@@ -189,6 +189,32 @@ private final class TemporaryPackage {
         #expect(decoded.notes[0].message == "see also")
     }
 
+    /// A record is keyed by the absolute path, but a finding carries the path that the run
+    /// displays, which is relative to the working directory. A replay from another working
+    /// directory must show the path of the current run, not the path of the run that wrote it.
+    @Test func locationOfLintedFileReplaysWithCurrentPath() {
+        let written = Finding.Location(file: "Sources/Import/Import+list.swift", line: 3, column: 5)
+        let cached = LintCache.Location(written, lintedFile: "Sources/Import/Import+list.swift")
+
+        let replayed = cached.asFindingLocation(
+            lintedFile: "Integrations/DocX/Sources/Import/Import+list.swift")
+        #expect(replayed.file == "Integrations/DocX/Sources/Import/Import+list.swift")
+        #expect(replayed.line == 3)
+        #expect(replayed.column == 5)
+    }
+
+    /// A location in another file than the linted file keeps its stored path.
+    @Test func locationOfOtherFileReplaysWithStoredPath() {
+        let written = Finding.Location(file: "/abs/Other.swift", line: 1, column: 1)
+        let cached = LintCache.Location(written, lintedFile: "Sources/A.swift")
+        #expect(cached.asFindingLocation(lintedFile: "B/Sources/A.swift").file == "/abs/Other.swift")
+    }
+
+    /// Records from before the working-directory fix hold stale relative paths, so they must miss.
+    @Test func recordVersionRejectsWorkingDirectoryRelativeRecords() {
+        #expect(LintCache.Record.currentVersion >= 2)
+    }
+
     /// The cache belongs to the package, not to the directory the run started in. A run started
     /// inside `Sources/` must still write to `<package root>/.build`, where the rooted ignore rule
     /// covers it.

@@ -77,7 +77,9 @@ extension SwiftiomaticCommand {
                 A git reference, such as `main` or `HEAD~1`. For each file, sm runs \
                 `git diff -U0 <ref>` in the repository of that file. Every finding is labeled \
                 `introduced` when its line changed since the reference and `existing` otherwise. \
-                An untracked file counts as fully changed. Not valid with `--changed-lines`.
+                An untracked file counts as fully changed. Not valid with `--changed-lines`. \
+                A rule can read other files of the project. An edit in one file can then give a \
+                new finding on an unchanged line of another file, which is labeled `existing`.
                 """
         )
         var changedSince: String?

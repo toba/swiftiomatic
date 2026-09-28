@@ -3,24 +3,41 @@ import SwiftSyntax
 /// Flag a view `body` whose only statement is an `if` / `else` or a `switch` that swaps the root
 /// view type between branches.
 ///
-/// When the branches build different root types, SwiftUI gives each branch its own identity. A
-/// change of the condition destroys the views of one branch and creates the views of the other. The
-/// destroyed views lose their state, and SwiftUI cannot animate between the two trees. Keep one
-/// stable root view and put the conditional content inside it, or change a modifier value instead
-/// of the view.
+/// SwiftUI gives each branch of an `if` or a `switch` in a view builder its own identity. This is
+/// true even when two branches build the same content. When the selected branch changes, SwiftUI
+/// destroys the views of one branch and creates the views of the other. The destroyed views lose
+/// their state, such as navigation state and focus, and SwiftUI cannot animate between the two
+/// trees. At the root of `body` the loss includes every view inside the root.
 ///
-/// The rule does not report an `if` without `else` , an `if #available` check, or branches whose
-/// root calls name the same view type. The root of a branch is the view that its modifier chain
-/// starts from.
+/// Keep one stable root view and one modifier chain. Change only the values that the modifiers get,
+/// with a ternary operator or a modifier that accepts an optional value:
 ///
-/// When every branch is an `HStack` , `VStack` , `ZStack` or `Grid` that holds the same children,
-/// only the layout changes. The message then names `AnyLayout` , which switches between
-/// `HStackLayout` , `VStackLayout` and the other layouts and keeps the identity of the children.
+/// ```swift
+/// content.tint(isHighlighted ? .accentColor : nil)
+/// ```
+///
+/// When only part of the content changes, put the condition inside the stable root.
+///
+/// An `if #available` check does not change while the app runs, so the swap never occurs. The rule
+/// does not report it. In a `View` `body` , the rule also does not report an `if` without `else` or
+/// branches whose root calls name the same view type, although these shapes also reset the identity
+/// when the branch changes. The root of a branch is the view that its modifier chain starts from.
+///
+/// In a `ViewModifier` `body(content:)` , the rule reports every top-level `if` or `switch` on a
+/// runtime condition, also one without `else` and one whose branches all start from `content` .
+/// Each branch still gives `content` its own identity, so the modified view loses its state when
+/// the condition changes.
+///
+/// When every branch is an `HStack`, `VStack`, `ZStack` or `Grid` that holds the same children,
+/// only the layout changes. The message then names `AnyLayout`, which switches between
+/// `HStackLayout`, `VStackLayout` and the other layouts and keeps the identity of the children.
 ///
 /// Lint: The single top-level statement of a `View` `body` or a `ViewModifier` `body(content:)` is
-/// an `if` / `else` or a `switch` whose branches build two or more different root view types.
+/// an `if` / `else` or a `switch` whose branches build two or more different root view types. In a
+/// `ViewModifier` `body(content:)` , any top-level `if` or `switch` on a runtime condition.
 final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .swiftui }
+    override class var guidance: GuidanceLevel { .shouldNot }
 
     /// The root of one branch: the name of its root view and the node that names it
     private struct Root {
@@ -51,33 +68,43 @@ final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         if node.name.text == "body",
            labels == ["content"],
            context.viewEntry(forMember: node) != nil,
-           let statements = node.body?.statements { check(statements) }
+           let statements = node.body?.statements,
+           !check(statements),
+           // In `ViewModifier.body(content:)` , any runtime branch changes the identity of
+           // `content` , also one that keeps the root or has no `else` .
+           let statement = statements.firstAndOnly,
+           let expression = statement.expression,
+           let keyword = Self.runtimeBranchKeyword(expression) {
+            diagnose(.modifierBranch, on: keyword)
+        }
         return .visitChildren
     }
 
-    private func check(_ statements: CodeBlockItemListSyntax) {
+    /// Reports a swap of the root view, and returns whether it did
+    @discardableResult
+    private func check(_ statements: CodeBlockItemListSyntax) -> Bool {
         guard let statement = statements.firstAndOnly,
-              let expression = Self.expression(of: statement) else { return }
+              let expression = statement.expression else { return false }
         let keyword: TokenSyntax
         let roots: [Root]
 
         if let ifExpr = expression.as(IfExprSyntax.self) {
             guard !Self.checksAvailability(ifExpr),
-                  let branches = Self.branches(of: ifExpr) else { return }
+                  let branches = Self.branches(of: ifExpr) else { return false }
             keyword = ifExpr.ifKeyword
             roots = branches.map { Self.root(of: $0) }
         } else if let switchExpr = expression.as(SwitchExprSyntax.self) {
             let branches = switchExpr.cases.compactMap { $0.as(SwitchCaseSyntax.self)?.statements }
-            guard branches.count > 1 else { return }
+            guard branches.count > 1 else { return false }
             keyword = switchExpr.switchKeyword
             roots = branches.map { Self.root(of: $0) }
         } else {
-            return
+            return false
         }
 
         var names: [String] = []
         for root in roots where !names.contains(root.name) { names.append(root.name) }
-        guard names.count > 1 else { return }
+        guard names.count > 1 else { return false }
 
         let notes = roots.map { root in
             Finding.Note(
@@ -91,6 +118,15 @@ final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Se
             ? .layoutSwap(names)
             : .rootSwap(names)
         diagnose(message, on: keyword, notes: notes)
+        return true
+    }
+
+    /// The keyword of a top-level `if` or `switch` that tests a runtime condition, or `nil`
+    private static func runtimeBranchKeyword(_ expression: ExprSyntax) -> TokenSyntax? {
+        if let ifExpr = expression.as(IfExprSyntax.self), !checksAvailability(ifExpr) {
+            return ifExpr.ifKeyword
+        }
+        return expression.as(SwitchExprSyntax.self)?.switchKeyword
     }
 
     /// Stack views that have an `AnyLayout` counterpart
@@ -107,7 +143,7 @@ final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Se
                   let call = stackCall(of: root.node),
                   let content = call.trailingClosure else { return nil }
             return content.statements.map { item in
-                expression(of: item).map(rootName(of:)) ?? item.trimmedDescription
+                item.expression.map(rootName(of:)) ?? item.trimmedDescription
             }
         }
         guard let first = children.first, let first, !first.isEmpty else { return false }
@@ -120,6 +156,7 @@ final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Se
 
         while let expression = current {
             guard let call = expression.as(FunctionCallExprSyntax.self) else { return nil }
+
             if let member = call.calledExpression.as(MemberAccessExprSyntax.self) {
                 current = member.base
             } else {
@@ -127,11 +164,6 @@ final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Se
             }
         }
         return nil
-    }
-
-    private static func expression(of item: CodeBlockItemSyntax) -> ExprSyntax? {
-        if let expression = item.item.as(ExprSyntax.self) { return expression }
-        return item.item.as(ExpressionStmtSyntax.self)?.expression
     }
 
     /// The statement lists of every branch, or `nil` when the chain has no final `else`
@@ -162,7 +194,7 @@ final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         guard let statement = statements.first else {
             return Root(name: "EmptyView", node: Syntax(statements))
         }
-        guard statements.count == 1, let expression = expression(of: statement)
+        guard statements.count == 1, let expression = statement.expression
         else { return Root(name: "TupleView", node: Syntax(statement)) }
         return expression.is(IfExprSyntax.self) || expression.is(SwitchExprSyntax.self)
             ? Root(name: "_ConditionalContent", node: Syntax(expression))
@@ -193,6 +225,12 @@ final class NoRootBranchSwapInBody: LintSyntaxRule<LintOnlyValue>, @unchecked Se
 }
 
 fileprivate extension Finding.Message {
+    static let modifierBranch: Finding.Message = """
+        'body(content:)' branches on a runtime condition, so a change of the condition gives \
+        'content' a new identity. Keep one modifier chain, and put the condition in a ternary or an \
+        optional-aware modifier
+        """
+
     static func rootSwap(_ names: [String]) -> Finding.Message {
         let list = names.map { "'\($0)'" }.joined(separator: ", ")
         return "'body' swaps its root view between \(list). Keep one stable root view and put the condition inside it"

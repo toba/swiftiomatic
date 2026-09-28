@@ -7,6 +7,8 @@ struct UseGuardForMainPathTests: RuleTesting {
     private static let message =
         "the main path sits inside this trailing 'if'; use 'guard ... else { return }' and unindent the body"
 
+    @Test func guidanceIsConsider() { #expect(UseGuardForMainPath.guidance == .consider) }
+
     @Test func trailingIfInVoidFunction() {
         assertLint(
             UseGuardForMainPath.self,

@@ -228,12 +228,27 @@ package enum CommentReflowEngine {
                 if fenceOpener(l) != nil { break }
                 if isLinkReferenceDefinition(l) { break }
                 if isTableLine(l) { break }
-                paraLines.append(l.trimmingCharacters(in: .whitespaces))
+                let trimmed = l.trimmingCharacters(in: .whitespaces)
+                if let previous = paraLines.last, startsParagraph(trimmed, after: previous) { break }
+                paraLines.append(trimmed)
                 i += 1
             }
             blocks.append(.paragraph(text: paraLines.joined(separator: " ")))
         }
         return blocks
+    }
+
+    /// Returns `true` if `line` starts a new paragraph after the line `previous`, with no blank line
+    /// between them.
+    ///
+    /// A line that ends without terminal punctuation, followed by a line that starts with a capital
+    /// letter, marks a paragraph break. Two such lines usually hold two separate thoughts, and a
+    /// join runs the first into the second without punctuation.
+    private static func startsParagraph(_ line: String, after previous: String) -> Bool {
+        guard let last = previous.last, last.isLetter || last.isNumber,
+              let first = line.first, first.isUppercase
+        else { return false }
+        return true
     }
 
     /// Returns `true` if `line` is a CommonMark link reference definition of the form

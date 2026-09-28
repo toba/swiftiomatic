@@ -11,6 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
+import Synchronization
 import SwiftSyntax
 import SwiftiomaticKit
 import SwiftDiagnostics
@@ -20,11 +21,19 @@ final class LintFrontend: Frontend, @unchecked Sendable {
     /// Optional content-addressed cache of previously emitted findings. `nil` disables caching.
     private let cache: LintCache?
 
+    /// Whether the lint reads the other files of the project through a `ProjectIndex` .
+    private let usesProjectIndex: Bool
+
+    /// The project index of each scope root, built by the first file under the root. The workers
+    /// of a parallel run wait for that one build.
+    private let projectIndexes = Mutex<[String: ProjectIndex]>([:])
+
     init(
         configurationOptions: ConfigurationOptions,
         lintFormatOptions: LintFormatOptions,
         treatWarningsAsErrors: Bool = false,
         cache: LintCache?,
+        usesProjectIndex: Bool = true,
         additionalDiagnosticHandlers: [@Sendable (Diagnostic) -> Void] = [],
         suppressDefaultDiagnosticPrinter: Bool = false,
         changedLines: [ClosedRange<Int>] = [],
@@ -32,6 +41,7 @@ final class LintFrontend: Frontend, @unchecked Sendable {
         onlyChanged: Bool = false
     ) {
         self.cache = cache
+        self.usesProjectIndex = usesProjectIndex
         super.init(
             configurationOptions: configurationOptions,
             lintFormatOptions: lintFormatOptions,
@@ -64,6 +74,8 @@ final class LintFrontend: Frontend, @unchecked Sendable {
                 ignoreUnparsableFiles: lintFormatOptions.ignoreUnparsableFiles
             )
 
+        let projectIndex = projectIndex(for: fileToProcess, source: source)
+
         if cacheEligible, let cache {
             let absolutePath = url.standardizedFileURL.path
             let contentHash = LintCache.contentHash(of: source)
@@ -72,17 +84,25 @@ final class LintFrontend: Frontend, @unchecked Sendable {
                 key: fileToProcess.configurationKey
             )
 
+            // A record whose findings read other files is valid while those files are unchanged
             if let record = cache.lookup(
                 absolutePath: absolutePath,
                 contentHash: contentHash,
                 fingerprint: fingerprint
-            ) {
-                for entry in record.entries { diagnosticsEngine.consumeCachedEntry(entry) }
+            ), record.dependencies.isEmpty || record.dependencyDigest == projectIndex?.digest(
+                of: record.dependencies, from: ProjectIndex.key(for: url.path))
+            {
+                for entry in record.entries {
+                    diagnosticsEngine.consumeCachedEntry(entry, lintedFile: url.relativePath)
+                }
                 return
             }
 
             // Miss: lint, capture findings as we forward them, and persist on success.
-            let capturer = CapturingFindingConsumer(forward: diagnosticsEngine.consumeFinding)
+            let capturer = CapturingFindingConsumer(
+                lintedFile: url.relativePath,
+                forward: diagnosticsEngine.consumeFinding
+            )
             var parserDiagnosticEmitted = false
 
             let linter = LintCoordinator(
@@ -90,6 +110,7 @@ final class LintFrontend: Frontend, @unchecked Sendable {
                 findingConsumer: capturer.consume
             )
             linter.debugOptions = debugOptions
+            linter.projectIndex = projectIndex
 
             do {
                 try linter.lint(
@@ -112,11 +133,19 @@ final class LintFrontend: Frontend, @unchecked Sendable {
             // A file the parser couldn't fully parse may have skipped rules entirely. Don't poison
             // the cache with a record that would silently suppress findings on the next run.
             if !parserDiagnosticEmitted {
+                var record = capturer.record()
+                let keys = linter.projectKeys.sorted()
+
+                if let projectIndex, !keys.isEmpty {
+                    record.dependencies = keys
+                    record.dependencyDigest = projectIndex.digest(
+                        of: keys, from: ProjectIndex.key(for: url.path))
+                }
                 cache.store(
                     absolutePath: absolutePath,
                     contentHash: contentHash,
                     fingerprint: fingerprint,
-                    record: capturer.record()
+                    record: record
                 )
             }
             return
@@ -128,6 +157,7 @@ final class LintFrontend: Frontend, @unchecked Sendable {
             findingConsumer: diagnosticsEngine.consumeFinding
         )
         linter.debugOptions = debugOptions
+        linter.projectIndex = projectIndex
 
         do {
             try linter.lint(
@@ -149,6 +179,32 @@ final class LintFrontend: Frontend, @unchecked Sendable {
     }
 }
 
+extension LintFrontend {
+    /// The index of the project that holds the file, or `nil` when no project holds it
+    ///
+    /// Files on disk share one index for each scope root. Text from standard input replaces the
+    /// file at its assumed path, so it gets an index of its own. Text from standard input without
+    /// `--assume-filename` has no path and no project.
+    private func projectIndex(for file: FileToProcess, source: String) -> ProjectIndex? {
+        guard usesProjectIndex, file.url.path != "<stdin>",
+              let root = ProjectIndex.scopeRoot(startingAt: file.url.path) else { return nil }
+        let excludes = excludePatterns(forProjectRoot: root)
+
+        if file.isStandardInput {
+            return ProjectIndex.build(
+                root: root, excludes: excludes, overrides: [file.url.path: source],
+                cacheDirectory: cache?.root)
+        }
+        return projectIndexes.withLock { indexes in
+            if let index = indexes[root.path] { return index }
+            let index = ProjectIndex.build(
+                root: root, excludes: excludes, cacheDirectory: cache?.root)
+            indexes[root.path] = index
+            return index
+        }
+    }
+}
+
 /// Wraps a finding consumer to record every forwarded finding in cache-ready form.
 ///
 /// Single-thread use only. One instance is created per file inside `processFile` and is invoked
@@ -157,21 +213,26 @@ final class LintFrontend: Frontend, @unchecked Sendable {
 /// concurrent worker, the mutable state needs a `Mutex` and the type needs a `Sendable`
 /// conformance.
 private final class CapturingFindingConsumer {
+    /// The displayed path of the linted file. It matches the file of the findings in that file.
+    private let lintedFile: String
     private let forward: (Finding) -> Void
     private var entries: [LintCache.Entry] = []
 
-    init(forward: @escaping (Finding) -> Void) { self.forward = forward }
+    init(lintedFile: String, forward: @escaping (Finding) -> Void) {
+        self.lintedFile = lintedFile
+        self.forward = forward
+    }
 
     func consume(_ finding: Finding) {
         let entry = LintCache.Entry(
             category: "\(finding.category)",
             severity: finding.severity,
             message: finding.message.text,
-            location: finding.location.map(LintCache.Location.init),
+            location: finding.location.map { LintCache.Location($0, lintedFile: lintedFile) },
             notes: finding.notes.map { note in
                 LintCache.Note(
                     message: note.message.text,
-                    location: note.location.map(LintCache.Location.init),
+                    location: note.location.map { LintCache.Location($0, lintedFile: lintedFile) },
                     role: note.role
                 )
             }

@@ -7,6 +7,8 @@ struct UseOptionalMapTests: RuleTesting {
     private static let message =
         "use 'map' or 'flatMap' on the optional instead of binding it only to return a transform or 'nil'"
 
+    @Test func guidanceIsConsider() { #expect(UseOptionalMap.guidance == .consider) }
+
     @Test func ifLetFollowedByReturnNil() {
         assertLint(
             UseOptionalMap.self,

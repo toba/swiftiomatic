@@ -22,6 +22,10 @@ import SwiftSyntax
 /// when the returned expression does not use the bound name, returns `nil`, or contains `await`. A
 /// `map` closure cannot suspend.
 ///
+/// The rule does not check the other reasons to keep the binding. Keep it when the `map` form
+/// changes when the code evaluates an expression, or changes how an error propagates. Also keep it
+/// when the transform is long and the closure is harder to read than the named binding.
+///
 /// Lint: An optional binding that only returns a transform of the value or `nil` raises a warning.
 final class UseOptionalMap: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
@@ -31,7 +35,7 @@ final class UseOptionalMap: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
         guard isCallableBody(node), let first = node.first?.item else { return .visitChildren }
         let next = node.dropFirst().first?.item
 
-        if let ifExpr = ifExpression(first) {
+        if let ifExpr = node.first?.expression?.as(IfExprSyntax.self) {
             let fitsBody = ifExpr.elseBody == nil ? node.count == 2 : node.count == 1
 
             if fitsBody, matchesIfShape(ifExpr, next: next) {
@@ -57,11 +61,6 @@ final class UseOptionalMap: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
         guard let owner = node.parent?.as(CodeBlockSyntax.self)?.parent else { return false }
         return owner.is(FunctionDeclSyntax.self) || owner.is(InitializerDeclSyntax.self)
             || owner.is(AccessorDeclSyntax.self)
-    }
-
-    private func ifExpression(_ item: CodeBlockItemSyntax.Item) -> IfExprSyntax? {
-        item.as(ExpressionStmtSyntax.self)?.expression.as(IfExprSyntax.self)
-            ?? item.as(IfExprSyntax.self)
     }
 
     private func matchesIfShape(_ node: IfExprSyntax, next: CodeBlockItemSyntax.Item?) -> Bool {
