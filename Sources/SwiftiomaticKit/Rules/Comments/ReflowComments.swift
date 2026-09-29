@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Reflows contiguous `///` and `//` comment runs to fit `lineLength` .

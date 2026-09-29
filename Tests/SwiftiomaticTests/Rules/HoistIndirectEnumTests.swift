@@ -11,8 +11,8 @@
 //===----------------------------------------------------------------------===//
 
 @testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
-import Testing
+package import SwiftiomaticTestSupport
+package import Testing
 
 @Suite
 struct HoistIndirectEnumTests: RuleTesting {

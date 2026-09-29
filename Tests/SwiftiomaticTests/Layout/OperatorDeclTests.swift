@@ -12,6 +12,7 @@
 
 import SwiftiomaticKit
 import Testing
+import SwiftOperators
 
 @Suite
 struct OperatorDeclTests: LayoutTesting {

@@ -1,5 +1,5 @@
-import SwiftSyntax
-import ConfigurationKit
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// Tuples with many elements are hard to read; consider a struct instead.
 final class TupleSize: LintSyntaxRule<TupleSizeConfiguration>, @unchecked Sendable {

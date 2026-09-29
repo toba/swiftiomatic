@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftSyntax
+package import SwiftSyntax
 
 package extension SyntaxCollection {
     /// The first element in the syntax collection if it is the *only* element, or nil otherwise.

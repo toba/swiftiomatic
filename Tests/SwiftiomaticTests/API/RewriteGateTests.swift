@@ -1,3 +1,4 @@
+import Foundation
 @testable import SwiftiomaticKit
 import SwiftOperators
 import SwiftParser

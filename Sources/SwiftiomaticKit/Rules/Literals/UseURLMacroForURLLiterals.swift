@@ -1,4 +1,5 @@
-import SwiftSyntax
+import Foundation
+package import SwiftSyntax
 
 /// Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.
 ///
@@ -13,7 +14,13 @@ import SwiftSyntax
 /// Requires configuration via `useURLMacroForURLLiterals.macroName` and
 /// `useURLMacroForURLLiterals.moduleName` .
 ///
-/// Lint: A warning is raised for each `URL(string: "...")!` that can be converted.
+/// Set `useURLMacroForURLLiterals.flagOptionalLiterals` to `true` to also flag
+/// `URL(string: "...")` with a plain string literal and no `!` . The rule does not rewrite these
+/// calls, because the macro returns a non-optional `URL` and the fix changes the type of the
+/// expression. The option is off by default.
+///
+/// Lint: A warning is raised for each `URL(string: "...")!` that can be converted. With
+/// `flagOptionalLiterals` , a warning is also raised for each `URL(string: "...")` with no `!` .
 ///
 /// Rewrite: The force-unwrapped URL initializer is replaced with the configured macro.
 final class UseURLMacroForURLLiterals: StaticFormatRule<URLMacroConfiguration>, @unchecked Sendable
@@ -166,7 +173,38 @@ final class UseURLMacroForURLLiterals: StaticFormatRule<URLMacroConfiguration>, 
         return result
     }
 
+    // MARK: - Expression-level: flag URL(string: "...") with no `!`
+
+    /// Flags `URL(string: "...")` with a plain string literal and no `!` when
+    /// `flagOptionalLiterals` is on. Lint only: the call stays unchanged.
+    static func transform(
+        _ node: FunctionCallExprSyntax,
+        original: FunctionCallExprSyntax,
+        parent: Syntax?,
+        context: Context
+    ) -> ExprSyntax {
+        let config = context.configuration[Self.self]
+        guard config.flagOptionalLiterals, config.macroName != nil,
+              parent?.is(ForceUnwrapExprSyntax.self) != true,
+              isURLStringLiteralCall(original) else { return ExprSyntax(node) }
+
+        Self.diagnose(.optionalURLLiteral, on: original, context: context)
+        return ExprSyntax(node)
+    }
+
     // MARK: - Helpers
+
+    /// Returns `true` if `call` is `URL(string: "...")` with one plain string literal argument.
+    private static func isURLStringLiteralCall(_ call: FunctionCallExprSyntax) -> Bool {
+        guard let declRef = call.calledExpression.as(DeclReferenceExprSyntax.self),
+              declRef.baseName.text == "URL",
+              call.trailingClosure == nil,
+              let argument = call.arguments.firstAndOnly,
+              argument.label?.text == "string",
+              let literal = argument.expression.as(StringLiteralExprSyntax.self)
+        else { return false }
+        return isSimpleStringLiteral(literal)
+    }
 
     /// Returns `true` if the string literal contains only plain text (no interpolation segments).
     private static func isSimpleStringLiteral(_ literal: StringLiteralExprSyntax) -> Bool {
@@ -178,6 +216,8 @@ final class UseURLMacroForURLLiterals: StaticFormatRule<URLMacroConfiguration>, 
 fileprivate extension Finding.Message {
     static let replaceWithURLMacro: Finding.Message =
         "replace force-unwrapped 'URL(string:)' with URL macro"
+    static let optionalURLLiteral: Finding.Message =
+        "replace 'URL(string:)' with a string literal with URL macro; the macro returns a non-optional 'URL'"
 }
 
 // MARK: - Configuration
@@ -191,6 +231,9 @@ package struct URLMacroConfiguration: SyntaxRuleValue {
     /// Module that defines `macroName` , used to insert an `import` statement when applying the
     /// rewrite. When `nil` , no import is added.
     package var moduleName: String?
+    /// When `true` , also flag `URL(string: "...")` with a plain string literal and no `!` . These
+    /// findings are lint only, because the fix changes the optionality of the expression.
+    package var flagOptionalLiterals = false
 
     package init() {}
 
@@ -203,5 +246,8 @@ package struct URLMacroConfiguration: SyntaxRuleValue {
         if let lint = try container.decodeIfPresent(Lint.self, forKey: .lint) { self.lint = lint }
         macroName = try container.decodeIfPresent(String.self, forKey: .macroName)
         moduleName = try container.decodeIfPresent(String.self, forKey: .moduleName)
+        if let flag = try container.decodeIfPresent(Bool.self, forKey: .flagOptionalLiterals) {
+            flagOptionalLiterals = flag
+        }
     }
 }

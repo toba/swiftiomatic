@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Flag `nonisolated(unsafe)` on a `let` whose literal value is already `Sendable` .

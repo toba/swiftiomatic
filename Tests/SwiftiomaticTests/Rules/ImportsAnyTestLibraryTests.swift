@@ -14,6 +14,7 @@ import Foundation
 @testable import SwiftiomaticKit
 import SwiftParser
 import Testing
+import SwiftOperators
 
 @Suite
 struct ImportsAnyTestLibraryTests: RuleTesting {

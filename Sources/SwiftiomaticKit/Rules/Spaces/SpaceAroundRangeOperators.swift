@@ -1,5 +1,5 @@
-import SwiftSyntax
-import SwiftOperators
+package import SwiftSyntax
+package import SwiftOperators
 
 /// Force spaces around range operators.
 package struct SpaceAroundRangeOperators: LayoutRule {

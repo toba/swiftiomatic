@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import SwiftSyntax
 
 /// All values should be written in lower camel-case ( `lowerCamelCase` ). Underscores (except at

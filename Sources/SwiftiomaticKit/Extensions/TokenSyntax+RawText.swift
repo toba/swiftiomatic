@@ -1,3 +1,4 @@
+import Foundation
 @_spi(RawSyntax) import SwiftSyntax
 
 // This file holds every `@_spi(RawSyntax)` use in the rule code. Other files must not import the

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Remove `@Suite` attributes that have no arguments, since they are inferred by the Swift Testing

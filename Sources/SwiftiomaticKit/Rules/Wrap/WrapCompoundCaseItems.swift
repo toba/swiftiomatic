@@ -1,4 +1,5 @@
 import SwiftSyntax
+import SwiftSyntaxBuilder
 
 /// Comma-delimited switch case items are wrapped onto separate lines.
 ///

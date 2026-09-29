@@ -1,4 +1,5 @@
-@testable import SwiftiomaticKit
+import SwiftiomaticTestSupport
+@testable package import SwiftiomaticKit
 
 extension Configuration {
   /// The default configuration to be used during unit tests.

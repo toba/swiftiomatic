@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Sort declarations between `// swiftiomatic:sort:begin` and `// swiftiomatic:sort:end` markers.

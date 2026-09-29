@@ -1,10 +1,10 @@
-import Foundation
+package import Foundation
 @testable import SwiftiomaticKit
-import SwiftOperators
-import SwiftParser
-import SwiftSyntax
-import SwiftiomaticTestSupport
-import Testing
+package import SwiftOperators
+package import SwiftParser
+package import SwiftSyntax
+package import SwiftiomaticTestSupport
+package import Testing
 
 /// Lint mode runs each `StructuralFormatRule` through its lint-only path, which emits findings
 /// without building a new tree. These tests pin the findings of that path, including nested

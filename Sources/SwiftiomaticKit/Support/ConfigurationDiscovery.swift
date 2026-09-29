@@ -1,5 +1,5 @@
-import Foundation
-import Synchronization
+package import Foundation
+package import Synchronization
 
 /// Finds the configuration file that applies to a path, and caches the result for each directory.
 ///

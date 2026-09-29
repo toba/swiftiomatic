@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 // sm:ignore fileLength, functionBodyLength
@@ -63,6 +64,13 @@ func rewriteSourceFile(
     //    at the top of the file.
     if context.shouldRewrite(UseURLMacroForURLLiterals.self, at: Syntax(result)) {
         result = UseURLMacroForURLLiterals.transform(
+            result, original: node, parent: nil, context: context)
+    }
+
+    // 7. UseUUIDMacroForUUIDLiterals: if the descent rewrote a `UUID(uuidString:)!` to the
+    //    configured macro, insert the configured module import.
+    if context.shouldRewrite(UseUUIDMacroForUUIDLiterals.self, at: Syntax(result)) {
+        result = UseUUIDMacroForUUIDLiterals.transform(
             result, original: node, parent: nil, context: context)
     }
 

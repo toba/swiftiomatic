@@ -1,3 +1,4 @@
+import Foundation
 @testable import SwiftiomaticKit
 import SwiftiomaticTestSupport
 import Testing
@@ -152,6 +153,36 @@ struct PairAcquireWithDeferTests: RuleTesting {
         thing.startSomething()
         guard ok else { return }
         thing.stopSomething()
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func signposterBeginIntervalWithEarlyReturnFlagged() {
+    assertLint(
+      PairAcquireWithDefer.self,
+      """
+      func load() {
+        let state = signposter.1️⃣beginInterval("load")
+        guard let items = source.items else { return }
+        apply(items)
+        signposter.endInterval("load", state)
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message("beginInterval", "endInterval"))]
+    )
+  }
+
+  @Test func signposterBeginIntervalWithDeferNotFlagged() {
+    assertLint(
+      PairAcquireWithDefer.self,
+      """
+      func load() {
+        let state = signposter.beginInterval("load")
+        defer { signposter.endInterval("load", state) }
+        guard let items = source.items else { return }
+        apply(items)
       }
       """,
       findings: []

@@ -1,5 +1,5 @@
-import SwiftSyntax
-import ConfigurationKit
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// Files should not exceed a configurable total line count.
 final class FileLength: LintSyntaxRule<FileLengthConfiguration>, @unchecked Sendable {

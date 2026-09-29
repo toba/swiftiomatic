@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Flag `dropFirst` on a `Data` value.

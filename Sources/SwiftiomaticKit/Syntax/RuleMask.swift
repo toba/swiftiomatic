@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
-import SwiftSyntax
+package import Foundation
+package import SwiftSyntax
 
 /// Scans the source for `// sm:ignore` directives and records which rules are disabled in which
 /// ranges. There are three forms:

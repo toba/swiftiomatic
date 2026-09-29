@@ -85,15 +85,19 @@
 			"checkClosureBlocks": false,
 			"allowCompactEmptyBlocks": true
 		},
+		"useOptionalTake": { "lint": "warn" },
 		"useFileIDNotFile": { "lint": "no", "rewrite": false },
+		"noRadixInitInLoop": { "lint": "warn" },
 		"useAsyncResultInit":  { "lint" : "warn" },
 		"useSelfNotTypeName": { "lint": "warn", "rewrite": true },
 		"noSwapThenRemoveAll": { "lint": "error" },
 		"noDropFirstInForLoop": { "lint": "no" },
 		"useAsyncDeferNotTask":  { "lint" : "warn" },
 		"breakBeforeLeadingDot": { "lint": "no", "rewrite": true },
+		"noWrappedAppendBuffer": { "lint": "warn" },
 		"useCompoundAssignment": { "lint": "warn", "rewrite": true },
 		"useStaticNotClassFunc": { "lint": "warn", "rewrite": false },
+		"useCanImportNotOSCheck": { "lint": "warn" },
 		"useLazyForLongChainOps": { "lint": "warn" },
 		"noFirstIndexOfInForLoop":  { "lint" : "warn" },
 		"useTypedThrowsNotResult": { "lint": "warn" },
@@ -105,10 +109,13 @@
 			"allowedFunctions": ["XCTAssertNoThrow"]
 		},
 		"noRetroactiveConformances": { "lint": "warn" },
+		"useCaseInsensitiveCompare": { "lint": "warn" },
 		"useContinuousClockNotDate": { "lint": "warn" },
+		"useUTF8ViewForByteParsing": { "lint": "warn" },
 		"flagSupersededFrameworkAPI":  { "lint" : "warn" },
 		"noExplicitOwnershipModifiers": { "lint": "no", "rewrite": false },
 		"useOrderedSetForUniqueAppend": { "lint": "warn" },
+		"useAsyncLetForIndependentAwaits": { "lint": "warn" },
 		"useAssertionFailureNotAssertFalse": { "lint": "warn", "rewrite": true }
 	},
 	"memory": {
@@ -117,6 +124,7 @@
 		"requireWeakDelegates": { "lint": "warn" },
 		"useWeakSelfInClosures": { "lint": "no" },
 		"requireAnyObjectOnDelegate": { "lint": "warn" },
+		"requireWeakSelfInObservations": { "lint": "warn" },
 		"requireObserverRemovalInDeinit": { "lint": "warn" },
 		"requireRetainOfNotificationObserver": { "lint": "no" }
 	},
@@ -189,21 +197,55 @@
 	},
 	"swiftui": {
 		"useScaledToFit":  { "lint" : "warn", "rewrite" : true },
+		"orderViewMembers": { "lint": "warn" },
 		"noAnyViewInForEach":  { "lint" : "warn" },
 		"flagPreviewProvider":  { "lint" : "warn" },
+		"useItemPresentation": { "lint": "warn" },
 		"useReadableDocument":  { "lint" : "warn" },
+		"noClosureInputInView": { "lint": "warn" },
+		"noForwardedViewInput": { "lint": "warn" },
+		"noHelperMethodInView": { "lint": "warn" },
+		"noViewFactoryMembers": { "lint": "warn" },
 		"flagSupersededSwiftUI":  { "lint" : "warn" },
+		"isolateTextInputState": { "lint": "warn" },
 		"noFormatterInViewBody": { "lint": "warn" },
+		"noUnprojectedBindable": { "lint": "warn" },
 		"useDraggableNotOnDrag": { "lint": "warn" },
 		"flagForEachOverIndices":  { "lint" : "warn" },
+		"flagReferenceViewInput": { "lint": "warn" },
+		"noOnAppearDerivedState": { "lint": "warn" },
+		"noRootBranchSwapInBody": { "lint": "warn" },
+		"constantForEachRowCount": { "lint": "warn" },
+		"flagDeepViewComposition": { "lint": "warn" },
 		"flagForEachIDSelfInView": { "lint": "warn" },
+		"flagSwiftUILayoutHazard": { "lint": "warn" },
+		"noWorkInViewInitializer": { "lint": "warn" },
 		"useReorderableNotOnMove":  { "lint" : "warn" },
+		"flagStateSeededFromInput": { "lint": "warn" },
 		"useTypedNotificationName":  { "lint" : "warn" },
+		"noWithAnimationInOnChange": { "lint": "warn" },
+		"requireRepeatSafeOnAppear": { "lint": "warn" },
+		"forEachRowReadsOnlyElement": { "lint": "warn" },
+		"noEnumeratedOffsetIdentity": { "lint": "warn" },
+		"noWholeCollectionChangeKey": { "lint": "warn" },
+		"useTaskIDNotTaskInOnChange": { "lint": "warn" },
 		"useTaskModifierNotOnAppear": { "lint": "warn" },
 		"useTypedSystemNotification":  { "lint" : "warn" },
+		"noBindingConstructionInView": { "lint": "warn" },
+		"noOnChangeDerivedStateWrite": { "lint": "warn" },
+		"noUnreadEnvironmentProperty": { "lint": "warn" },
 		"useAtEntryNotEnvironmentKey": { "lint": "no", "rewrite": false },
 		"dropRedundantMainActorOnView": { "lint": "warn", "rewrite": true },
-		"useClosureNotificationObserver": { "lint": "warn" }
+		"flagWholeValueModelViewInput": { "lint": "warn" },
+		"noLifecycleModifierOnViewList": { "lint": "warn" },
+		"useOnChangeInitialNotOnAppear": { "lint": "warn" },
+		"flagAnimatedConditionalContent": { "lint": "warn" },
+		"flagStatefulForEachOverIndices": { "lint": "warn" },
+		"useClosureNotificationObserver": { "lint": "warn" },
+		"noCollectionWorkReachableFromBody": { "lint": "warn" },
+		"useViewExtensionForCustomModifier": { "lint": "warn" },
+		"flagNonEquatableObservableProperty": { "lint": "warn" },
+		"noDynamicPropertyInViewInitializer": { "lint": "warn" }
 	},
 	"testing": {
 		"noGuardInTests": { "lint": "warn", "rewrite": false },
@@ -257,6 +299,7 @@
 	"literals": {
 		"groupNumericLiterals": { "lint": "no", "rewrite": true },
 		"noPlaygroundLiterals": { "lint": "warn" },
+		"useRawStringForEscapes": { "lint": "warn" },
 		"flagInvisibleCharacters": {
 			"lint": "error",
 			"additionalCodePoints": []
@@ -282,6 +325,7 @@
 		"noDropFirstOnData": { "lint": "warn" },
 		"useTypedCatchError": { "lint": "warn" },
 		"flagTaskInMainActor":  { "lint" : "warn" },
+		"requireTaskPriority": { "lint": "warn" },
 		"flagMutableStaticVar":  { "lint" : "warn" },
 		"pairAcquireWithDefer": {
 		  "lint" : "warn",
@@ -338,9 +382,11 @@
 	"conditions": {
 		"useTernary": { "lint": "no", "rewrite": true },
 		"useEarlyExits": { "lint": "no", "rewrite": false },
+		"useOptionalMap": { "lint": "warn" },
 		"noYodaConditions": { "lint": "warn" },
 		"useExplicitNilCheck": { "lint": "warn", "rewrite": true },
 		"noIdenticalOperands": { "lint": "error" },
+		"useGuardForMainPath": { "lint": "warn" },
 		"useIfElseAsExpression": { "lint": "no", "rewrite": false },
 		"noDuplicateConditions": { "lint": "error" },
 		"noParensAroundConditions": { "lint": "warn", "rewrite": true },
@@ -377,9 +423,13 @@
 		"useReduceInto": { "lint": "warn" }
 	},
 	"controlFlow": {
+		"noDroppedCaughtError": { "lint": "warn" },
 		"useForLoopNotForEach": { "lint": "warn" },
 		"noSortFilterInForEach": { "lint": "warn" },
-		"useWhereClauseInForLoop": { "lint": "no", "rewrite": true }
+		"requireTaskYieldInLoop": { "lint": "warn" },
+		"useWhereClauseInForLoop": { "lint": "no", "rewrite": true },
+		"requireCancellationCheckInLoop": { "lint": "warn" },
+		"useTaskGroupForIndependentIterations": { "lint": "warn" }
 	},
 	"indentation": {
 		"unit": { "spaces": 4 },
@@ -416,18 +466,24 @@
 			]
 		},
 		"useSynthesizedInit": { "lint": "warn" },
+		"flagDiscardedResult": { "lint": "warn" },
 		"noUnusedSetterValue": { "lint": "error" },
+		"useClosureTypeAlias": { "lint": "warn" },
+		"noUnusedPrivateMember": { "lint": "warn" },
 		"removeEmptyExtensions": { "lint": "warn", "rewrite": true },
 		"orderProtocolAccessors": { "lint": "warn", "rewrite": false },
 		"collapseSingleLineGetter": { "lint": "warn", "rewrite": true },
 		"markInitCoderUnavailable": { "lint": "no", "rewrite": false },
 		"useAtCNotUnderscoreCDecl": { "lint": "warn", "rewrite": true },
+		"useOptionSetForBoolFlags": { "lint": "warn" },
 		"convertStaticStructToEnum": { "lint": "warn", "rewrite": true },
+		"flagObserverSkippedInInit": { "lint": "warn" },
 		"splitMultipleDeclsPerLine": { "lint": "warn", "rewrite": true },
 		"useAnyAppleOSAvailability":  { "lint" : "warn", "rewrite" : true },
 		"useWeakLetForUnreassigned": { "lint": "warn" },
 		"useMainAttributeNotMainFunc": { "lint": "warn", "rewrite": true },
 		"useAtSpecializeNotUnderscore": { "lint": "warn", "rewrite": true },
+		"useExtensionInitToKeepMemberwise": { "lint": "warn" },
 			"useBorrowAccessorNotUnderscoreRead":  { "lint" : "warn" }
 },
 	"redundancies": {
@@ -468,5 +524,11 @@
 		"dropRedundantOptionalBinding": { "lint": "warn", "rewrite": true },
 		"dropRedundantSwiftTestingSuite": { "lint": "no", "rewrite": false },
 			"dropParensAroundExistentialOptional":  { "lint" : "warn", "rewrite" : true }
-}
+},
+	"swiftdata": {
+		"flagInMemoryModelStore": { "lint": "warn" },
+		"requireFinalModelClass": { "lint": "warn" },
+		"dropRedundantObservableOnModel": { "lint": "warn" },
+		"useFetchDescriptorNotPostFilter": { "lint": "warn" }
+	}
 }

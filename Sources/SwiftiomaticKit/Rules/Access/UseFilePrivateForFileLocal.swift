@@ -10,7 +10,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import SwiftSyntax
+package import SwiftSyntax
 
 /// Declarations at file scope with effective private access should be consistently declared as
 /// either `fileprivate` or `private` , determined by configuration.

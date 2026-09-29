@@ -1,9 +1,9 @@
-import Foundation
+package import Foundation
 @testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
-import SwiftParser
-import SwiftSyntax
-import Testing
+package import SwiftiomaticTestSupport
+package import SwiftParser
+package import SwiftSyntax
+package import Testing
 
 @Suite
 struct RequireSuiteAccessControlTests: RuleTesting {

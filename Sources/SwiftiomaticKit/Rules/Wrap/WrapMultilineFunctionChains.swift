@@ -1,4 +1,5 @@
 import SwiftSyntax
+import SwiftSyntaxBuilder
 
 /// Chained function calls are wrapped consistently: if any dot in the chain is on a different line,
 /// all dots are placed on separate lines.

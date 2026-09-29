@@ -1,5 +1,5 @@
-import SwiftSyntax
-import ConfigurationKit
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// Flag acquire-style calls that aren't followed by a `defer { release() }` in the same scope when
 /// the scope has at least one early exit (`return` / `throw` / `break` / `continue`) after the
@@ -8,7 +8,8 @@ import ConfigurationKit
 /// it, the release line at the end of the function is silently skipped.
 ///
 /// Configurable via `pairs` (acquire + release name list). The default catalog covers well-known
-/// Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState, etc.).
+/// Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState,
+/// `OSSignposter` beginInterval/endInterval, etc.).
 /// Matching is by member-call name only — false positives on same-named methods from unrelated
 /// types are expected and can be suppressed with `// sm:ignore PairAcquireWithDefer` .
 ///
@@ -52,11 +53,19 @@ final class PairAcquireWithDefer: LintSyntaxRule<PairAcquireWithDeferConfigurati
         }
     }
 
-    /// Pull a `FunctionCallExprSyntax` out of a `CodeBlockItemSyntax` whose item is just a bare
-    /// expression (statement-position call). Returns nil for declarations or wrapped expressions.
+    /// Pull a `FunctionCallExprSyntax` out of a `CodeBlockItemSyntax` whose item is a bare
+    /// expression (statement-position call) or a variable declaration with one binding whose
+    /// initializer is a call (`let state = signposter.beginInterval("load")`). Returns nil for other
+    /// declarations or wrapped expressions.
     private func extractCall(_ item: CodeBlockItemSyntax) -> FunctionCallExprSyntax? {
-        guard case let .expr(expr) = item.item else { return nil }
-        return expr.as(FunctionCallExprSyntax.self)
+        switch item.item {
+            case let .expr(expr): return expr.as(FunctionCallExprSyntax.self)
+            case let .decl(decl):
+                guard let variable = decl.as(VariableDeclSyntax.self),
+                      let binding = variable.bindings.firstAndOnly else { return nil }
+                return binding.initializer?.value.as(FunctionCallExprSyntax.self)
+            default: return nil
+        }
     }
 
     /// Match the called expression's terminal name against the catalog. Accepts either a bare
@@ -240,6 +249,7 @@ fileprivate extension AcquireReleasePair {
         .init(acquire: "beginEditing", release: "endEditing"),
         .init(acquire: "saveGState", release: "restoreGState"),
         .init(acquire: "beginGrouping", release: "endGrouping"),
+        .init(acquire: "beginInterval", release: "endInterval"),
         .init(
             acquire: "startAccessingSecurityScopedResource",
             release: "stopAccessingSecurityScopedResource"

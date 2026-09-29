@@ -1,3 +1,4 @@
+import SwiftiomaticTestSupport
 import SwiftiomaticKit
 import Testing
 

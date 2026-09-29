@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
+package import Foundation
 
 package extension URL {
     /// Returns a `Bool` to indicate if the given `URL` leads to the root of a filesystem. A

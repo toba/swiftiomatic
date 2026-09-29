@@ -5,7 +5,7 @@ import Testing
 @Suite
 struct FlagTaskInMainActorTests: RuleTesting {
   private static let message =
-    "'Task { ... }' from a '@MainActor' context hops off the main actor unless the body's first work is main-actor-isolated — use 'Task.immediate' to start synchronously on the calling actor"
+    "'Task { ... }' on the main actor inherits the caller's isolation but defers its start to a later turn; use 'Task.immediate' to start synchronously on the calling actor"
 
   @Test func taskInMainActorFunctionFlagged() {
     assertLint(
@@ -91,6 +91,56 @@ struct FlagTaskInMainActorTests: RuleTesting {
       func reload() {
         Task.immediate {
           await refresh()
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func taskStatementInIBActionFlagged() {
+    assertLint(
+      FlagTaskInMainActor.self,
+      """
+      final class ViewController: NSViewController {
+        @IBAction func reload(_ sender: Any) {
+          1️⃣Task {
+            await refresh()
+          }
+        }
+      }
+      """,
+      findings: [FindingSpec("1️⃣", message: Self.message)]
+    )
+  }
+
+  @Test func taskAssignedInIBActionNotFlagged() {
+    assertLint(
+      FlagTaskInMainActor.self,
+      """
+      final class ViewController: NSViewController {
+        var loading: Task<Void, Never>?
+
+        @IBAction func reload(_ sender: Any) {
+          loading = Task {
+            await refresh()
+          }
+        }
+      }
+      """,
+      findings: []
+    )
+  }
+
+  @Test func taskInNonIBActionFunctionNotFlagged() {
+    assertLint(
+      FlagTaskInMainActor.self,
+      """
+      final class ViewController: NSViewController {
+        func reload(_ sender: Any) {
+          Task {
+            await refresh()
+          }
         }
       }
       """,

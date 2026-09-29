@@ -1,4 +1,4 @@
-import SwiftSyntax
+package import SwiftSyntax
 
 /// Align wrapped conditions to the column after the keyword.
 ///

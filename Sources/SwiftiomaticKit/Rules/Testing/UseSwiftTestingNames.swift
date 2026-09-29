@@ -1,4 +1,5 @@
-import SwiftSyntax
+import Foundation
+package import SwiftSyntax
 
 /// Normalize Swift Testing `@Test` function names according to the configured `style`.
 ///

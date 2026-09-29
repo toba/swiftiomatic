@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 /// Layout of the module selector `::` operator.

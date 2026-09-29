@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import SwiftSyntax
 import Testing
 @Suite
 struct TernaryExprTests: LayoutTesting {

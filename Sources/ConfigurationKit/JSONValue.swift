@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 /// Controls the order of keys in serialized JSON output.
 package enum KeySortOrder: String, Sendable, CaseIterable {

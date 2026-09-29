@@ -1,5 +1,5 @@
-import Foundation
-import ConfigurationKit
+package import Foundation
+package import ConfigurationKit
 
 /// The metadata of one rule that reporters and `sm explain` show to a reader.
 package struct RuleInfo: Sendable {

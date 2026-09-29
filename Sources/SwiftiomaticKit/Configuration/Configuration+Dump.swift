@@ -10,7 +10,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Foundation
+package import Foundation
 @_exported import enum ConfigurationKit.KeySortOrder
 
 package extension Configuration {

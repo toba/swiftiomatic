@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 package extension URL {
     /// Reports whether this file sits in a test target.

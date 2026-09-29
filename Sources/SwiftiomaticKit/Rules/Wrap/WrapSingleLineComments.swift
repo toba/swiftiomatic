@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Single-line comments that exceed the configured line length are wrapped.

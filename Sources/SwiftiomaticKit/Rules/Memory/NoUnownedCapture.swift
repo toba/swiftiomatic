@@ -1,5 +1,5 @@
-import SwiftSyntax
-import ConfigurationKit
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// An `unowned` capture in a closure capture list is a latent use-after-free: an `unowned`
 /// reference does not keep its referent alive and does not degrade to `nil`. If the referent is

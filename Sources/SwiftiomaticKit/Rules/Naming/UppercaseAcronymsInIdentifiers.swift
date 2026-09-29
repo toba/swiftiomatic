@@ -1,4 +1,5 @@
-import SwiftSyntax
+import Foundation
+package import SwiftSyntax
 
 /// Capitalize acronyms when the first character is capitalized.
 ///

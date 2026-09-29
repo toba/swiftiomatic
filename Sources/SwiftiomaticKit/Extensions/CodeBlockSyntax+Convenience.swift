@@ -11,6 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 import SwiftSyntax
+import SwiftSyntaxBuilder
 
 extension CodeBlockSyntax {
     /// Whether the body is a single statement on a single line with no internal comments — i.e. it

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Flag a `Binding(get:set:)` that a view builds in its body, in a helper, or in a closure.

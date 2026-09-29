@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
-import SwiftSyntax
+package import Foundation
+package import SwiftSyntax
 
 /// Errors that can be thrown by the `SwiftiomaticFormatter` and `SwiftiomaticLinter` APIs.
 package enum SwiftiomaticError: LocalizedError {

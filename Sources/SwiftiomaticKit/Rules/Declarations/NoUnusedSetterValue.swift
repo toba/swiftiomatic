@@ -8,9 +8,10 @@ import SwiftSyntax
 /// parent class's setter, or a protocol-extension default that must supply a settable requirement
 /// for conformers to override. Nothing is assigned, so there is nothing to get wrong.
 ///
-/// Lint: When a `set` accessor's body never references its parameter name, a warning is raised.
+/// Lint: When a `set` accessor's body never references its parameter name, an error is raised.
 final class NoUnusedSetterValue: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .declarations }
+    override class var guidance: GuidanceLevel { .mustNot }
     override class var defaultValue: LintOnlyValue { .init(lint: .error) }
 
     override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {

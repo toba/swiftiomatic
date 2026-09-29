@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 /// What one `--configuration` value names.
 ///

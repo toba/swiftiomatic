@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Prefer `final class` unless a class is designed for subclassing.

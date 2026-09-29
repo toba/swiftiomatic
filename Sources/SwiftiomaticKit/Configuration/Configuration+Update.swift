@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 extension Configuration {
     /// A diff between a configuration file and the current rule registry.

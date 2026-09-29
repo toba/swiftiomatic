@@ -1,5 +1,5 @@
-import Foundation
-import ConfigurationKit
+package import Foundation
+package import ConfigurationKit
 
 /// Generates `schema.json` by encoding a `JSONSchemaNode` tree.
 ///

@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Testing
+package import Testing
 @Suite
 struct TypeAliasTests: LayoutTesting {
   @Test func `typealias`() {

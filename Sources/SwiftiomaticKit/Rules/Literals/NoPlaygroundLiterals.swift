@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
-import SwiftSyntax
+package import Foundation
+package import SwiftSyntax
 
 /// The playground literals ( `#colorLiteral` , `#fileLiteral` , and `#imageLiteral` ) are
 /// forbidden.

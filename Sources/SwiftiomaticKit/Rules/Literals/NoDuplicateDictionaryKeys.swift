@@ -12,6 +12,7 @@ import SwiftSyntax
 /// after the first is flagged.
 final class NoDuplicateDictionaryKeys: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .literals }
+    override class var guidance: GuidanceLevel { .mustNot }
     override class var defaultValue: LintOnlyValue { .init(lint: .error) }
 
     override func visit(_ node: DictionaryElementListSyntax) -> SyntaxVisitorContinueKind {

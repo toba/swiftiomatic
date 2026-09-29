@@ -37,7 +37,7 @@ final class MakeStateVarsPrivate: StaticFormatRule<BasicRuleValue>, @unchecked S
     static let rewriteOrder = 380
 
     override static var group: ConfigurationGroup? { .access }
-    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .no) }
+    override static var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
     override class var guidance: GuidanceLevel { .must }
 
     static func transform(

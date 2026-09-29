@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Check for a framework with `#if canImport(...)`, not with `#if os(...)`.

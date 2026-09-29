@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// `String.data(using: .utf8)` returns `Data?` , even though UTF-8 encoding can never fail. Prefer

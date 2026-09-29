@@ -1,6 +1,6 @@
-import Foundation
-import SwiftParser
-import SwiftSyntax
+package import Foundation
+package import SwiftParser
+package import SwiftSyntax
 
 /// A rewrite hook a rule can declare.
 package enum RewriteHookKind: String, CaseIterable, Sendable { case transform, willEnter, didExit }

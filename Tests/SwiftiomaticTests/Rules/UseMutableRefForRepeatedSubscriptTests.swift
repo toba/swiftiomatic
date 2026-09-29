@@ -1,3 +1,4 @@
+import SwiftSyntax
 @testable import SwiftiomaticKit
 import SwiftiomaticTestSupport
 import Testing

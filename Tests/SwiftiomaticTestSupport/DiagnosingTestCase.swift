@@ -10,10 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
-@testable import SwiftiomaticKit
-import SwiftSyntax
-import Testing
+package import Foundation
+@testable package import SwiftiomaticKit
+package import SwiftSyntax
+package import Testing
+import SwiftOperators
 
 package typealias TestSourceLocation = Testing.SourceLocation
 

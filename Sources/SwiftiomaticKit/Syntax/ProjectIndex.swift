@@ -1,9 +1,9 @@
-import CryptoKit
-import Foundation
-import SwiftOperators
-import SwiftParser
-import SwiftSyntax
-import Synchronization
+package import CryptoKit
+package import Foundation
+package import SwiftOperators
+package import SwiftParser
+package import SwiftSyntax
+package import Synchronization
 
 /// The type facts of every Swift file in one project, for the lint rules that resolve a name
 /// declared in another file.
@@ -40,7 +40,15 @@ package final class ProjectIndex: Sendable {
         package var types: [TypeDeclaration]
         /// The simple names of the typealiases in the file.
         package var typeAliases: [String]
+        /// The names from `ProjectIndex.trackedNames` that the file uses as an identifier, sorted.
+        package var referencedNames: [String] = []
+        /// The simple names of the classes in the file that carry `@Model` , sorted.
+        package var modelTypeNames: [String] = []
     }
+
+    /// The identifiers whose use the index records for each file. A rule reads them to learn
+    /// whether the project uses a framework type, such as `CKSyncEngine` .
+    package static let trackedNames: Set<String> = ["CKSyncEngine", "DocumentGroup"]
 
     /// A file that the index parsed on demand.
     package final class LoadedFile: Sendable {
@@ -74,6 +82,12 @@ package final class ProjectIndex: Sendable {
     /// The type names whose member of each base name names `Binding` , sorted.
     private let bindingMemberOwners: [String: [String]]
 
+    /// The paths of the files that use each tracked name, sorted.
+    private let referenceFiles: [String: [String]]
+
+    /// The paths of the files that declare a `@Model` class of each name, sorted.
+    private let modelTypeFiles: [String: [String]]
+
     private let loaded = Mutex<[String: LoadedFile]>([:])
 
     /// The root identities of the loaded trees, so a check for a foreign node needs no path.
@@ -91,8 +105,12 @@ package final class ProjectIndex: Sendable {
         var typeFiles: [String: Set<String>] = [:]
         var aliasFiles: [String: Set<String>] = [:]
         var bindingMemberOwners: [String: Set<String>] = [:]
+        var referenceFiles: [String: Set<String>] = [:]
+        var modelTypeFiles: [String: Set<String>] = [:]
 
         for (path, summary) in summaries {
+            for name in summary.referencedNames { referenceFiles[name, default: []].insert(path) }
+            for name in summary.modelTypeNames { modelTypeFiles[name, default: []].insert(path) }
             for type in summary.types {
                 typeFiles[type.name, default: []].insert(path)
                 for member in type.bindingMemberNames {
@@ -104,6 +122,8 @@ package final class ProjectIndex: Sendable {
         self.typeFiles = typeFiles.mapValues { $0.sorted() }
         self.aliasFiles = aliasFiles.mapValues { $0.sorted() }
         self.bindingMemberOwners = bindingMemberOwners.mapValues { $0.sorted() }
+        self.referenceFiles = referenceFiles.mapValues { $0.sorted() }
+        self.modelTypeFiles = modelTypeFiles.mapValues { $0.sorted() }
     }
 
     /// Creates an index over in-memory sources, as tests and stdin runs need.
@@ -220,24 +240,47 @@ package final class ProjectIndex: Sendable {
     /// Computes the summary of one file
     package static func summarize(source: String, contentHash: String? = nil) -> FileSummary {
         let collector = SummaryCollector(viewMode: .sourceAccurate)
-        collector.walk(Parser.parse(source: source))
+        let tree = Parser.parse(source: source)
+        collector.walk(tree)
         return FileSummary(
             contentHash: contentHash ?? LintCache.contentHash(of: source),
             types: collector.types,
-            typeAliases: collector.typeAliases
+            typeAliases: collector.typeAliases,
+            referencedNames: referencedNames(in: tree, source: source),
+            modelTypeNames: collector.modelTypeNames.sorted()
         )
+    }
+
+    /// The names from `trackedNames` that `tree` uses as an identifier, sorted
+    ///
+    /// A text search on `source` skips the token walk for a file that holds no tracked name.
+    package static func referencedNames(in tree: SourceFileSyntax, source: String) -> [String] {
+        let candidates = trackedNames.filter { source.contains($0) }
+        guard !candidates.isEmpty else { return [] }
+        var found: Set<String> = []
+
+        for token in tree.tokens(viewMode: .sourceAccurate) {
+            if case let .identifier(text) = token.tokenKind, candidates.contains(text) {
+                found.insert(text)
+            }
+        }
+        return found.sorted()
     }
 
     private final class SummaryCollector: SyntaxVisitor {
         var types: [FileSummary.TypeDeclaration] = []
         var typeAliases: [String] = []
+        var modelTypeNames: [String] = []
 
         override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
             record(Syntax(node), isNominal: true, members: node.memberBlock)
         }
 
         override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-            record(Syntax(node), isNominal: true, members: node.memberBlock)
+            if node.attributes.attribute(named: "Model", module: "SwiftData") != nil {
+                modelTypeNames.append(node.name.text)
+            }
+            return record(Syntax(node), isNominal: true, members: node.memberBlock)
         }
 
         override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -306,7 +349,7 @@ package final class ProjectIndex: Sendable {
     // MARK: - Summary cache
 
     private struct SummaryCache: Codable {
-        static let currentVersion = 1
+        static let currentVersion = 2
 
         var version: Int
         var summaries: [String: FileSummary]
@@ -392,6 +435,16 @@ package final class ProjectIndex: Sendable {
     /// `Binding`
     package func typesWithBindingMember(named member: String) -> [String] {
         bindingMemberOwners[member] ?? []
+    }
+
+    /// The paths of the files that use the tracked name `name` as an identifier
+    package func filesReferencing(_ name: String) -> [String] {
+        referenceFiles[name] ?? []
+    }
+
+    /// The paths of the files that declare a `@Model` class named `name`
+    package func filesDeclaringModel(named name: String) -> [String] {
+        modelTypeFiles[name] ?? []
     }
 
     /// The paths among `paths` whose declarations of `name` the lookup merges, or `nil` when the
@@ -508,6 +561,10 @@ package final class ProjectIndex: Sendable {
                 paths = (bindingMemberOwners[String(key.dropFirst(8))] ?? []).flatMap {
                     typeFiles[$0] ?? []
                 }
+            } else if key.hasPrefix("ref:") {
+                paths = referenceFiles[String(key.dropFirst(4))] ?? []
+            } else if key.hasPrefix("model:") {
+                paths = modelTypeFiles[String(key.dropFirst(6))] ?? []
             } else {
                 paths = []
             }
@@ -563,5 +620,17 @@ package final class ProjectLookup: Sendable {
     func typesWithBindingMember(named member: String) -> [String] {
         recorded.withLock { _ = $0.insert("binding:\(member)") }
         return index.typesWithBindingMember(named: member)
+    }
+
+    /// Whether a file other than this one uses the tracked name `name` as an identifier
+    func otherFileReferences(_ name: String) -> Bool {
+        recorded.withLock { _ = $0.insert("ref:\(name)") }
+        return index.filesReferencing(name).contains { $0 != file }
+    }
+
+    /// Whether a file other than this one declares a `@Model` class named `name`
+    func otherFileDeclaresModel(named name: String) -> Bool {
+        recorded.withLock { _ = $0.insert("model:\(name)") }
+        return index.filesDeclaringModel(named: name).contains { $0 != file }
     }
 }

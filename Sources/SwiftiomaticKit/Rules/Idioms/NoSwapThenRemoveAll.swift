@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Lint the `swap(&a, &b); a.removeAll(…)` (or `b.removeAll(…)` ) pattern. It almost always
@@ -5,7 +6,8 @@ import SwiftSyntax
 /// is brittle when refactored.
 final class NoSwapThenRemoveAll: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
-    override class var defaultValue: LintOnlyValue { .init(lint: .error) }
+    override class var guidance: GuidanceLevel { .shouldNot }
+    override class var defaultValue: LintOnlyValue { .init(lint: .warn) }
 
     override func visit(_ node: CodeBlockItemListSyntax) -> SyntaxVisitorContinueKind {
         let items = Array(node)

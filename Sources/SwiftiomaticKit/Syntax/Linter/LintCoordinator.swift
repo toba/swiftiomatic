@@ -10,10 +10,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
-import SwiftSyntax
-import SwiftOperators
-import SwiftDiagnostics
+package import Foundation
+package import SwiftSyntax
+package import SwiftOperators
+package import SwiftDiagnostics
 
 /// Diagnoses and reports problems in Swift source code or syntax trees according to the Swift style
 /// guidelines.

@@ -10,10 +10,10 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Foundation
-import SwiftSyntax
-import SwiftOperators
-import SwiftDiagnostics
+package import Foundation
+package import SwiftSyntax
+package import SwiftOperators
+package import SwiftDiagnostics
 
 /// Formats Swift source code or syntax trees according to the Swift style guidelines.
 package final class RewriteCoordinator {

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Initializers declared in `ExpressibleBy*` literal protocols are intended for the compiler.

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Flag a view input whose type is a large struct declared in the same file.

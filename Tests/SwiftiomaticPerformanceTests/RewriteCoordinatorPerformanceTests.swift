@@ -10,10 +10,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-import XCTest
-import SwiftParser
-import SwiftSyntax
-import SwiftiomaticTestSupport
+import Foundation
+package import XCTest
+package import SwiftParser
+package import SwiftSyntax
+package import SwiftiomaticTestSupport
 @testable import SwiftiomaticKit
 
 /// Locks in baseline timing for full single-file format (parse + rewrite pipeline + pretty-print),

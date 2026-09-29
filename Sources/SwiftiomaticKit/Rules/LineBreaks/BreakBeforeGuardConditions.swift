@@ -1,4 +1,4 @@
-import SwiftSyntax
+package import SwiftSyntax
 
 /// Break before guard conditions.
 package struct BreakBeforeGuardConditions: LayoutRule {

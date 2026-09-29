@@ -1,3 +1,4 @@
+import SwiftParser
 import SwiftSyntax
 
 /// Flag a module-wide diagnostic flag in a package manifest in favour of the SE-0522 attribute.

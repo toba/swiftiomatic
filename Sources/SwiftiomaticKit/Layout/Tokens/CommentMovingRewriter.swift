@@ -10,6 +10,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
+import Foundation
 import SwiftSyntax
 
 func isNestedInPostfixIfConfig(node: Syntax) -> Bool {

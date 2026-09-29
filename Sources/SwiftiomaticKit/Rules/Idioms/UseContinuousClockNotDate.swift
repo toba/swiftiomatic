@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Lint elapsed-time uses of `Date()` / `Date.now` — prefer `ContinuousClock` .

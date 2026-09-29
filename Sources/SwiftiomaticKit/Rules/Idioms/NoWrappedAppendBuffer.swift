@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Lint a local buffer that `append` fills in a loop and a second buffer then copies

@@ -1,3 +1,4 @@
+import Foundation
 @testable import SwiftiomaticKit
 import SwiftiomaticTestSupport
 import Testing
@@ -335,5 +336,68 @@ struct UseURLMacroForURLLiteralsTests: RuleTesting {
         FindingSpec("1️⃣", message: "replace force-unwrapped 'URL(string:)' with URL macro")
       ],
       configuration: config())
+  }
+
+  // MARK: - Optional literal mode
+
+  private static let optionalMessage =
+    "replace 'URL(string:)' with a string literal with URL macro; the macro returns a non-optional 'URL'"
+
+  private func optionalConfig() -> Configuration {
+    var c = config()
+    c[UseURLMacroForURLLiterals.self].flagOptionalLiterals = true
+    return c
+  }
+
+  @Test func optionalURLLiteralFlaggedButNotRewritten() {
+    assertFormatting(
+      UseURLMacroForURLLiterals.self,
+      input: """
+        let url = 1️⃣URL(string: "https://example.com")
+        let other = 2️⃣URL(string: "https://other.com") ?? fallback
+        """,
+      expected: """
+        let url = URL(string: "https://example.com")
+        let other = URL(string: "https://other.com") ?? fallback
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: Self.optionalMessage),
+        FindingSpec("2️⃣", message: Self.optionalMessage),
+      ],
+      configuration: optionalConfig())
+  }
+
+  @Test func optionalModeStillRewritesForceUnwrap() {
+    assertFormatting(
+      UseURLMacroForURLLiterals.self,
+      input: """
+        let url = 1️⃣URL(string: "https://example.com")!
+        """,
+      expected: """
+        import URLFoundation
+
+        let url = #URL("https://example.com")
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "replace force-unwrapped 'URL(string:)' with URL macro")
+      ],
+      configuration: optionalConfig())
+  }
+
+  @Test func optionalModeSkipsNonLiteralArguments() {
+    assertFormatting(
+      UseURLMacroForURLLiterals.self,
+      input: """
+        let a = URL(string: path)
+        let b = URL(string: "https://\\(host)/path")
+        let c = URL(string: "https://example.com", relativeTo: base)
+        """,
+      expected: """
+        let a = URL(string: path)
+        let b = URL(string: "https://\\(host)/path")
+        let c = URL(string: "https://example.com", relativeTo: base)
+        """,
+      findings: [],
+      configuration: optionalConfig())
   }
 }

@@ -1,4 +1,5 @@
-import SwiftSyntax
+package import SwiftSyntax
+import SwiftSyntaxBuilder
 
 /// Per-file state for `LayoutSingleLineBodies`. The `indentStack` tracks the baseIndent of each
 /// enclosing wrapping construct ( `for` / `while` / `repeat` / `guard` / `if` ) so a same-line

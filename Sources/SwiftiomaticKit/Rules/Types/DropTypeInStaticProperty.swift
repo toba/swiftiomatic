@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import SwiftSyntax
 
 /// Static properties of a type that return that type should not include a reference to their type.

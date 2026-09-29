@@ -1,5 +1,5 @@
-import SwiftSyntax
-import ConfigurationKit
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// A block should hold a statement or a comment
 ///

@@ -10,8 +10,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Foundation
-import SwiftSyntax
+package import Foundation
+package import SwiftSyntax
 
 /// LayoutCoordinator takes a Syntax node and outputs a well-formatted, re-indented reproduction of
 /// the code as a String.

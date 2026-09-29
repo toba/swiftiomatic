@@ -1,5 +1,5 @@
-import SwiftSyntax
-import ConfigurationKit
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// Functions and initializers should not declare too many parameters.
 final class ParameterCount: LintSyntaxRule<ParameterCountConfiguration>, @unchecked Sendable {

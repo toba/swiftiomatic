@@ -10,6 +10,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
+import Foundation
 import SwiftSyntax
 
 /// Numeric literals should be grouped with `_`s to delimit common separators.

@@ -1,6 +1,6 @@
-import Foundation
-import SwiftSyntax
-import ConfigurationKit
+package import Foundation
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// `TODO` and `FIXME` comments with a bracketed date should be resolved by that date.
 ///

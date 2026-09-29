@@ -1,6 +1,6 @@
-import Foundation
-import SwiftSyntax
-import SwiftOperators
+package import Foundation
+package import SwiftSyntax
+package import SwiftOperators
 @_spi(ExperimentalLanguageFeatures) import SwiftWarningControl
 
 /// Context contains the bits that each formatter and linter will need access to.
@@ -117,6 +117,7 @@ package final class Context {
     lazy var hoistTryState = HoistTry.AwaitState()
     lazy var leadingDotOperatorsState = BreakBeforeLeadingDot.State()
     lazy var namedClosureParamsState = RequireNamedClosureParams.State()
+    lazy var noExplicitOwnershipModifiersState = NoExplicitOwnershipModifiers.State()
     lazy var noForceTryState = NoForceTry.State()
     lazy var noForceUnwrapState = NoForceUnwrap.State()
     lazy var noGuardInTestsState = NoGuardInTests.State()
@@ -131,6 +132,7 @@ package final class Context {
     lazy var swiftTestingTestCaseNamesState = UseSwiftTestingNames.State()
     lazy var testSuiteAccessControlState = RequireSuiteAccessControl.State()
     lazy var urlMacroState = UseURLMacroForURLLiterals.State()
+    lazy var uuidMacroState = UseUUIDMacroForUUIDLiterals.State()
     lazy var validateTestCasesState = RequireTestFnPrefixOrAttribute.State()
     lazy var layoutSingleLineBodiesState = LayoutSingleLineBodiesState()
 
@@ -148,6 +150,22 @@ package final class Context {
     /// Keyed by the root for the same reason as `freeFunctionIndexes` . The index records member
     /// declarations as nodes, so it only answers for the tree it was built from.
     private var typeMemberIndexes: [SyntaxIdentifier: TypeMemberIndex] = [:]
+
+    /// The answers of `projectReferences(_:)` , keyed by name.
+    private var projectReferenceAnswers: [String: Bool] = [:]
+
+    /// Whether the linted file or another file of the project uses `name` as an identifier
+    ///
+    /// The other files answer only for a name in `ProjectIndex.trackedNames` , and only when the
+    /// run has a project index. The answer for each name is computed once per file.
+    func projectReferences(_ name: String) -> Bool {
+        if let answer = projectReferenceAnswers[name] { return answer }
+        let answer = sourceFileSyntax.tokens(viewMode: .sourceAccurate).contains {
+            $0.tokenKind == .identifier(name)
+        } || projectLookup?.otherFileReferences(name) == true
+        projectReferenceAnswers[name] = answer
+        return answer
+    }
 
     /// The members of every type in the tree that holds `node`
     ///

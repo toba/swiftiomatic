@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 /// Pure reflow engine for `///` and `//` comment runs.
 ///

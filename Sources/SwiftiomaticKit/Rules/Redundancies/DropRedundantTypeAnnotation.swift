@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Remove redundant type annotations when the type is obvious from the initializer.

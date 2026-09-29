@@ -10,12 +10,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Markdown
-import Foundation
-import SwiftSyntax
-import NaturalLanguage
-import Synchronization
-import TobaConcurrency
+package import Markdown
+package import Foundation
+package import SwiftSyntax
+package import NaturalLanguage
+package import Synchronization
+package import TobaConcurrency
 
 /// All documentation comments must begin with a one-line summary of the declaration.
 ///

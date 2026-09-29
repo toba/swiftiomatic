@@ -1,4 +1,6 @@
-import SwiftSyntax
+import Foundation
+package import SwiftSyntax
+import SwiftSyntaxBuilder
 
 // sm:ignore functionBodyLength
 

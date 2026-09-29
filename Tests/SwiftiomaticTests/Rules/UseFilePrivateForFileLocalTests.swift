@@ -10,11 +10,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftiomaticKit
+import Foundation
+package import SwiftiomaticKit
 @testable import SwiftiomaticKit
-import SwiftSyntax
-import SwiftiomaticTestSupport
-import Testing
+package import SwiftSyntax
+package import SwiftiomaticTestSupport
+package import Testing
 
 private typealias TestConfiguration = (
   original: String,

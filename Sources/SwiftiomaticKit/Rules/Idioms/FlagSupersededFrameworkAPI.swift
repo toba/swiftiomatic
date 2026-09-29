@@ -16,8 +16,12 @@ import SwiftSyntax
 /// - Storage of `NSAttributedString` or `NSMutableAttributedString` → `AttributedString` . The rule
 ///   reports a stored property of a type, an initializer parameter of a type and an enum case
 ///   parameter. The Swift value type is `Sendable` , it is `Codable` and SwiftData stores it. The
-///   rule does not report a local, a computed property or a function parameter. A TextKit bridge
+///   rule does not report a computed property, a global or a closure parameter. A TextKit bridge
 ///   can need the reference type. In that case, keep the code and ignore the finding.
+/// - A local variable or a function parameter of type `NSAttributedString` or
+///   `NSMutableAttributedString` , and an `NSMutableParagraphStyle(...)` construction. These
+///   findings are at the CONSIDER level, and their messages start with "consider". TextKit code
+///   needs these types, so weigh the finding against the code.
 /// - A hand-written `animatableData` on a type that conforms to `Animatable` , `Shape` ,
 ///   `InsettableShape` or `AnimatableModifier` → the `@Animatable` macro. The macro makes the
 ///   stored properties animatable and writes `animatableData` . Mark a property that must not
@@ -25,7 +29,8 @@ import SwiftSyntax
 ///   stored properties can need to stay.
 ///
 /// Lint: A reference to a replaced type, a stored `NSAttributedString` or a hand-written
-/// `animatableData` raises a warning.
+/// `animatableData` raises a warning. A local or function parameter of an attributed string type
+/// and an `NSMutableParagraphStyle` construction also raise a warning.
 final class FlagSupersededFrameworkAPI: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .idioms }
 
@@ -66,11 +71,18 @@ final class FlagSupersededFrameworkAPI: LintSyntaxRule<LintOnlyValue>, @unchecke
         "NSAttributedString", "NSMutableAttributedString",
     ]
 
-    /// Reports `type` when it names an attributed string class and it is the type of stored data.
+    /// Reports `type` when it names an attributed string class and it is the type of stored data,
+    /// of a local variable or of a function parameter.
     private func flagAttributedStringStorage(_ type: some TypeSyntaxProtocol, name: TokenSyntax) {
-        guard Self.attributedStringTypes.contains(name.text),
-            let member = storageMember(containing: Syntax(type)),
-            let owner = owningType(of: member) else { return }
+        guard Self.attributedStringTypes.contains(name.text) else { return }
+        guard let member = storageMember(containing: Syntax(type)),
+            let owner = owningType(of: member)
+        else {
+            if isLocalOrFunctionParameter(Syntax(type)) {
+                diagnose(.considerAttributedString, on: name)
+            }
+            return
+        }
         diagnose(
             .useAttributedString,
             on: name,
@@ -105,6 +117,38 @@ final class FlagSupersededFrameworkAPI: LintSyntaxRule<LintOnlyValue>, @unchecke
             current = parent
         }
         return nil
+    }
+
+    /// Whether the type at `node` is the annotated type of a local variable or the type of a
+    /// function parameter. A global variable and a closure parameter do not count.
+    private func isLocalOrFunctionParameter(_ node: Syntax) -> Bool {
+        var current = node
+
+        while let parent = current.parent {
+            if let annotation = parent.as(TypeAnnotationSyntax.self) {
+                guard let variable = annotation.parent?.parent?.parent?.as(VariableDeclSyntax.self),
+                      let item = variable.parent?.as(CodeBlockItemSyntax.self)
+                else { return false }
+                return item.parent?.parent?.is(SourceFileSyntax.self) == false
+            }
+            if parent.is(FunctionParameterSyntax.self) {
+                return enclosingDecl(of: parent)?.is(FunctionDeclSyntax.self) == true
+            }
+            if parent.is(DeclSyntax.self) || parent.is(ExprSyntax.self)
+                || parent.is(StmtSyntax.self)
+                || parent.is(CodeBlockSyntax.self) { return false }
+            current = parent
+        }
+        return false
+    }
+
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        if let callee = node.calledExpression.as(DeclReferenceExprSyntax.self),
+           callee.baseName.text == "NSMutableParagraphStyle"
+        {
+            diagnose(.considerParagraphAttributes, on: callee)
+        }
+        return .visitChildren
     }
 
     /// The nearest declaration above `node` .
@@ -201,6 +245,10 @@ fileprivate extension Finding.Message {
     static let useAttributedString: Finding.Message =
         "store 'AttributedString', not the reference type 'NSAttributedString'"
     static let attributedStringOwner: Finding.Message = "the type that stores the value"
+    static let considerAttributedString: Finding.Message =
+        "consider 'AttributedString' in place of the reference type 'NSAttributedString', unless TextKit needs it"
+    static let considerParagraphAttributes: Finding.Message =
+        "consider the 'AttributedString' paragraph attributes in place of 'NSMutableParagraphStyle', unless TextKit needs it"
     static let useAnimatableMacro: Finding.Message =
         "replace the hand-written 'animatableData' with the '@Animatable' macro"
     static let animatableConformance: Finding.Message = "the explicit 'Animatable' conformance"

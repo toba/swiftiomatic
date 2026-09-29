@@ -231,6 +231,71 @@ struct UseSwiftTestingNotXCTestTests: RuleTesting {
     )
   }
 
+  @Test func convertsXCTAssertThrowsErrorAndNoThrow() {
+    assertFormatting(
+      UseSwiftTestingNotXCTest.self,
+      input: """
+        import XCTest
+
+        class Tests: XCTestCase {
+            func testThrows() throws {
+                1️⃣XCTAssertThrowsError(try parse(""))
+                2️⃣XCTAssertThrowsError(try parse(""), "empty input should throw")
+                3️⃣XCTAssertNoThrow(try parse("1"))
+                4️⃣XCTAssertNoThrow(try parse("2"), "valid input should not throw")
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        class Tests {
+            @Test func testThrows() throws {
+                #expect(throws: (any Error).self) { try parse("") }
+                #expect(throws: (any Error).self, "empty input should throw") { try parse("") }
+                #expect(throws: Never.self) { try parse("1") }
+                #expect(throws: Never.self, "valid input should not throw") { try parse("2") }
+            }
+        }
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "convert XCTest assertion to Swift Testing"),
+        FindingSpec("2️⃣", message: "convert XCTest assertion to Swift Testing"),
+        FindingSpec("3️⃣", message: "convert XCTest assertion to Swift Testing"),
+        FindingSpec("4️⃣", message: "convert XCTest assertion to Swift Testing"),
+      ]
+    )
+  }
+
+  @Test func preservesXCTAssertThrowsErrorWithErrorHandler() {
+    assertFormatting(
+      UseSwiftTestingNotXCTest.self,
+      input: """
+        import XCTest
+
+        class Tests: XCTestCase {
+            func testThrows() throws {
+                XCTAssertThrowsError(try parse("")) { error in
+                    print(error)
+                }
+            }
+        }
+        """,
+      expected: """
+        import Testing
+
+        class Tests {
+            @Test func testThrows() throws {
+                XCTAssertThrowsError(try parse("")) { error in
+                    print(error)
+                }
+            }
+        }
+        """,
+      findings: []
+    )
+  }
+
   // MARK: - setUp/tearDown conversion
 
   @Test func convertsSimpleSetUp() {

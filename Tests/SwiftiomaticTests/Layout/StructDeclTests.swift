@@ -10,8 +10,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftiomaticKit
-import Testing
+import SwiftiomaticTestSupport
+package import SwiftiomaticKit
+package import Testing
 
 @Suite
 struct StructDeclTests: LayoutTesting {

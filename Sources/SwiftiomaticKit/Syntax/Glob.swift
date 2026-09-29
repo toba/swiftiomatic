@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 /// Shell-style glob matcher used by the `excludes` configuration to skip paths during recursive
 /// directory walks.

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Remove unnecessary backticks around identifiers.

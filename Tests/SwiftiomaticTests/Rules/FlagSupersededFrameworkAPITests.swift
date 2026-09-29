@@ -12,6 +12,10 @@ struct FlagSupersededFrameworkAPITests: RuleTesting {
     private static let attributedString =
         "store 'AttributedString', not the reference type 'NSAttributedString'"
     private static let attributedStringOwner = "the type that stores the value"
+    private static let considerAttributedString =
+        "consider 'AttributedString' in place of the reference type 'NSAttributedString', unless TextKit needs it"
+    private static let considerParagraphAttributes =
+        "consider the 'AttributedString' paragraph attributes in place of 'NSMutableParagraphStyle', unless TextKit needs it"
     private static let animatableMacro =
         "replace the hand-written 'animatableData' with the '@Animatable' macro"
     private static let animatableConformance = "the explicit 'Animatable' conformance"
@@ -160,13 +164,61 @@ struct FlagSupersededFrameworkAPITests: RuleTesting {
         )
     }
 
-    @Test func attributedStringLocalNotFlagged() {
+    @Test func attributedStringLocalFlagged() {
         assertLint(
             FlagSupersededFrameworkAPI.self,
             """
             func render() {
-              let text: NSAttributedString = make()
+              let text: 1️⃣NSAttributedString = make()
               draw(text)
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.considerAttributedString)]
+        )
+    }
+
+    @Test func attributedStringFunctionParameterFlagged() {
+        assertLint(
+            FlagSupersededFrameworkAPI.self,
+            """
+            struct Renderer {
+              func draw(_ text: 1️⃣NSMutableAttributedString?) {}
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.considerAttributedString)]
+        )
+    }
+
+    @Test func attributedStringGlobalAndClosureParameterNotFlagged() {
+        assertLint(
+            FlagSupersededFrameworkAPI.self,
+            """
+            let placeholder: NSAttributedString = make()
+            let transform = { (text: NSAttributedString) in text }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func mutableParagraphStyleConstructionFlagged() {
+        assertLint(
+            FlagSupersededFrameworkAPI.self,
+            """
+            func render() {
+              let style = 1️⃣NSMutableParagraphStyle()
+              style.alignment = .center
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.considerParagraphAttributes)]
+        )
+    }
+
+    @Test func paragraphStyleTypeReferenceNotFlagged() {
+        assertLint(
+            FlagSupersededFrameworkAPI.self,
+            """
+            func render(_ style: NSParagraphStyle) {
+              let copy = style.mutableCopy() as? NSMutableParagraphStyle
             }
             """,
             findings: []

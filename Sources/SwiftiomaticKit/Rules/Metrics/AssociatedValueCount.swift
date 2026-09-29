@@ -1,5 +1,5 @@
-import SwiftSyntax
-import ConfigurationKit
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// Enum cases should not declare too many associated values.
 final class AssociatedValueCount: LintSyntaxRule<AssociatedValueCountConfiguration>,

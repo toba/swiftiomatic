@@ -1,6 +1,6 @@
 @testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
-import Testing
+package import SwiftiomaticTestSupport
+package import Testing
 
 @Suite
 struct NoExplicitOwnershipModifiersTests: RuleTesting {
@@ -139,6 +139,149 @@ struct NoExplicitOwnershipModifiersTests: RuleTesting {
         """,
       findings: [
         FindingSpec("1️⃣", message: "remove explicit 'consuming' ownership modifier"),
+      ]
+    )
+  }
+
+  // MARK: - Noncopyable and nonescapable code keeps its modifiers
+
+  @Test func keepsModifierOnNoncopyableParameterType() {
+    assertFormatting(
+      NoExplicitOwnershipModifiers.self,
+      input: """
+        struct Buffer: ~Copyable {}
+        func take(_ buffer: consuming Buffer) {}
+        func peek(_ buffer: borrowing Buffer) {}
+        """,
+      expected: """
+        struct Buffer: ~Copyable {}
+        func take(_ buffer: consuming Buffer) {}
+        func peek(_ buffer: borrowing Buffer) {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func keepsModifierOnNonescapableParameterType() {
+    assertFormatting(
+      NoExplicitOwnershipModifiers.self,
+      input: """
+        struct View: ~Escapable {}
+        func read(_ view: borrowing View) {}
+        """,
+      expected: """
+        struct View: ~Escapable {}
+        func read(_ view: borrowing View) {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func keepsModifierOnNoncopyableGenericParameter() {
+    assertFormatting(
+      NoExplicitOwnershipModifiers.self,
+      input: """
+        func take<T: ~Copyable>(_ value: consuming T) {}
+        func peek<T>(_ value: borrowing T) where T: ~Copyable {}
+        """,
+      expected: """
+        func take<T: ~Copyable>(_ value: consuming T) {}
+        func peek<T>(_ value: borrowing T) where T: ~Copyable {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func keepsModifierOnNoncopyableTypeGenericParameter() {
+    assertFormatting(
+      NoExplicitOwnershipModifiers.self,
+      input: """
+        struct Box<Element: ~Copyable>: ~Copyable {
+          func store(_ element: consuming Element) {}
+        }
+        """,
+      expected: """
+        struct Box<Element: ~Copyable>: ~Copyable {
+          func store(_ element: consuming Element) {}
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func keepsModifierOnSomeNoncopyable() {
+    assertFormatting(
+      NoExplicitOwnershipModifiers.self,
+      input: """
+        func take(_ value: consuming some P & ~Copyable) {}
+        """,
+      expected: """
+        func take(_ value: consuming some P & ~Copyable) {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func keepsModifierOnSpanFamilyType() {
+    assertFormatting(
+      NoExplicitOwnershipModifiers.self,
+      input: """
+        func parse(_ bytes: borrowing RawSpan) {}
+        func fill(_ output: consuming OutputSpan<UInt8>) {}
+        """,
+      expected: """
+        func parse(_ bytes: borrowing RawSpan) {}
+        func fill(_ output: consuming OutputSpan<UInt8>) {}
+        """,
+      findings: []
+    )
+  }
+
+  @Test func keepsMethodModifierInNoncopyableType() {
+    assertFormatting(
+      NoExplicitOwnershipModifiers.self,
+      input: """
+        struct FileHandle: ~Copyable {
+          consuming func close() {}
+        }
+        extension FileHandle {
+          borrowing func size() -> Int { 0 }
+        }
+        protocol Resource: ~Copyable {
+          consuming func release()
+        }
+        """,
+      expected: """
+        struct FileHandle: ~Copyable {
+          consuming func close() {}
+        }
+        extension FileHandle {
+          borrowing func size() -> Int { 0 }
+        }
+        protocol Resource: ~Copyable {
+          consuming func release()
+        }
+        """,
+      findings: []
+    )
+  }
+
+  @Test func stillRemovesModifierOnCopyableTypeNextToNoncopyable() {
+    assertFormatting(
+      NoExplicitOwnershipModifiers.self,
+      input: """
+        struct Buffer: ~Copyable {}
+        func take(_ buffer: consuming Buffer, _ name: 1️⃣consuming String) {}
+        func other<T>(_ value: 2️⃣borrowing T) {}
+        """,
+      expected: """
+        struct Buffer: ~Copyable {}
+        func take(_ buffer: consuming Buffer, _ name: String) {}
+        func other<T>(_ value: T) {}
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "remove explicit 'consuming' ownership modifier"),
+        FindingSpec("2️⃣", message: "remove explicit 'borrowing' ownership modifier"),
       ]
     )
   }

@@ -10,7 +10,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import SwiftSyntax
+package import SwiftSyntax
 
 /// The text contents of a documentation comment extracted from trivia.
 ///

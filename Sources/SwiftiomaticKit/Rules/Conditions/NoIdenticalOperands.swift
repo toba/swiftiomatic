@@ -6,9 +6,10 @@ import SwiftSyntax
 /// their non-trivia token text so internal whitespace and formatting differences are ignored.
 ///
 /// Lint: When both operands of a comparison operator are textually identical (ignoring whitespace),
-/// a warning is raised.
+/// an error is raised.
 final class NoIdenticalOperands: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
+    override class var guidance: GuidanceLevel { .mustNot }
     override class var defaultValue: LintOnlyValue { .init(lint: .error) }
 
     private static let comparisonOperators: Set<String> = [

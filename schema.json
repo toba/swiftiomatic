@@ -115,6 +115,15 @@
       },
       "type" : "object"
     },
+    "assignStreamSnapshot" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag code that appends a `streamResponse` snapshot instead of assigning it.\n\n`LanguageModelSession.streamResponse(to:)` yields snapshots. Each snapshot holds the whole response so far, not only the new part. A loop that appends each snapshot to the previous text repeats the response many times. Assign the snapshot to the output on each iteration.\n\nThe rule reads the body of `for try await s in <x>.streamResponse(...)`. It reports a `+=` whose right side reads `s`, and an `append` call whose arguments read `s`. A read of a member that has the same name as `s`, such as `state.s`, does not count.\n\nLint: A `streamResponse` loop appends its snapshot to an accumulated value.",
+      "unevaluatedProperties" : false
+    },
     "associatedValueCount" : {
       "allOf" : [
         {
@@ -360,6 +369,15 @@
       "additionalProperties" : false,
       "description" : "collections rule group.",
       "properties" : {
+        "flagSortAfterAppend" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `sort` call that directly follows one `append` on the same receiver.\n\nA collection that is already sorted needs only one insert to stay sorted. A `sort()` after one `append` sorts the whole collection again, which costs O(n log n) where an insert at the sorted index costs O(n).\n\nThe rule reads each pair of adjacent statements. The first statement is `x.append(e)` with one unlabeled argument, and the second is `x.sort()` or `x.sort(by:)` on the same receiver. An `append(contentsOf:)` adds a batch, so the rule skips it. A loop that appends each element and then sorts once after the loop is correct, and the rule does not flag it.\n\nLint: `x.sort()` directly follows `x.append(e)` .",
+          "unevaluatedProperties" : false
+        },
         "useAllSatisfy" : {
           "allOf" : [
             {
@@ -667,7 +685,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x` , `foo.bar < foo.bar` , and `$0 != $0` . Compares operands by their non-trivia token text so internal whitespace and formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical (ignoring whitespace), a warning is raised.",
+          "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x` , `foo.bar < foo.bar` , and `$0 != $0` . Compares operands by their non-trivia token text so internal whitespace and formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical (ignoring whitespace), an error is raised.",
           "unevaluatedProperties" : false
         },
         "noParensAroundConditions" : {
@@ -927,7 +945,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "A computed-property or subscript setter that never reads its parameter ( `newValue` by default, or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying storage uses some other expression, leaving the actual incoming value silently dropped.\n\nException: empty setters, e.g. `set {}` , are intentional no-ops — an `override` suppressing the parent class's setter, or a protocol-extension default that must supply a settable requirement for conformers to override. Nothing is assigned, so there is nothing to get wrong.\n\nLint: When a `set` accessor's body never references its parameter name, a warning is raised.",
+          "description" : "A computed-property or subscript setter that never reads its parameter ( `newValue` by default, or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying storage uses some other expression, leaving the actual incoming value silently dropped.\n\nException: empty setters, e.g. `set {}` , are intentional no-ops — an `override` suppressing the parent class's setter, or a protocol-extension default that must supply a settable requirement for conformers to override. Nothing is assigned, so there is nothing to get wrong.\n\nLint: When a `set` accessor's body never references its parameter name, an error is raised.",
           "unevaluatedProperties" : false
         },
         "orderProtocolAccessors" : {
@@ -1447,6 +1465,36 @@
       "description" : "Flag an `.animation(_:value:)` whose view holds an `if` or `switch` and no geometry group.\n\nSwiftUI passes a change of position or size down the view tree, and each leaf view animates its own frame. When the content of the animated view also changes, because a branch of an `if` or a `switch` appears or goes away, its parts can animate as separate pieces. A component can then come apart during the animation, for example a label whose text and background move apart.\n\nWhen the parts must move as one unit, put `geometryGroup()` around the complete unit. The parent then resolves the position and size of the group first, and the parts follow it:\n\n```swift StatusLabel(isDone: isDone) .geometryGroup() .frame(maxWidth: .infinity, alignment: isDone ? .trailing : .leading) ```\n\nThe place in the modifier chain matters, because it decides which views are inside the group. `geometryGroup()` does not flatten the drawing, and it does not make the view faster. When the parts may animate on their own, keep the code and suppress the finding. The finding asks for a review, not a fixed change.\n\nThe rule looks at the view that the modifier chain before `.animation(_:value:)` builds, including the closures of its modifiers, such as an `overlay` .\n\nLint: An `.animation(_:value:)` modifier follows a view that holds an `if` or `switch` and no `geometryGroup()` .",
       "unevaluatedProperties" : false
     },
+    "flagAvailabilityBelowFloor" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove an availability check that the deployment floor already satisfies.\n\nA project with a platform floor of macOS 27 gains nothing from `@available(macOS 14, *)` or from `if #available(macOS 14, *)`. The attribute restricts nothing, and the condition is always true. Both only add noise and an `else` branch that never runs.\n\nThe rule does nothing until a floor is configured. Set one version per platform: `flagAvailabilityBelowFloor.macOS`, `.iOS`, `.tvOS`, `.watchOS` and `.visionOS`. A platform with no floor blocks the finding, so `@available(macOS 13, tvOS 16, *)` stays when only macOS has a floor. `anyAppleOS N` counts as below the floor only when every configured floor is at or above `N`.\n\nThe rule reads only the shorthand form (`@available(macOS 13, *)`) and the form with one `introduced:` label. It ignores `deprecated`, `obsoleted`, `unavailable`, `renamed` and `message` arguments, a Swift version, and an application extension platform.\n\nLint: A warning is raised on an `@available` attribute or an `#available` condition whose versions are all at or below the floor, and on an `#unavailable` condition whose versions are all at or below the floor.\n\nRewrite: The attribute is removed. A sole `if #available` condition unwraps its body into the enclosing block and drops any `else` branch. A sole `guard #available` statement is removed. One `#available` condition among several is removed from the list. A body that holds a `defer` or a declaration stays, because unwrapping it changes its scope. `#unavailable` is lint only.",
+      "properties" : {
+        "iOS" : {
+          "description" : "The lowest iOS version the project supports.",
+          "type" : "string"
+        },
+        "macOS" : {
+          "description" : "The lowest macOS version the project supports, such as `\"27\"` . When `nil` , macOS has no floor and blocks every finding that names it.",
+          "type" : "string"
+        },
+        "tvOS" : {
+          "description" : "The lowest tvOS version the project supports.",
+          "type" : "string"
+        },
+        "visionOS" : {
+          "description" : "The lowest visionOS version the project supports.",
+          "type" : "string"
+        },
+        "watchOS" : {
+          "description" : "The lowest watchOS version the project supports.",
+          "type" : "string"
+        }
+      }
+    },
     "flagDeepViewComposition" : {
       "allOf" : [
         {
@@ -1647,6 +1695,15 @@
       "description" : "Flag a view input whose type is an `@Observable` class declared in the same file.\n\nSwiftUI compares a class input by reference. The parent passes the same reference on each of its updates, so the comparison does not tell SwiftUI whether the values the view reads changed. Observation then tracks every property the view reads through the reference, which ties the view to the model's whole lifetime. Pass the values the view reads, or read the model from the environment, so that the view's inputs describe what it shows. For example, change `let model: Library` to `let title: String` when the view shows only `model.title`.\n\nKeep the class input when the view reads many properties of the model, or when the view changes the model. Observation updates the view when a property it reads changes, so a plain `let` input of an `@Observable` class is correct in these cases. Do not change the code only because a reference input is present.\n\nA property the view owns, such as `@State` or `@Environment`, is not an input. The rule is syntax-only, so a class declared in another file is unknown to it, and a type that names a generic parameter of the view is never matched. The rule does not report a class that is not `@Observable`. A change to such a class does not update the view, and the rule does not check that case.\n\nLint: A stored input of a view type has the type of a same-file `@Observable` class.",
       "unevaluatedProperties" : false
     },
+    "flagSortAfterAppend" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `sort` call that directly follows one `append` on the same receiver.\n\nA collection that is already sorted needs only one insert to stay sorted. A `sort()` after one `append` sorts the whole collection again, which costs O(n log n) where an insert at the sorted index costs O(n).\n\nThe rule reads each pair of adjacent statements. The first statement is `x.append(e)` with one unlabeled argument, and the second is `x.sort()` or `x.sort(by:)` on the same receiver. An `append(contentsOf:)` adds a batch, so the rule skips it. A loop that appends each element and then sorts once after the loop is correct, and the rule does not flag it.\n\nLint: `x.sort()` directly follows `x.append(e)` .",
+      "unevaluatedProperties" : false
+    },
     "flagStateSeededFromInput" : {
       "allOf" : [
         {
@@ -1671,7 +1728,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nThe rule also flags two older patterns that have a Swift replacement:\n\n- Storage of `NSAttributedString` or `NSMutableAttributedString` → `AttributedString` . The rule\nreports a stored property of a type, an initializer parameter of a type and an enum case parameter. The Swift value type is `Sendable` , it is `Codable` and SwiftData stores it. The rule does not report a local, a computed property or a function parameter. A TextKit bridge can need the reference type. In that case, keep the code and ignore the finding.\n- A hand-written `animatableData` on a type that conforms to `Animatable` , `Shape` ,\n`InsettableShape` or `AnimatableModifier` → the `@Animatable` macro. The macro makes the stored properties animatable and writes `animatableData` . Mark a property that must not animate with `@AnimatableIgnored` . A custom `animatableData` that does more than pack the stored properties can need to stay.\n\nLint: A reference to a replaced type, a stored `NSAttributedString` or a hand-written `animatableData` raises a warning.",
+      "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nThe rule also flags two older patterns that have a Swift replacement:\n\n- Storage of `NSAttributedString` or `NSMutableAttributedString` → `AttributedString` . The rule\nreports a stored property of a type, an initializer parameter of a type and an enum case parameter. The Swift value type is `Sendable` , it is `Codable` and SwiftData stores it. The rule does not report a computed property, a global or a closure parameter. A TextKit bridge can need the reference type. In that case, keep the code and ignore the finding.\n- A local variable or a function parameter of type `NSAttributedString` or\n`NSMutableAttributedString` , and an `NSMutableParagraphStyle(...)` construction. These findings are at the CONSIDER level, and their messages start with \"consider\". TextKit code needs these types, so weigh the finding against the code.\n- A hand-written `animatableData` on a type that conforms to `Animatable` , `Shape` ,\n`InsettableShape` or `AnimatableModifier` → the `@Animatable` macro. The macro makes the stored properties animatable and writes `animatableData` . Mark a property that must not animate with `@AnimatableIgnored` . A custom `animatableData` that does more than pack the stored properties can need to stay.\n\nLint: A reference to a replaced type, a stored `NSAttributedString` or a hand-written `animatableData` raises a warning. A local or function parameter of an attributed string type and an `NSMutableParagraphStyle` construction also raise a warning.",
       "unevaluatedProperties" : false
     },
     "flagSupersededSwiftUI" : {
@@ -1707,7 +1764,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag `Task { ... }` started from a `@MainActor`-isolated context. The unstructured `Task` initializer hops off the main actor unless the body's first awaited work is itself main-actor-isolated, defeating the caller's isolation guarantee. Prefer `Task.immediate` (or `Task.immediate(priority:)`), which starts execution synchronously on the calling actor and only suspends at the first `await` that requires it.\n\nDetection walks enclosing parents looking for `@MainActor` on a function, computed property accessor, closure, type, or extension. Matches false-positive-friendly: `Task { ... }` with any priority arg form fires when the enclosing decl carries the attribute. Detached and named-static-method forms (`Task.detached`, `Task.immediate`) are not flagged here.\n\nCaveat noted in the message: a `Task` body whose first work suspends off-main is the silent-fallback case the rule is named for — the runtime drops main-actor isolation without a diagnostic, so reviewing flagged sites is worthwhile even when the body \"looks fine.\"",
+      "description" : "Flag `Task { ... }` started from a `@MainActor`-isolated context. The unstructured `Task` initializer inherits the isolation of the caller, so its body runs on the main actor. The cost is a deferred start: the body does not run until the main actor reaches a later turn, so work that the caller expects to happen now happens later. Prefer `Task.immediate` (or `Task.immediate(priority:)`), which starts execution synchronously on the calling actor and only suspends at the first `await` that requires it.\n\nDetection walks enclosing parents looking for `@MainActor` on a function, computed property accessor, closure, type, or extension. Matches false-positive-friendly: `Task { ... }` with any priority arg form fires when the enclosing decl carries the attribute. Detached and named-static-method forms (`Task.detached`, `Task.immediate`) are not flagged here.\n\nThe rule also flags `Task { ... }` as a statement in a function with the `@IBAction` attribute. An `@IBAction` method runs on the main actor, and a `Task` in it defers the work of the action to a later turn.\n\nLint: A `Task { ... }` starts in a `@MainActor` context or as a statement in an `@IBAction`.",
       "unevaluatedProperties" : false
     },
     "flagUncheckedSendable" : {
@@ -1964,6 +2021,15 @@
       "additionalProperties" : false,
       "description" : "idioms rule group.",
       "properties" : {
+        "assignStreamSnapshot" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag code that appends a `streamResponse` snapshot instead of assigning it.\n\n`LanguageModelSession.streamResponse(to:)` yields snapshots. Each snapshot holds the whole response so far, not only the new part. A loop that appends each snapshot to the previous text repeats the response many times. Assign the snapshot to the output on each iteration.\n\nThe rule reads the body of `for try await s in <x>.streamResponse(...)`. It reports a `+=` whose right side reads `s`, and an `append` call whose arguments read `s`. A read of a member that has the same name as `s`, such as `state.s`, does not count.\n\nLint: A `streamResponse` loop appends its snapshot to an accumulated value.",
+          "unevaluatedProperties" : false
+        },
         "breakBeforeLeadingDot" : {
           "allOf" : [
             {
@@ -1972,13 +2038,52 @@
           ],
           "description" : "Move leading delimiters to the end of the previous line.\n\nWhen a line starts with a comma or colon, the delimiter should instead be placed at the end of the previous line. This keeps the delimiter associated with the preceding expression rather than the following one.\n\nLint: A finding is emitted when a delimiter starts a line.\n\nRewrite: The delimiter is moved to the end of the previous line."
         },
+        "flagAvailabilityBelowFloor" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove an availability check that the deployment floor already satisfies.\n\nA project with a platform floor of macOS 27 gains nothing from `@available(macOS 14, *)` or from `if #available(macOS 14, *)`. The attribute restricts nothing, and the condition is always true. Both only add noise and an `else` branch that never runs.\n\nThe rule does nothing until a floor is configured. Set one version per platform: `flagAvailabilityBelowFloor.macOS`, `.iOS`, `.tvOS`, `.watchOS` and `.visionOS`. A platform with no floor blocks the finding, so `@available(macOS 13, tvOS 16, *)` stays when only macOS has a floor. `anyAppleOS N` counts as below the floor only when every configured floor is at or above `N`.\n\nThe rule reads only the shorthand form (`@available(macOS 13, *)`) and the form with one `introduced:` label. It ignores `deprecated`, `obsoleted`, `unavailable`, `renamed` and `message` arguments, a Swift version, and an application extension platform.\n\nLint: A warning is raised on an `@available` attribute or an `#available` condition whose versions are all at or below the floor, and on an `#unavailable` condition whose versions are all at or below the floor.\n\nRewrite: The attribute is removed. A sole `if #available` condition unwraps its body into the enclosing block and drops any `else` branch. A sole `guard #available` statement is removed. One `#available` condition among several is removed from the list. A body that holds a `defer` or a declaration stays, because unwrapping it changes its scope. `#unavailable` is lint only.",
+          "properties" : {
+            "iOS" : {
+              "description" : "The lowest iOS version the project supports.",
+              "type" : "string"
+            },
+            "macOS" : {
+              "description" : "The lowest macOS version the project supports, such as `\"27\"` . When `nil` , macOS has no floor and blocks every finding that names it.",
+              "type" : "string"
+            },
+            "tvOS" : {
+              "description" : "The lowest tvOS version the project supports.",
+              "type" : "string"
+            },
+            "visionOS" : {
+              "description" : "The lowest visionOS version the project supports.",
+              "type" : "string"
+            },
+            "watchOS" : {
+              "description" : "The lowest watchOS version the project supports.",
+              "type" : "string"
+            }
+          }
+        },
         "flagSupersededFrameworkAPI" : {
           "allOf" : [
             {
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nThe rule also flags two older patterns that have a Swift replacement:\n\n- Storage of `NSAttributedString` or `NSMutableAttributedString` → `AttributedString` . The rule\nreports a stored property of a type, an initializer parameter of a type and an enum case parameter. The Swift value type is `Sendable` , it is `Codable` and SwiftData stores it. The rule does not report a local, a computed property or a function parameter. A TextKit bridge can need the reference type. In that case, keep the code and ignore the finding.\n- A hand-written `animatableData` on a type that conforms to `Animatable` , `Shape` ,\n`InsettableShape` or `AnimatableModifier` → the `@Animatable` macro. The macro makes the stored properties animatable and writes `animatableData` . Mark a property that must not animate with `@AnimatableIgnored` . A custom `animatableData` that does more than pack the stored properties can need to stay.\n\nLint: A reference to a replaced type, a stored `NSAttributedString` or a hand-written `animatableData` raises a warning.",
+          "description" : "Flag framework types the OS 27 SDK replaced wholesale.\n\n- `MXMetricManager` and its payload types → `MetricManager` . The MetricKit headers carry\n`API_DEPRECATED(\"Use MetricManager instead.\")` on the manager, the subscriber protocol and each payload type.\n- `NSBundleResourceRequest` → Background Assets. The Foundation interface marks it\n`deprecated: 27` on iOS, tvOS, watchOS and visionOS. It was never available on macOS.\n\nThe rule matches the type name wherever it appears: a conformance, an annotation, a generic argument or a static member reference such as `MXMetricManager.shared` .\n\nThe rule also flags two older patterns that have a Swift replacement:\n\n- Storage of `NSAttributedString` or `NSMutableAttributedString` → `AttributedString` . The rule\nreports a stored property of a type, an initializer parameter of a type and an enum case parameter. The Swift value type is `Sendable` , it is `Codable` and SwiftData stores it. The rule does not report a computed property, a global or a closure parameter. A TextKit bridge can need the reference type. In that case, keep the code and ignore the finding.\n- A local variable or a function parameter of type `NSAttributedString` or\n`NSMutableAttributedString` , and an `NSMutableParagraphStyle(...)` construction. These findings are at the CONSIDER level, and their messages start with \"consider\". TextKit code needs these types, so weigh the finding against the code.\n- A hand-written `animatableData` on a type that conforms to `Animatable` , `Shape` ,\n`InsettableShape` or `AnimatableModifier` → the `@Animatable` macro. The macro makes the stored properties animatable and writes `animatableData` . Mark a property that must not animate with `@AnimatableIgnored` . A custom `animatableData` that does more than pack the stored properties can need to stay.\n\nLint: A reference to a replaced type, a stored `NSAttributedString` or a hand-written `animatableData` raises a warning. A local or function parameter of an attributed string type and an `NSMutableParagraphStyle` construction also raise a warning.",
+          "unevaluatedProperties" : false
+        },
+        "noAccountChangedWithSyncEngine" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag the `CKAccountChanged` notification in a project that uses `CKSyncEngine` .\n\n`CKSyncEngine` sends an `.accountChange` event to its delegate when the iCloud account signs in, signs out or switches. A separate `CKAccountChanged` observer handles the same change a second time, and the two handlers can run in either order. The delegate event is the one source of account changes that the engine keeps in step with its sync state.\n\nThe rule reports `CKAccountChanged` when the same file or another file of the project uses the identifier `CKSyncEngine` . Without a project index, the rule reads the linted file only.\n\nLint: `CKAccountChanged` appears in a project that also uses `CKSyncEngine` .",
           "unevaluatedProperties" : false
         },
         "noAssignmentInExpressions" : {
@@ -2057,7 +2162,16 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()` ) or parameter types (e.g. `func foo(_ bar: consuming Bar)` ), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed."
+          "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()` ) or parameter types (e.g. `func foo(_ bar: consuming Bar)` ), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed.\n\nThe rule keeps a modifier that the compiler requires or that changes the meaning of noncopyable code. It keeps a parameter modifier when the parameter type names a type that this file declares `~Copyable` or `~Escapable` , a generic parameter that an enclosing declaration constrains with `~Copyable` or `~Escapable` , a type in the `Span` family, or a suppressed conformance such as `some P & ~Copyable` . It keeps a method modifier inside a type that suppresses `Copyable` or `Escapable` , and inside an extension of such a type. The rule cannot see a type that another file declares."
+        },
+        "noFinishOnUnverifiedTransaction" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `finish()` call in the `.unverified` case of a StoreKit verification result.\n\n`finish()` tells the App Store that the app delivered the content of a transaction. StoreKit then removes the transaction from `Transaction.unfinished` and does not deliver it again. An unverified transaction failed the signature check, so the app must not deliver its content. To finish it hides the failure, and the app loses the chance to verify the transaction later.\n\nFinish a transaction only in the `.verified` case, after the app delivers the content.\n\nThe rule reads the body of a `case .unverified` switch case and the body of an `if case .unverified = ...` statement. It matches a call `x.finish()` with no arguments.\n\nLint: The `.unverified` branch of a verification result calls `finish()` .",
+          "unevaluatedProperties" : false
         },
         "noFirstIndexOfInForLoop" : {
           "allOf" : [
@@ -2095,6 +2209,24 @@
           "description" : "Lint the `swap(&a, &b); a.removeAll(…)` (or `b.removeAll(…)` ) pattern. It almost always indicates a hand-rolled alternating-buffer parser that loses `Array` / `Data` CoW guarantees and is brittle when refactored.",
           "unevaluatedProperties" : false
         },
+        "noSyncEngineCallInDelegate" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `fetchChanges` or `sendChanges` call inside a `CKSyncEngineDelegate` callback.\n\n`CKSyncEngine` calls `handleEvent(_:syncEngine:)` and `nextRecordZoneChangeBatch(_:syncEngine:)` while it fetches or sends changes. A call to `fetchChanges()` or `sendChanges()` from one of these methods starts a new sync operation, which calls the delegate again. The result is an infinite loop. The engine schedules its own fetches and sends, so the delegate does not start them.\n\nThe rule checks the body of `handleEvent` when the method has a `syncEngine:` parameter, and the body of `nextRecordZoneChangeBatch` . A closure in the body, such as a `Task` , counts as a part of the body. A nested function does not.\n\nLint: `.fetchChanges(` or `.sendChanges(` appears inside `handleEvent(_:syncEngine:)` or `nextRecordZoneChangeBatch` .",
+          "unevaluatedProperties" : false
+        },
+        "noTracksBoundsInLoadView" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag an assignment to `tracksTextAttachmentViewBounds` inside `loadView()` .\n\nTextKit reads `tracksTextAttachmentViewBounds` of an `NSTextAttachmentViewProvider` when it creates the provider, before it calls `loadView()` . A value set in `loadView()` comes too late. The layout then does not follow the bounds of the attachment view.\n\nSet the property in the initializer of the provider.\n\nThe rule counts an assignment in a closure inside `loadView()` . It does not count an assignment in a function that `loadView()` declares.\n\nLint: `loadView()` assigns `tracksTextAttachmentViewBounds` or `self.tracksTextAttachmentViewBounds` .",
+          "unevaluatedProperties" : false
+        },
         "noVoidTernary" : {
           "allOf" : [
             {
@@ -2119,6 +2251,15 @@
             }
           ],
           "description" : "`fatalError` calls should include a descriptive message.\n\nA bare `fatalError()` (or `fatalError(\"\")` ) gives no context when the program crashes. Including a message makes it far easier to diagnose the problem from the stack trace alone.\n\nLint: A warning is raised for `fatalError()` and `fatalError(\"\")` .\n\nRewrite: Not auto-fixed; the message must be supplied by the author."
+        },
+        "requireSyncEngineSavedState" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Require the saved state when the code creates a `CKSyncEngine.Configuration` .\n\n`CKSyncEngine` sends a `.stateUpdate` event each time its state changes. The app saves that state and passes it back as `stateSerialization` on the next launch. A literal `nil` makes the engine start with no state. It then reports a spurious sign-in and fetches every record again.\n\nThe rule reports only the literal `nil` . A variable that holds `nil` on the first launch is the correct form.\n\nLint: `CKSyncEngine.Configuration(...)` has the argument `stateSerialization: nil` .",
+          "unevaluatedProperties" : false
         },
         "useAssertionFailureNotAssertFalse" : {
           "allOf" : [
@@ -2214,6 +2355,14 @@
           ],
           "description" : "Enforce consistent use of `#file` or `#fileID` .\n\nIn Swift 6+, `#file` and `#fileID` have identical behavior (both produce `Module/File.swift` ). This rule standardizes usage to `#fileID` by default. `#filePath` is unaffected.\n\nLint: Using the non-preferred file macro yields a lint warning.\n\nRewrite: The macro is replaced with the preferred spelling."
         },
+        "useInlineAlwaysNotUnderscore" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Replace `@inline(__always)` with `@inline(always)` .\n\n`@inline(__always)` is the old, underscore-prefixed spelling. It only suggests inlining. `@inline(always)` guarantees inlining since Swift 6.3.\n\n`@inline(always)` changes how an overridable declaration can dispatch, so the rewrite applies only to a declaration that nothing can override. That is a free or local function, a member of a struct, enum, actor or extension, a `static` / `final` / `private` / `fileprivate` member of a class, or any member of a `final` class.\n\nLint: Using `@inline(__always)` raises a warning.\n\nRewrite: The attribute becomes `@inline(always)` . An overridable class member keeps its text."
+        },
         "useLazyForLongChainOps" : {
           "allOf" : [
             {
@@ -2239,6 +2388,15 @@
             }
           ],
           "description" : "Lint the `if !collection.contains(x) { collection.append(x) }` pattern.\n\nMaintaining uniqueness in an `Array` via `contains` + `append` is O(n) per insertion. `OrderedSet` (swift-collections) preserves insertion order with O(1) average insertion and `contains` .\n\nLint-only: rewriting would change the variable's declared type, which is outside the rule's structural scope.",
+          "unevaluatedProperties" : false
+        },
+        "useRunsNotEnumerateAttributes" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag the `NSAttributedString` attribute walk in favour of `AttributedString.runs` .\n\n`enumerateAttributes(in:options:using:)` and `enumerateAttribute(_:in:options:using:)` walk the reference type through an Objective-C block with an `NSRange` and an untyped attribute dictionary. `AttributedString.runs` is a Swift collection. Each run carries typed attributes and a `Range<AttributedString.Index>` , and a `for` loop iterates it.\n\nTextKit code that must keep an `NSAttributedString` can ignore the finding with `// sm:ignore` .\n\nLint: A call to `enumerateAttributes` or `enumerateAttribute` with an `in:` argument raises a warning.",
           "unevaluatedProperties" : false
         },
         "useSelfNotTypeName" : {
@@ -2706,14 +2864,37 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation` , this rule converts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds the module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and non-literal expressions are left alone. The `URL(string:relativeTo:)` and `URL(fileURLWithPath:)` initializers are not affected.\n\nRequires configuration via `useURLMacroForURLLiterals.macroName` and `useURLMacroForURLLiterals.moduleName` .\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nRewrite: The force-unwrapped URL initializer is replaced with the configured macro.",
+          "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation` , this rule converts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds the module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and non-literal expressions are left alone. The `URL(string:relativeTo:)` and `URL(fileURLWithPath:)` initializers are not affected.\n\nRequires configuration via `useURLMacroForURLLiterals.macroName` and `useURLMacroForURLLiterals.moduleName` .\n\nSet `useURLMacroForURLLiterals.flagOptionalLiterals` to `true` to also flag `URL(string: \"...\")` with a plain string literal and no `!` . The rule does not rewrite these calls, because the macro returns a non-optional `URL` and the fix changes the type of the expression. The option is off by default.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted. With `flagOptionalLiterals` , a warning is also raised for each `URL(string: \"...\")` with no `!` .\n\nRewrite: The force-unwrapped URL initializer is replaced with the configured macro.",
           "properties" : {
+            "flagOptionalLiterals" : {
+              "default" : false,
+              "description" : "When `true` , also flag `URL(string: \"...\")` with a plain string literal and no `!` . These findings are lint only, because the fix changes the optionality of the expression.",
+              "type" : "boolean"
+            },
             "macroName" : {
               "description" : "Name of the URL macro to substitute for `URL(string:)!` , e.g. `\"URL\"` or `\"#URL\"` . When `nil` , the rule is inactive.",
               "type" : "string"
             },
             "moduleName" : {
               "description" : "Module that defines `macroName` , used to insert an `import` statement when applying the rewrite. When `nil` , no import is added.",
+              "type" : "string"
+            }
+          }
+        },
+        "useUUIDMacroForUUIDLiterals" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Replace force-unwrapped `UUID(uuidString:)` initializers with a configured UUID macro.\n\nA force-unwrapped `UUID(uuidString: \"...\")!` checks the literal at run time and crashes when the literal is not a valid UUID. A UUID macro such as `#UUID(\"...\")` checks the literal at compile time and removes the force unwrap.\n\nThe rule converts only a plain string literal. It leaves an interpolated string, a concatenation and a variable alone. It adds the configured module import when the file does not import that module yet.\n\nThe rule does nothing until `useUUIDMacroForUUIDLiterals.macroName` is set. Set `useUUIDMacroForUUIDLiterals.moduleName` to add the import.\n\nLint: A warning is raised for each `UUID(uuidString: \"...\")!` that the rule can convert.\n\nRewrite: The force-unwrapped initializer is replaced with the configured macro.",
+          "properties" : {
+            "macroName" : {
+              "description" : "Name of the UUID macro that replaces `UUID(uuidString:)!` , for example `\"UUID\"` or `\"#UUID\"` . When `nil` , the rule is inactive.",
+              "type" : "string"
+            },
+            "moduleName" : {
+              "description" : "Module that defines `macroName` . The rewrite adds an `import` of it. When `nil` , the rule adds no import.",
               "type" : "string"
             }
           }
@@ -3085,6 +3266,15 @@
       },
       "unevaluatedProperties" : false
     },
+    "noAccountChangedWithSyncEngine" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag the `CKAccountChanged` notification in a project that uses `CKSyncEngine` .\n\n`CKSyncEngine` sends an `.accountChange` event to its delegate when the iCloud account signs in, signs out or switches. A separate `CKAccountChanged` observer handles the same change a second time, and the two handlers can run in either order. The delegate event is the one source of account changes that the engine keeps in step with its sync state.\n\nThe rule reports `CKAccountChanged` when the same file or another file of the project uses the identifier `CKSyncEngine` . Without a project index, the rule reads the linted file only.\n\nLint: `CKAccountChanged` appears in a project that also uses `CKSyncEngine` .",
+      "unevaluatedProperties" : false
+    },
     "noAnyViewInForEach" : {
       "allOf" : [
         {
@@ -3171,6 +3361,15 @@
         }
       ],
       "description" : "Doc comments ( `///` and `/** */` ) inside function, initializer, and accessor bodies should be regular comments ( `//` or `/* */` ).\n\nDocumentation comments are intended for API-level declarations. Inside an implementation body, a doc comment cannot document anything externally visible, so a regular comment is the correct form.\n\nNested function declarations are exempt — they are still declarations and may carry doc comments.\n\nLint: If a doc comment appears inside a body, a lint warning is raised.",
+      "unevaluatedProperties" : false
+    },
+    "noDocumentControllerSubclass" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a subclass of `NSDocumentController` in a project that uses `DocumentGroup` .\n\nA `DocumentGroup` scene installs and drives the shared document controller of the app. AppKit makes the first `NSDocumentController` instance the shared one. A custom subclass that the app creates takes that place, and the document scene then opens, saves and restores documents through a controller that it does not expect.\n\nCustomize the document behavior through the `DocumentGroup` API, the document type and the scene modifiers instead.\n\nThe rule reads the other files of the project through the project index. Without a project index, it reads the linted file alone.\n\nLint: A class inherits from `NSDocumentController` , and a file of the project uses `DocumentGroup` .",
       "unevaluatedProperties" : false
     },
     "noDropFirstInForLoop" : {
@@ -3272,13 +3471,31 @@
       "description" : "Flag a `ForEach` or `List` over `enumerated()` pairs that uses the offset as the row identity.\n\nThe offset of an `enumerated()` pair is a counter, not an identity. When an element is inserted, removed or moved, the rows after it get new offsets. SwiftUI then treats them as other rows: it moves their state to the wrong element and animates the wrong change.\n\nIdentify each row by the element, with `id: \\.element.id` for an `Identifiable` element or another stable key path, and keep the offset for display, such as a step number. Since Swift 6.2 (SE-0459) the enumerated sequence is a collection, so `ForEach(steps.enumerated(), ...)` needs no `Array` around it.\n\nKeep the offset only when the collection never changes and its order is fixed. The rule accepts an array literal as such a collection. For other fixed data, such as positional labels, suppress the finding.\n\nLint: A `ForEach` or `List` iterates `enumerated()` pairs with `id: \\.offset`.",
       "unevaluatedProperties" : false
     },
+    "noEscapedUnsafePointer" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `withUnsafe…` closure that returns the pointer it receives.\n\nThe pointer that `withUnsafeBytes` , `withUnsafeBufferPointer` , `withUnsafePointer` and their mutable forms pass to the closure is valid only inside the closure. A closure that returns the pointer, or its `baseAddress` , hands the caller a dangling pointer. For example, `self.bytes = source.withUnsafeBytes { $0 }` is already a lifetime bug. Do the work inside the closure, or store a `Span` and state the dependency with `@_lifetime` .\n\nThe rule does not report a closure that returns a value computed from the pointer, such as `$0.load(as: UInt32.self)` or `$0.count` .\n\nLint: A `withUnsafe…` call whose closure body is only the pointer parameter, its `baseAddress` or its force-unwrapped `baseAddress` raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "noExplicitOwnershipModifiers" : {
       "allOf" : [
         {
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()` ) or parameter types (e.g. `func foo(_ bar: consuming Bar)` ), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed."
+      "description" : "Remove explicit `borrowing` and `consuming` ownership modifiers.\n\nOwnership modifiers are an advanced feature that most code does not need. When present on function declarations (e.g. `consuming func move()` ) or parameter types (e.g. `func foo(_ bar: consuming Bar)` ), they are removed.\n\nLint: If an explicit `borrowing` or `consuming` modifier is found, a lint warning is raised.\n\nRewrite: The ownership modifier is removed.\n\nThe rule keeps a modifier that the compiler requires or that changes the meaning of noncopyable code. It keeps a parameter modifier when the parameter type names a type that this file declares `~Copyable` or `~Escapable` , a generic parameter that an enclosing declaration constrains with `~Copyable` or `~Escapable` , a type in the `Span` family, or a suppressed conformance such as `some P & ~Copyable` . It keeps a method modifier inside a type that suppresses `Copyable` or `Escapable` , and inside an extension of such a type. The rule cannot see a type that another file declares."
+    },
+    "noFinishOnUnverifiedTransaction" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `finish()` call in the `.unverified` case of a StoreKit verification result.\n\n`finish()` tells the App Store that the app delivered the content of a transaction. StoreKit then removes the transaction from `Transaction.unfinished` and does not deliver it again. An unverified transaction failed the signature check, so the app must not deliver its content. To finish it hides the failure, and the app loses the chance to verify the transaction later.\n\nFinish a transaction only in the `.verified` case, after the app delivers the content.\n\nThe rule reads the body of a `case .unverified` switch case and the body of an `if case .unverified = ...` statement. It matches a call `x.finish()` with no arguments.\n\nLint: The `.unverified` branch of a verification result calls `finish()` .",
+      "unevaluatedProperties" : false
     },
     "noFirstIndexOfInForLoop" : {
       "allOf" : [
@@ -3354,7 +3571,16 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x` , `foo.bar < foo.bar` , and `$0 != $0` . Compares operands by their non-trivia token text so internal whitespace and formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical (ignoring whitespace), a warning is raised.",
+      "description" : "Comparing two identical operands is almost always a copy-paste bug.\n\nCatches expressions like `x == x` , `foo.bar < foo.bar` , and `$0 != $0` . Compares operands by their non-trivia token text so internal whitespace and formatting differences are ignored.\n\nLint: When both operands of a comparison operator are textually identical (ignoring whitespace), an error is raised.",
+      "unevaluatedProperties" : false
+    },
+    "noImageDecodeInViewBody" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `UIImage(data:)` and `NSImage(data:)` calls that run during `body` evaluation.\n\nSwiftUI evaluates `body` again whenever a dependency of the view changes. An image decode there runs again on each evaluation, on the main actor. Decoding is expensive, so the view can drop frames. Decode the image once in a model, or in `.task` , and store the result.\n\nThe rule checks `body` , and the same-file computed properties and called methods that `body` reaches. Closures that run later, such as a `Button` action or a `.task` body, do not count.\n\nLint: A call `UIImage(data:)` or `NSImage(data:)` runs during `body` evaluation of a `View` .",
       "unevaluatedProperties" : false
     },
     "noImplicitlyUnwrappedOptionals" : {
@@ -3391,6 +3617,33 @@
         }
       ],
       "description" : "Initializers declared in `ExpressibleBy*` literal protocols are intended for the compiler. Calling them directly ( `Set(arrayLiteral: 1, 2)` ) is almost certainly a mistake — the literal form ( `[1, 2]` ) is shorter, faster, and more idiomatic.\n\nLint: When a known standard-library or Foundation type is initialized via a compiler-protocol label like `arrayLiteral` / `dictionaryLiteral` / `stringLiteral` , a warning is raised.",
+      "unevaluatedProperties" : false
+    },
+    "noMainActorOnFileDocument" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `@MainActor` on a type that conforms to `FileDocument` or `ReferenceFileDocument` .\n\nSwiftUI calls `init(configuration:)` , `fileWrapper(configuration:)` and `snapshot(contentType:)` of a document on a background queue. A main-actor type cannot satisfy these nonisolated requirements. The compiler rejects the conformance, or the code hops to the main actor and blocks the document queue.\n\nKeep the document type nonisolated. Isolate the state that the user interface reads in a separate `@MainActor` model.\n\nThe rule reads the conformances of the type declaration and of its extensions in the same file. It also flags `@MainActor` on an extension that adds the conformance.\n\nLint: A type or extension that conforms to `FileDocument` or `ReferenceFileDocument` has the attribute `@MainActor` .",
+      "unevaluatedProperties" : false
+    },
+    "noModelContextInSendable" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a stored `ModelContext` property in an actor or in a `Sendable` type.\n\n`ModelContext` is not `Sendable` . A context belongs to one thread or one actor. An actor or a `Sendable` type that stores a context lets other threads reach it, which is a data race. `@unchecked Sendable` hides the error but not the race. Store the `ModelContainer` , which is `Sendable` , and create a `ModelContext` in the code that uses it. Use `@ModelActor` for an actor that works with SwiftData.\n\nThe rule checks an `actor` , and a struct or class that declares `Sendable` or `@unchecked Sendable` in its declaration or in an extension in the same file. It reports a stored property whose type is `ModelContext` , `ModelContext?` or `ModelContext!` , or whose initial value is a `ModelContext(...)` call. It does not report a computed property.\n\nLint: An actor or a `Sendable` type has a stored `ModelContext` property.",
+      "unevaluatedProperties" : false
+    },
+    "noModelReturnFromModelActor" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `@ModelActor` method that returns a `@Model` object or an array of them.\n\nA `@Model` object belongs to the `ModelContext` that fetched it, and that context runs on the executor of the `@ModelActor` . A model that the actor returns to its caller leaves that executor. The caller then reads the model from another thread, which is a data race. Return `PersistentIdentifier` values, and fetch the models again in the context of the caller. Or return `Sendable` copies of the data.\n\nThe rule checks the methods that an `@ModelActor actor` declares in its body. It reports a return type `T` , `T?` , `[T]` , `[T]?` or `Array<T>` when `T` names a class with `@Model` in the same file or in another file of the project. It does not report a `private` or `fileprivate` method, because the caller of such a method runs on the actor.\n\nLint: A method of an `@ModelActor actor` returns a `@Model` type or an array of one.",
       "unevaluatedProperties" : false
     },
     "noMultiTrailingClosures" : {
@@ -3490,6 +3743,14 @@
       "description" : "The playground literals ( `#colorLiteral` , `#fileLiteral` , and `#imageLiteral` ) are forbidden.\n\nLint: Using a playground literal will yield a lint error with a suggestion of an API to replace it.",
       "unevaluatedProperties" : false
     },
+    "noPrintChangesInBody" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Remove `Self._printChanges()` and `Self._logChanges()` calls that no `#if DEBUG` guards.\n\nThese calls are debugging aids. They write to the console on each view update, and they are underscored API that can change. They do not belong in shipping code.\n\nThe rule matches a statement that is the call, `let _ = <call>` or `_ = <call>` .\n\nLint: A call that no enclosing `#if DEBUG` clause wraps raises a warning.\n\nRewrite: The statement is removed. A call inside `#if DEBUG` stays."
+    },
     "noRadixInitInLoop" : {
       "allOf" : [
         {
@@ -3497,6 +3758,15 @@
         }
       ],
       "description" : "Lint `FixedWidthInteger(_:radix:)` on a slice inside a loop\n\nThe initializer parses a sign, validates every digit against the radix and returns an optional, and it does all of that on each call. A 256-entry lookup table reads the same digit with one load, so a loop that calls the initializer per byte pays the parser once per byte for nothing.\n\nThe sign is a correctness argument as well as a cost one. The initializer accepts a leading `+` or `-`, so a reader built on it read `\"+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1\"` as a valid `UUID` for as long as it stood.\n\nA helper function the loop calls counts as part of the loop, because a cost behind a call is still paid once per iteration. A parse of a whole string is not covered, because the slice is what marks the per-byte read.\n\nLint: A radix initializer whose text argument is a slice, inside a loop, raises a warning.",
+      "unevaluatedProperties" : false
+    },
+    "noRepresentableAsDelegate" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag `.delegate = self` in a type that conforms to a SwiftUI representable protocol.\n\nA `UIViewRepresentable` , `NSViewRepresentable` or `UIViewControllerRepresentable` is a value that SwiftUI creates again on each update. `self` in `makeUIView(context:)` is a copy that SwiftUI soon discards. A platform delegate that points to it sees stale state, and the platform view keeps a copy that no update reaches.\n\nMake the coordinator the delegate. Return it from `makeCoordinator()` and assign `context.coordinator` .\n\nThe rule matches a property named `delegate` or with a name that ends in `Delegate` , such as `navigationDelegate` . It reads the conformances of the enclosing type and of its extensions in the same file. A nested coordinator class is a separate type, so the rule does not flag it.\n\nLint: A member of a representable type assigns `self` to a delegate property.",
       "unevaluatedProperties" : false
     },
     "noRetroactiveConformances" : {
@@ -3526,6 +3796,15 @@
       "description" : "Lint inline `.sorted` / `.filter` / `.map` / `.compactMap` / `.reversed` chains in the data argument of `ForEach` . The expression is recomputed on every render. A computed property does not help, because it also runs on every render. Store the result in `@State` or an `@Observable` model and update it when its inputs change.",
       "unevaluatedProperties" : false
     },
+    "noStackedStateWrapper" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a second property wrapper on a `@State` property.\n\nSwiftUI finds the storage of `@State` through the property wrapper that the view declares. A second wrapper composes around `State` or inside it, so SwiftUI does not install the storage as it expects. The property then loses its value or does not update the view.\n\nApply the other behavior to the value itself, or keep the value in an `@Observable` model. The rule does not flag `@Previewable` , and it does not flag built-in declaration attributes such as `@MainActor` or `@available` .\n\nLint: A variable declaration has the attribute `@State` and another custom attribute.",
+      "unevaluatedProperties" : false
+    },
     "noSwapThenRemoveAll" : {
       "allOf" : [
         {
@@ -3535,6 +3814,24 @@
       "description" : "Lint the `swap(&a, &b); a.removeAll(…)` (or `b.removeAll(…)` ) pattern. It almost always indicates a hand-rolled alternating-buffer parser that loses `Array` / `Data` CoW guarantees and is brittle when refactored.",
       "unevaluatedProperties" : false
     },
+    "noSyncEngineCallInDelegate" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `fetchChanges` or `sendChanges` call inside a `CKSyncEngineDelegate` callback.\n\n`CKSyncEngine` calls `handleEvent(_:syncEngine:)` and `nextRecordZoneChangeBatch(_:syncEngine:)` while it fetches or sends changes. A call to `fetchChanges()` or `sendChanges()` from one of these methods starts a new sync operation, which calls the delegate again. The result is an infinite loop. The engine schedules its own fetches and sends, so the delegate does not start them.\n\nThe rule checks the body of `handleEvent` when the method has a `syncEngine:` parameter, and the body of `nextRecordZoneChangeBatch` . A closure in the body, such as a `Task` , counts as a part of the body. A nested function does not.\n\nLint: `.fetchChanges(` or `.sendChanges(` appears inside `handleEvent(_:syncEngine:)` or `nextRecordZoneChangeBatch` .",
+      "unevaluatedProperties" : false
+    },
+    "noTracksBoundsInLoadView" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag an assignment to `tracksTextAttachmentViewBounds` inside `loadView()` .\n\nTextKit reads `tracksTextAttachmentViewBounds` of an `NSTextAttachmentViewProvider` when it creates the provider, before it calls `loadView()` . A value set in `loadView()` comes too late. The layout then does not follow the bounds of the attachment view.\n\nSet the property in the initializer of the provider.\n\nThe rule counts an assignment in a closure inside `loadView()` . It does not count an assignment in a function that `loadView()` declares.\n\nLint: `loadView()` assigns `tracksTextAttachmentViewBounds` or `self.tracksTextAttachmentViewBounds` .",
+      "unevaluatedProperties" : false
+    },
     "noTrailingClosureParens" : {
       "allOf" : [
         {
@@ -3542,6 +3839,15 @@
         }
       ],
       "description" : "Function calls with no arguments and a trailing closure should not have empty parentheses.\n\nLint: If a function call with a trailing closure has an empty argument list with parentheses, a lint error is raised.\n\nRewrite: Empty parentheses in function calls with trailing closures will be removed."
+    },
+    "noUUIDInViewBody" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a `UUID()` call that runs during `body` evaluation, or that builds the data or the `id` of a `ForEach` .\n\nSwiftUI evaluates `body` again whenever a dependency of the view changes. `UUID()` there makes a new value on each evaluation. When the value is an identity, such as the argument of `.id(_:)` or the `id` of a `ForEach` element, SwiftUI sees a new view each time. It then resets the state of the view and restarts its animations. Store the identifier in the model, or in `@State` .\n\nThe rule checks `body` , and the same-file computed properties and called methods that `body` reaches. Closures that run later, such as a `Button` action or a `.task` body, do not count. The rule also checks the data argument and the `id:` argument of each `ForEach` call, in any scope.\n\nLint: A `UUID()` call with no arguments runs during `body` evaluation of a `View` , or is inside the data argument or the `id:` argument of a `ForEach` .",
+      "unevaluatedProperties" : false
     },
     "noUnownedCapture" : {
       "allOf" : [
@@ -3592,7 +3898,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "A computed-property or subscript setter that never reads its parameter ( `newValue` by default, or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying storage uses some other expression, leaving the actual incoming value silently dropped.\n\nException: empty setters, e.g. `set {}` , are intentional no-ops — an `override` suppressing the parent class's setter, or a protocol-extension default that must supply a settable requirement for conformers to override. Nothing is assigned, so there is nothing to get wrong.\n\nLint: When a `set` accessor's body never references its parameter name, a warning is raised.",
+      "description" : "A computed-property or subscript setter that never reads its parameter ( `newValue` by default, or the bound name in `set(custom)` ) is almost always wrong — the assignment to the underlying storage uses some other expression, leaving the actual incoming value silently dropped.\n\nException: empty setters, e.g. `set {}` , are intentional no-ops — an `override` suppressing the parent class's setter, or a protocol-extension default that must supply a settable requirement for conformers to override. Nothing is assigned, so there is nothing to get wrong.\n\nLint: When a `set` accessor's body never references its parameter name, an error is raised.",
       "unevaluatedProperties" : false
     },
     "noViewFactoryMembers" : {
@@ -3688,7 +3994,7 @@
           "$ref" : "#/$defs/lintOnlyBase"
         }
       ],
-      "description" : "Flag acquire-style calls that aren't followed by a `defer { release() }` in the same scope when the scope has at least one early exit (`return` / `throw` / `break` / `continue`) after the acquire. Pairing the cleanup as a `defer` immediately after the acquire is Swift's idiomatic way to guarantee the release runs even when a later refactor introduces a new early exit. Without it, the release line at the end of the function is silently skipped.\n\nConfigurable via `pairs` (acquire + release name list). The default catalog covers well-known Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState, etc.). Matching is by member-call name only — false positives on same-named methods from unrelated types are expected and can be suppressed with `// sm:ignore PairAcquireWithDefer` .\n\nFlag-only — auto-inserting the `defer` is unsafe in general because the release's arguments (`objc_sync_exit(obj)`, `os_signpost(.end, … , label)`) can't always be inferred from the acquire site.\n\nSource: https://ioscodereview.com/issues/issue-79-defer-done-right-instruments-is-back-and-wwdc-is-one-week-away/.",
+      "description" : "Flag acquire-style calls that aren't followed by a `defer { release() }` in the same scope when the scope has at least one early exit (`return` / `throw` / `break` / `continue`) after the acquire. Pairing the cleanup as a `defer` immediately after the acquire is Swift's idiomatic way to guarantee the release runs even when a later refactor introduces a new early exit. Without it, the release line at the end of the function is silently skipped.\n\nConfigurable via `pairs` (acquire + release name list). The default catalog covers well-known Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState, `OSSignposter` beginInterval/endInterval, etc.). Matching is by member-call name only — false positives on same-named methods from unrelated types are expected and can be suppressed with `// sm:ignore PairAcquireWithDefer` .\n\nFlag-only — auto-inserting the `defer` is unsafe in general because the release's arguments (`objc_sync_exit(obj)`, `os_signpost(.end, … , label)`) can't always be inferred from the acquire site.\n\nSource: https://ioscodereview.com/issues/issue-79-defer-done-right-instruments-is-back-and-wwdc-is-one-week-away/.",
       "properties" : {
         "pairs" : {
           "description" : "Pairs to check. Defaults to a catalog of well-known Apple framework acquire/release names. Configuration replaces the catalog wholesale rather than appending — set this to extend with project-specific pairs (re-listing the defaults if you want to keep them).",
@@ -4069,6 +4375,15 @@
       "description" : "All identifiers must be ASCII.\n\nLint: If an identifier contains non-ASCII characters, a lint error is raised.",
       "unevaluatedProperties" : false
     },
+    "requireAccessInObservableMutexProperty" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag a computed property of an `@Observable` class that reads or writes a `Mutex` with no observation call.\n\nThe `@Observable` macro tracks stored properties only. A computed property that reads its value through `Mutex.withLock` gives Observation nothing to track, so a view that reads the property does not update when the value changes. The getter must call `access(keyPath:)`, and the setter must wrap the change in `withMutation(keyPath:)`.\n\nThe rule reads each instance computed property of an `@Observable` class, and of an extension of an `@Observable` class in the same file. It reports a getter that calls `withLock` with no `access` call, and a setter that calls `withLock` with no `withMutation` call.\n\nLint: A computed property of an `@Observable` class calls `withLock` with no `access(keyPath:)` or `withMutation(keyPath:)` call.",
+      "unevaluatedProperties" : false
+    },
     "requireAnyObjectOnDelegate" : {
       "allOf" : [
         {
@@ -4211,6 +4526,15 @@
       "description" : "`NotificationCenter.addObserver(forName:object:queue:using:)` returns an opaque token that must be retained to later remove the observer. Discarding the return value leaks the observer.\n\nLint: When a call to `addObserver(forName:object:queue:...)` is used as a statement (not stored, returned, or passed to another call), a warning is raised.",
       "unevaluatedProperties" : false
     },
+    "requireStrictMemorySafetySetting" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Require `.strictMemorySafety()` in the Swift settings of each target of a package manifest.\n\nStrict memory safety makes the compiler report each use of an unsafe construct that has no `unsafe` marker. A target without the setting accepts unsafe code with no warning. The policy applies to every target, with or without unsafe code today, so that new unsafe code gets the warning.\n\nThe rule reads only a file named `Package.swift` . It checks each `.target` , `.executableTarget` , `.testTarget` and `.macro` call. The `swiftSettings:` argument passes when it holds `.strictMemorySafety()` , or names a top-level variable of the manifest whose value holds it, directly or through another such variable. A `for` loop over `package.targets` that sets `.strictMemorySafety()` passes every target.\n\nLint: A target in `Package.swift` has no `.strictMemorySafety()` in its `swiftSettings` .",
+      "unevaluatedProperties" : false
+    },
     "requireSubprocessTeardownSequence" : {
       "allOf" : [
         {
@@ -4253,6 +4577,15 @@
       },
       "unevaluatedProperties" : false
     },
+    "requireSyncEngineSavedState" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Require the saved state when the code creates a `CKSyncEngine.Configuration` .\n\n`CKSyncEngine` sends a `.stateUpdate` event each time its state changes. The app saves that state and passes it back as `stateSerialization` on the next launch. A literal `nil` makes the engine start with no state. It then reports a spurious sign-in and fetches every record again.\n\nThe rule reports only the literal `nil` . A variable that holds `nil` on the first launch is the correct form.\n\nLint: `CKSyncEngine.Configuration(...)` has the argument `stateSerialization: nil` .",
+      "unevaluatedProperties" : false
+    },
     "requireTaskName" : {
       "allOf" : [
         {
@@ -4287,6 +4620,14 @@
         }
       ],
       "description" : "Ensure test methods have the correct `test` prefix or `@Test` attribute.\n\nFor XCTest: functions in `XCTestCase` subclasses that look like tests get a `test` prefix. For Swift Testing: functions in test suite types get a `@Test` attribute.\n\nA \"test suite\" type is one whose name ends with `Tests` , `TestCase` , or `Suite` .\n\nLint: A warning is raised for each test method missing the correct prefix or attribute.\n\nRewrite: The `test` prefix or `@Test` attribute is added."
+    },
+    "requireTestTraitWithTestScoping" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Add `TestTrait` to a `SuiteTrait` that conforms to `TestScoping` .\n\nThe Swift Testing runner applies a suite trait to every test in the suite as well as to the suite. When a `SuiteTrait` provides a scope through `TestScoping` but does not conform to `TestTrait` , the runner crashes when it applies the trait to a test. See the Swift Testing notes on custom traits.\n\nThe rule checks structs, classes, enums, actors and extensions. It matches a simple name or a name qualified with a module, such as `Testing.SuiteTrait` .\n\nLint: A type or extension whose inheritance clause names `TestScoping` and `SuiteTrait` but not `TestTrait` raises a warning.\n\nRewrite: `TestTrait` is inserted in the inheritance clause after `SuiteTrait` ."
     },
     "requireWeakDelegates" : {
       "allOf" : [
@@ -4528,6 +4869,24 @@
           "description" : "Flag an in-memory SwiftData store outside tests and previews.\n\n`ModelConfiguration(isStoredInMemoryOnly: true)` and `.modelContainer(for:inMemory: true)` keep the store in memory only. The app loses every saved model when it quits. That is correct for a unit test and for a preview, and it is almost always a mistake in the app target. A flag that a developer sets for a quick test and does not remove is a common cause.\n\nThe rule does not report a test file, a file that imports XCTest or Testing, a Swift Testing `@Test` function, a `#Preview` body, or a type that conforms to `PreviewProvider` . A test file is a file under a `Tests/` directory or a file whose name ends in `Tests.swift` . The rule reports only the literal `true` , so a value that a launch argument sets does not get a finding.\n\nLint: `isStoredInMemoryOnly: true` or `modelContainer(..., inMemory: true)` appears outside a test or a preview.",
           "unevaluatedProperties" : false
         },
+        "noModelContextInSendable" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a stored `ModelContext` property in an actor or in a `Sendable` type.\n\n`ModelContext` is not `Sendable` . A context belongs to one thread or one actor. An actor or a `Sendable` type that stores a context lets other threads reach it, which is a data race. `@unchecked Sendable` hides the error but not the race. Store the `ModelContainer` , which is `Sendable` , and create a `ModelContext` in the code that uses it. Use `@ModelActor` for an actor that works with SwiftData.\n\nThe rule checks an `actor` , and a struct or class that declares `Sendable` or `@unchecked Sendable` in its declaration or in an extension in the same file. It reports a stored property whose type is `ModelContext` , `ModelContext?` or `ModelContext!` , or whose initial value is a `ModelContext(...)` call. It does not report a computed property.\n\nLint: An actor or a `Sendable` type has a stored `ModelContext` property.",
+          "unevaluatedProperties" : false
+        },
+        "noModelReturnFromModelActor" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `@ModelActor` method that returns a `@Model` object or an array of them.\n\nA `@Model` object belongs to the `ModelContext` that fetched it, and that context runs on the executor of the `@ModelActor` . A model that the actor returns to its caller leaves that executor. The caller then reads the model from another thread, which is a data race. Return `PersistentIdentifier` values, and fetch the models again in the context of the caller. Or return `Sendable` copies of the data.\n\nThe rule checks the methods that an `@ModelActor actor` declares in its body. It reports a return type `T` , `T?` , `[T]` , `[T]?` or `Array<T>` when `T` names a class with `@Model` in the same file or in another file of the project. It does not report a `private` or `fileprivate` method, because the caller of such a method runs on the actor.\n\nLint: A method of an `@ModelActor actor` returns a `@Model` type or an array of one.",
+          "unevaluatedProperties" : false
+        },
         "requireFinalModelClass" : {
           "allOf" : [
             {
@@ -4732,6 +5091,15 @@
           "description" : "Flag collection work in a view's `body` , or in a computed property or method that `body` reads.\n\nA computed property is not stored. It runs again on every `body` evaluation, and so does every method `body` calls. A `.filter` , `.sorted` , `.map` or loop there walks the whole collection on each update, even when the collection did not change. When the view observes state that changes frequently, this cost adds up and the main actor can drop frames.\n\nChoose a place for the work from its inputs and its lifetime:\n- Store the derived value in an `@Observable` model or in view state, and update it when one of\nits inputs changes. For example, set `sortedTrails` in the `didSet` of `trails`, and let `body` read `store.sortedTrails`.\n- Move the work into a focused child `View`. SwiftUI does not evaluate the `body` of a child\nwhose inputs did not change.\n- Start the work from `onChange` or `task(id:)` when an event or an input change starts it.\n- Run heavy computation off the main actor in a `@concurrent` function, and then store the\nresult in main-actor state. A `.task` alone runs its code on the main actor until the first suspension.\n\nA small transform over static data can stay in `body`. The rule allows a transform over an array or dictionary literal. For other small, static data, suppress the finding.\n\nThe rule checks `body` itself, and follows it into same-type computed properties and the methods it calls, and from those into further members. Closures that run later, such as a `Button` action or a `.task` body, are not followed. A method named without a call, such as a function reference passed to a drop delegate, runs later too, so the rule does not follow it.\n\nA reached member can call a static function on another type, such as `Row.rows(projects:)` . When the file declares that type, the rule follows the call into the function body. When another file of the project declares it, the rule reads that body and reports the call when the body holds work. When no file of the run declares the type, the rule cannot see the body. It then reports the call when an argument passes a stored collection of the view, because the function most likely walks it.\n\nThe rule also reports the view type itself, and each member name that `body` reads when that member leads to work. When `body` reaches work through such a member, the rule also reports the `body` declaration. These findings mark where the repeated evaluation starts.\n\nLint: `body` , a same-type member that `body` reaches, or a same-file static function it calls, calls `filter` , `sorted` , `map` , `compactMap` , `flatMap` or `reduce` , or holds a `for` , `while` or `repeat` loop. `body` or a reached member passes a stored collection of the view to a static function declared in another file. The view type reaches any of this work. `body` reads a member that leads to any of this work, which the rule reports at the read and at `body` .",
           "unevaluatedProperties" : false
         },
+        "noDocumentControllerSubclass" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a subclass of `NSDocumentController` in a project that uses `DocumentGroup` .\n\nA `DocumentGroup` scene installs and drives the shared document controller of the app. AppKit makes the first `NSDocumentController` instance the shared one. A custom subclass that the app creates takes that place, and the document scene then opens, saves and restores documents through a controller that it does not expect.\n\nCustomize the document behavior through the `DocumentGroup` API, the document type and the scene modifiers instead.\n\nThe rule reads the other files of the project through the project index. Without a project index, it reads the linted file alone.\n\nLint: A class inherits from `NSDocumentController` , and a file of the project uses `DocumentGroup` .",
+          "unevaluatedProperties" : false
+        },
         "noDynamicPropertyInViewInitializer" : {
           "allOf" : [
             {
@@ -4777,6 +5145,15 @@
           "description" : "Flag a method on a view type, other than `body`, that `body` calls or passes as a function value.\n\nA helper method on a view runs as part of `body`. SwiftUI cannot compare its inputs or skip it, so each evaluation of `body` repeats the work. Keep `body` as the one function of the view. Move the work into a model that owns the result, or into a child view whose inputs SwiftUI compares.\n\nThe rule reads the view type and its same-file extensions. It counts a bare `name` or a `self.name` reference inside `body`, both as a call and as a function value such as `build: render`. A `static` method and a method that returns a view are not reported here. `NoViewFactoryMembers` covers a method that returns a view.\n\nLint: A view method that `body` references raises a warning.",
           "unevaluatedProperties" : false
         },
+        "noImageDecodeInViewBody" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `UIImage(data:)` and `NSImage(data:)` calls that run during `body` evaluation.\n\nSwiftUI evaluates `body` again whenever a dependency of the view changes. An image decode there runs again on each evaluation, on the main actor. Decoding is expensive, so the view can drop frames. Decode the image once in a model, or in `.task` , and store the result.\n\nThe rule checks `body` , and the same-file computed properties and called methods that `body` reaches. Closures that run later, such as a `Button` action or a `.task` body, do not count.\n\nLint: A call `UIImage(data:)` or `NSImage(data:)` runs during `body` evaluation of a `View` .",
+          "unevaluatedProperties" : false
+        },
         "noLifecycleModifierOnViewList" : {
           "allOf" : [
             {
@@ -4784,6 +5161,15 @@
             }
           ],
           "description" : "Flag a lifecycle or effect modifier that a list of views or conditional content receives.\n\n`Group`, `ForEach`, a view whose `body` holds several views, and a `@ViewBuilder` member that returns several views do not make one view. They make a list of views, and a modifier on the list attaches to each view in it. `onAppear`, `onDisappear`, `task`, `onChange` and `onReceive` therefore run once per view: each view starts and cancels its own task, and each one calls the action for every change. On conditional content the modifier attaches to each branch. When the condition changes, the new branch is a new view, so its `onAppear` and `task` run again and the task of the old branch is cancelled.\n\nAttach the modifier to one view that holds the content, such as a `VStack`, a `List` or a `ScrollView`, or to the one view that owns the effect. When each element needs the work, such as a row that loads its thumbnail, write the modifier inside the row. When the work belongs to the branches of a conditional, write it on each branch, so that it is clear that both run it.\n\nThe rule follows the chain of modifiers down to its receiver. It reports the receiver when it is a `Group` or a `ForEach`, a `@ViewBuilder` property or method of the same type, or a view that this file declares, and its content is an `if`, a `switch`, a `ForEach` or more than one view. A view that another file declares is not checked.\n\nLint: A lifecycle or effect modifier is attached to a list of views or to conditional content.",
+          "unevaluatedProperties" : false
+        },
+        "noMainActorOnFileDocument" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `@MainActor` on a type that conforms to `FileDocument` or `ReferenceFileDocument` .\n\nSwiftUI calls `init(configuration:)` , `fileWrapper(configuration:)` and `snapshot(contentType:)` of a document on a background queue. A main-actor type cannot satisfy these nonisolated requirements. The compiler rejects the conformance, or the code hops to the main actor and blocks the document queue.\n\nKeep the document type nonisolated. Isolate the state that the user interface reads in a separate `@MainActor` model.\n\nThe rule reads the conformances of the type declaration and of its extensions in the same file. It also flags `@MainActor` on an extension that adds the conformance.\n\nLint: A type or extension that conforms to `FileDocument` or `ReferenceFileDocument` has the attribute `@MainActor` .",
           "unevaluatedProperties" : false
         },
         "noOnAppearDerivedState" : {
@@ -4804,6 +5190,23 @@
           "description" : "Flag an `.onChange(of:)` whose source is a `@State` of the view and whose action assigns another stored property of the same view.\n\nThe write lands one update after the change it follows. SwiftUI evaluates `body` once with the new source and the old derived value, then again after the action runs. The write is also not part of the transaction of the source change. When the source changes in `withAnimation`, the derived value does not animate with it.\n\nWhen the view owns both values, derive the second one in the same mutation. If the target is a cheap, pure function of the source, replace it with a computed property, for example `private var subtotal: Int { quantity * unitPrice }`. If both values need storage, set the target in a `didSet` of the source, or in one model method that every writer calls.\n\nThe source can be a `@State` property or a member path on one, such as `settings.type` . The rule only reports a source that the view owns as `@State` . An environment value or a `Binding` from a parent changes outside the view, so `onChange` is the correct reaction to it. Keep `onChange` also when the action is a real side effect and not a relation between two stored values, when the work depends on the lifetime of the view, or when the source changes rarely and the target does not need to change in the same transaction.\n\nThe rule also reports the declaration of the source and the declaration of the target. The fix often changes those declarations, for example when the target becomes a computed property. Each declaration gets one finding, also when more than one write links it.\n\nLint: An `.onChange(of:)` of a `@State` property assigns a different stored property of the same view type. The write, the source declaration, and the target declaration each get a warning.",
           "unevaluatedProperties" : false
         },
+        "noPrintChangesInBody" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Remove `Self._printChanges()` and `Self._logChanges()` calls that no `#if DEBUG` guards.\n\nThese calls are debugging aids. They write to the console on each view update, and they are underscored API that can change. They do not belong in shipping code.\n\nThe rule matches a statement that is the call, `let _ = <call>` or `_ = <call>` .\n\nLint: A call that no enclosing `#if DEBUG` clause wraps raises a warning.\n\nRewrite: The statement is removed. A call inside `#if DEBUG` stays."
+        },
+        "noRepresentableAsDelegate" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag `.delegate = self` in a type that conforms to a SwiftUI representable protocol.\n\nA `UIViewRepresentable` , `NSViewRepresentable` or `UIViewControllerRepresentable` is a value that SwiftUI creates again on each update. `self` in `makeUIView(context:)` is a copy that SwiftUI soon discards. A platform delegate that points to it sees stale state, and the platform view keeps a copy that no update reaches.\n\nMake the coordinator the delegate. Return it from `makeCoordinator()` and assign `context.coordinator` .\n\nThe rule matches a property named `delegate` or with a name that ends in `Delegate` , such as `navigationDelegate` . It reads the conformances of the enclosing type and of its extensions in the same file. A nested coordinator class is a separate type, so the rule does not flag it.\n\nLint: A member of a representable type assigns `self` to a delegate property.",
+          "unevaluatedProperties" : false
+        },
         "noRootBranchSwapInBody" : {
           "allOf" : [
             {
@@ -4811,6 +5214,24 @@
             }
           ],
           "description" : "Flag a view `body` whose only statement is an `if` / `else` or a `switch` that swaps the root view type between branches.\n\nSwiftUI gives each branch of an `if` or a `switch` in a view builder its own identity. This is true even when two branches build the same content. When the selected branch changes, SwiftUI destroys the views of one branch and creates the views of the other. The destroyed views lose their state, such as navigation state and focus, and SwiftUI cannot animate between the two trees. At the root of `body` the loss includes every view inside the root.\n\nKeep one stable root view and one modifier chain. Change only the values that the modifiers get, with a ternary operator or a modifier that accepts an optional value:\n\n```swift content.tint(isHighlighted ? .accentColor : nil) ```\n\nWhen only part of the content changes, put the condition inside the stable root.\n\nAn `if #available` check does not change while the app runs, so the swap never occurs. The rule does not report it. In a `View` `body` , the rule also does not report an `if` without `else` or branches whose root calls name the same view type, although these shapes also reset the identity when the branch changes. The root of a branch is the view that its modifier chain starts from.\n\nIn a `ViewModifier` `body(content:)` , the rule reports every top-level `if` or `switch` on a runtime condition, also one without `else` and one whose branches all start from `content` . Each branch still gives `content` its own identity, so the modified view loses its state when the condition changes.\n\nWhen every branch is an `HStack`, `VStack`, `ZStack` or `Grid` that holds the same children, only the layout changes. The message then names `AnyLayout`, which switches between `HStackLayout`, `VStackLayout` and the other layouts and keeps the identity of the children.\n\nLint: The single top-level statement of a `View` `body` or a `ViewModifier` `body(content:)` is an `if` / `else` or a `switch` whose branches build two or more different root view types. In a `ViewModifier` `body(content:)` , any top-level `if` or `switch` on a runtime condition.",
+          "unevaluatedProperties" : false
+        },
+        "noStackedStateWrapper" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a second property wrapper on a `@State` property.\n\nSwiftUI finds the storage of `@State` through the property wrapper that the view declares. A second wrapper composes around `State` or inside it, so SwiftUI does not install the storage as it expects. The property then loses its value or does not update the view.\n\nApply the other behavior to the value itself, or keep the value in an `@Observable` model. The rule does not flag `@Previewable` , and it does not flag built-in declaration attributes such as `@MainActor` or `@available` .\n\nLint: A variable declaration has the attribute `@State` and another custom attribute.",
+          "unevaluatedProperties" : false
+        },
+        "noUUIDInViewBody" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `UUID()` call that runs during `body` evaluation, or that builds the data or the `id` of a `ForEach` .\n\nSwiftUI evaluates `body` again whenever a dependency of the view changes. `UUID()` there makes a new value on each evaluation. When the value is an identity, such as the argument of `.id(_:)` or the `id` of a `ForEach` element, SwiftUI sees a new view each time. It then resets the state of the view and restarts its animations. Store the identifier in the model, or in `@State` .\n\nThe rule checks `body` , and the same-file computed properties and called methods that `body` reaches. Closures that run later, such as a `Button` action or a `.task` body, do not count. The rule also checks the data argument and the `id:` argument of each `ForEach` call, in any scope.\n\nLint: A `UUID()` call with no arguments runs during `body` evaluation of a `View` , or is inside the data argument or the `id:` argument of a `ForEach` .",
           "unevaluatedProperties" : false
         },
         "noUnprojectedBindable" : {
@@ -4876,6 +5297,15 @@
           "description" : "Flag a member of a `View` type that is not in the standard member order.\n\nA fixed order makes each view easy to scan. The inputs and the state come first. The `body` comes after them, and the helpers come last. The order is:\n\n1. `@Environment` , `@FocusState` and `@FocusedValue` properties 2. `let` stored properties 3. `@State` and other stored properties 4. computed properties that do not build a view 5. `init` 6. `body` 7. other view builders: members that return `some View` or carry `@ViewBuilder` 8. other functions\n\nThe rule ignores `static` members, nested types, type aliases, subscripts and members inside `#if` blocks. It reports only the first member out of order in each member block.\n\nLint: A member of a `View` or `ViewModifier` type comes after a member of a later category.",
           "unevaluatedProperties" : false
         },
+        "requireAccessInObservableMutexProperty" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a computed property of an `@Observable` class that reads or writes a `Mutex` with no observation call.\n\nThe `@Observable` macro tracks stored properties only. A computed property that reads its value through `Mutex.withLock` gives Observation nothing to track, so a view that reads the property does not update when the value changes. The getter must call `access(keyPath:)`, and the setter must wrap the change in `withMutation(keyPath:)`.\n\nThe rule reads each instance computed property of an `@Observable` class, and of an extension of an `@Observable` class in the same file. It reports a getter that calls `withLock` with no `access` call, and a setter that calls `withLock` with no `withMutation` call.\n\nLint: A computed property of an `@Observable` class calls `withLock` with no `access(keyPath:)` or `withMutation(keyPath:)` call.",
+          "unevaluatedProperties" : false
+        },
         "requireRepeatSafeOnAppear" : {
           "allOf" : [
             {
@@ -4883,6 +5313,15 @@
             }
           ],
           "description" : "Flag a write inside `.onAppear` that gives a different result each time it runs.\n\nA view can appear many times: on each navigation back to it, each tab switch, and each time a lazy container scrolls it into view again. A compound assignment such as `count += 1` , an `append` , or `x = x + 1` accumulates across those appearances. Guard the write so that it runs once, or move it to the owner of the state.\n\nA call to a method of the view or to a closure it holds, such as `loadMore()` , runs again on each appearance too. A row of a lazy list that asks for the next page when it appears asks again each time it scrolls back into view. Make the call repeat-safe, or guard it with a flag the view keeps in state, as in `guard !didLoad else { return }` followed by `didLoad = true` . A `@State` flag means once for this view identity. When SwiftUI removes the view and inserts it again, the flag starts fresh. The rule reports a call only when its name is a member that the view or a same-file extension declares. A free function such as `max(a, b)` is not reported.\n\nAn assignment of a fixed value, such as `isFocused = true` , is repeat-safe and is not reported. A call is not reported when an `if` or `guard` in the closure reads a property the view keeps in state, such as `@State` or `@Binding` , because that check can make the call run once. The rule reads these properties from the view and from its same-file extensions. A call inside a nested closure, a call on another value, and a call to `print` or `withAnimation` are not reported. `UseTaskModifierNotOnAppear` covers a `Task` that starts from `.onAppear` .\n\nLint: An `.onAppear` closure holds a compound assignment, a self-referential arithmetic assignment, a call to a mutating collection method such as `append` , or a call to a method of the view or a closure it holds that no state check guards.",
+          "unevaluatedProperties" : false
+        },
+        "useAnimationWithValue" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag the one-argument `.animation(_:)` view modifier.\n\nThe one-argument form is deprecated since iOS 15. It animates every change in the view, including changes that must not animate. `.animation(_:value:)` animates only the changes of `value` . The iOS 17 form `.animation(_:body:)` animates only the modifiers in its closure.\n\nThe rule does not flag `Binding.animation(_:)` on a `$` projection, or `AnyTransition.animation(_:)` on a transition such as `.opacity` . These forms are not deprecated.\n\nLint: A call `.animation(x)` has exactly one unlabeled argument and no trailing closure.",
           "unevaluatedProperties" : false
         },
         "useAtEntryNotEnvironmentKey" : {
@@ -4911,6 +5350,15 @@
           "description" : "Flag the pre-`Transferable` drag API.\n\n`.onDrag` builds an `NSItemProvider` , which carries an untyped payload behind a type identifier string. `.draggable` takes a value whose type conforms to `Transferable` , so the compiler checks the payload and the same conformance also serves copy, paste and share.\n\nLint: A call to `.onDrag` , or a reference to `NSItemProvider` , raises a warning.",
           "unevaluatedProperties" : false
         },
+        "useDropDestinationNotOnDrop" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag the `.onDrop(of:perform:)` view modifier.\n\n`.onDrop(of:)` hands the drop an array of `NSItemProvider` values. Each provider carries an untyped payload behind a type identifier string, and the view loads it asynchronously. `.dropDestination(for:)` takes a type that conforms to `Transferable` , so the compiler checks the payload.\n\nThe rule does not flag the `delegate:` form. A `DropDelegate` with `dropUpdated` has no `.dropDestination` equivalent.\n\nLint: A modifier call `.onDrop(of:)` has a `perform:` argument or a trailing closure.",
+          "unevaluatedProperties" : false
+        },
         "useItemPresentation" : {
           "allOf" : [
             {
@@ -4918,6 +5366,15 @@
             }
           ],
           "description" : "Flag a `Bool` `@State` flag that presents content which reads a separate optional `@State` .\n\nA view that presents a sheet for a value often keeps two properties: a `Bool` that shows the sheet and an optional that holds the value. The two properties can disagree. The flag can be `true` while the value is `nil` , and then the sheet shows empty content. The `item:` form takes one `Binding<T?>` . The sheet shows when the value is set, and the content gets the value unwrapped. `.alert` and `.confirmationDialog` get the same fix from their `presenting:` form.\n\nThe rule reads only the view type in the same file. It reports when the `isPresented:` argument is the projected binding of a `Bool` `@State` property, and a content closure of the modifier reads an optional `@State` property of the same view.\n\nLint: A `.sheet` , `.alert` , `.confirmationDialog` , `.popover` or `.fullScreenCover` presents with a `Bool` `@State` flag, and its content reads an optional `@State` property.",
+          "unevaluatedProperties" : false
+        },
+        "useOfferCodeSheetOptions" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag the offer code sheet call that the OS 27 StoreKit SDK deprecates.\n\nThe OS 27 StoreKit interface marks `AppStore.presentOfferCodeRedeemSheet(in:)` as `deprecated: 27.0` with the message \"Use `presentOfferCodeRedeemSheet(from:options:)` instead.\" The replacement takes the presenting `UIViewController` and a `Set<RedeemOption>` . It returns the `VerificationResult<Transaction>` of the redemption.\n\nThe `options` parameter has a default value of `[]` . A call with only a `from:` argument therefore resolves to the new method, and the rule does not report it.\n\nLint: A call to `presentOfferCodeRedeemSheet` whose only argument has the label `in:` raises a warning.",
           "unevaluatedProperties" : false
         },
         "useOnChangeInitialNotOnAppear" : {
@@ -4955,6 +5412,15 @@
           ],
           "description" : "Prefer `.scaledToFit()` / `.scaledToFill()` over `.aspectRatio(contentMode:)` with a constant content mode.\n\nSwiftUI's `scaledToFit()` and `scaledToFill()` are exact equivalents of `aspectRatio(contentMode: .fit)` and `aspectRatio(contentMode: .fill)` respectively, and read more clearly. The rewrite only fires when the call has a single `contentMode:` argument whose value is a constant `.fit` / `.fill` (optionally spelled `ContentMode.fit` / `ContentMode.fill`). A leading ratio argument, a non-constant content mode, or a differently-typed enum base leaves the call untouched.\n\nLint: Using `aspectRatio(contentMode:)` with a constant content mode raises a warning.\n\nRewrite: `.aspectRatio(contentMode: .fit)` becomes `.scaledToFit()` and `.aspectRatio(contentMode: .fill)` becomes `.scaledToFill()`."
         },
+        "useTabNotTabItem" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag the `.tabItem` view modifier.\n\nThe `Tab` type supersedes `.tabItem`. A `Tab` declares its label, its selection value and its role in one place, and it supports the sidebar-adaptable `TabView` style, tab sections and customization. `.tabItem` still works, but it gets none of these.\n\n`.tabItem` has a meaning only in a `TabView`, so the rule does not look for the enclosing `TabView`. That also covers a child view that another file puts in a `TabView`.\n\nLint: A modifier call `.tabItem { ... }` .",
+          "unevaluatedProperties" : false
+        },
         "useTaskIDNotTaskInOnChange" : {
           "allOf" : [
             {
@@ -4972,6 +5438,14 @@
           ],
           "description" : "Flag an `.onAppear` closure whose whole body is a `Task { }` .\n\n`.onAppear` is synchronous, so the only way to start async work from it is an unstructured task. That task outlives the view: nothing cancels it when the view goes away, and it keeps every value it captured alive until it finishes. The `.task` modifier starts the same work and cancels it when the view disappears.\n\nThe rule reports only the closure whose single statement is the task, because a closure that also does synchronous work does not translate to `.task` on its own.\n\nLint: An `.onAppear` whose closure body is one `Task { }` raises a warning.",
           "unevaluatedProperties" : false
+        },
+        "useTopBarPlacement" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Replace `.navigationBarLeading` / `.navigationBarTrailing` with `.topBarLeading` / `.topBarTrailing` .\n\nSwiftUI deprecates the `navigationBar` toolbar placements. The `topBar` placements have the same meaning and work on every platform that has a top bar.\n\nThe rule matches an implicit member (`.navigationBarLeading`) or a member of `ToolbarItemPlacement` . It does not check the type of an implicit member.\n\nLint: Using `.navigationBarLeading` or `.navigationBarTrailing` raises a warning.\n\nRewrite: The member name becomes `topBarLeading` or `topBarTrailing` . Trivia stays."
         },
         "useTypedNotificationName" : {
           "allOf" : [
@@ -5040,6 +5514,14 @@
           ],
           "description" : "Ensure test methods have the correct `test` prefix or `@Test` attribute.\n\nFor XCTest: functions in `XCTestCase` subclasses that look like tests get a `test` prefix. For Swift Testing: functions in test suite types get a `@Test` attribute.\n\nA \"test suite\" type is one whose name ends with `Tests` , `TestCase` , or `Suite` .\n\nLint: A warning is raised for each test method missing the correct prefix or attribute.\n\nRewrite: The `test` prefix or `@Test` attribute is added."
         },
+        "requireTestTraitWithTestScoping" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/ruleBase"
+            }
+          ],
+          "description" : "Add `TestTrait` to a `SuiteTrait` that conforms to `TestScoping` .\n\nThe Swift Testing runner applies a suite trait to every test in the suite as well as to the suite. When a `SuiteTrait` provides a scope through `TestScoping` but does not conform to `TestTrait` , the runner crashes when it applies the trait to a test. See the Swift Testing notes on custom traits.\n\nThe rule checks structs, classes, enums, actors and extensions. It matches a simple name or a name qualified with a module, such as `Testing.SuiteTrait` .\n\nLint: A type or extension whose inheritance clause names `TestScoping` and `SuiteTrait` but not `TestTrait` raises a warning.\n\nRewrite: `TestTrait` is inserted in the inheritance clause after `SuiteTrait` ."
+        },
         "useSwiftTestingNames" : {
           "allOf" : [
             {
@@ -5065,7 +5547,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Convert XCTest suites to Swift Testing.\n\nReplaces `import XCTest` with `import Testing` + `import Foundation` , removes `XCTestCase` conformance, converts `setUp` / `tearDown` to `init` / `deinit` , adds `@Test` to test methods, and converts XCT assertions to `#expect` / `#require` .\n\nBails out entirely if the file contains unsupported XCTest functionality (expectations, performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions)."
+          "description" : "Convert XCTest suites to Swift Testing.\n\nReplaces `import XCTest` with `import Testing` + `import Foundation` , removes `XCTestCase` conformance, converts `setUp` / `tearDown` to `init` / `deinit` , adds `@Test` to test methods, and converts XCT assertions to `#expect` / `#require` . `XCTAssertThrowsError` becomes `#expect(throws: (any Error).self) { ... }` , and `XCTAssertNoThrow` becomes `#expect(throws: Never.self) { ... }` . An `XCTAssertThrowsError` with an error handler closure stays unchanged.\n\nBails out entirely if the file contains unsupported XCTest functionality (expectations, performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions)."
         }
       },
       "type" : "object"
@@ -5227,7 +5709,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag `Task { ... }` started from a `@MainActor`-isolated context. The unstructured `Task` initializer hops off the main actor unless the body's first awaited work is itself main-actor-isolated, defeating the caller's isolation guarantee. Prefer `Task.immediate` (or `Task.immediate(priority:)`), which starts execution synchronously on the calling actor and only suspends at the first `await` that requires it.\n\nDetection walks enclosing parents looking for `@MainActor` on a function, computed property accessor, closure, type, or extension. Matches false-positive-friendly: `Task { ... }` with any priority arg form fires when the enclosing decl carries the attribute. Detached and named-static-method forms (`Task.detached`, `Task.immediate`) are not flagged here.\n\nCaveat noted in the message: a `Task` body whose first work suspends off-main is the silent-fallback case the rule is named for — the runtime drops main-actor isolation without a diagnostic, so reviewing flagged sites is worthwhile even when the body \"looks fine.\"",
+          "description" : "Flag `Task { ... }` started from a `@MainActor`-isolated context. The unstructured `Task` initializer inherits the isolation of the caller, so its body runs on the main actor. The cost is a deferred start: the body does not run until the main actor reaches a later turn, so work that the caller expects to happen now happens later. Prefer `Task.immediate` (or `Task.immediate(priority:)`), which starts execution synchronously on the calling actor and only suspends at the first `await` that requires it.\n\nDetection walks enclosing parents looking for `@MainActor` on a function, computed property accessor, closure, type, or extension. Matches false-positive-friendly: `Task { ... }` with any priority arg form fires when the enclosing decl carries the attribute. Detached and named-static-method forms (`Task.detached`, `Task.immediate`) are not flagged here.\n\nThe rule also flags `Task { ... }` as a statement in a function with the `@IBAction` attribute. An `@IBAction` method runs on the main actor, and a `Task` in it defers the work of the action to a later turn.\n\nLint: A `Task { ... }` starts in a `@MainActor` context or as a statement in an `@IBAction`.",
           "unevaluatedProperties" : false
         },
         "flagUncheckedSendable" : {
@@ -5275,6 +5757,15 @@
           "description" : "Flag `dropFirst` on a `Data` value.\n\n`Data` is a value type over a copy-on-write buffer, and `dropFirst` hands back a new `Data` . A parse loop that drops one byte per pass therefore copies the rest of the buffer on every pass, which makes the loop quadratic in the input size. Advance an index instead, or take one slice and read through it.\n\nThe rule reads the type from the source alone. It collects the names the file declares as `Data` , through a type annotation, a `Data(...)` initializer or a parameter type, and it reports a `dropFirst` whose receiver is one of them. A receiver it cannot resolve stays quiet, so `dropFirst` on a `String` or an `Array` raises nothing.\n\nLint: A `dropFirst` call on a value the file declares as `Data` raises a warning.",
           "unevaluatedProperties" : false
         },
+        "noEscapedUnsafePointer" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Flag a `withUnsafe…` closure that returns the pointer it receives.\n\nThe pointer that `withUnsafeBytes` , `withUnsafeBufferPointer` , `withUnsafePointer` and their mutable forms pass to the closure is valid only inside the closure. A closure that returns the pointer, or its `baseAddress` , hands the caller a dangling pointer. For example, `self.bytes = source.withUnsafeBytes { $0 }` is already a lifetime bug. Do the work inside the closure, or store a `Span` and state the dependency with `@_lifetime` .\n\nThe rule does not report a closure that returns a value computed from the pointer, such as `$0.load(as: UInt32.self)` or `$0.count` .\n\nLint: A `withUnsafe…` call whose closure body is only the pointer parameter, its `baseAddress` or its force-unwrapped `baseAddress` raises a warning.",
+          "unevaluatedProperties" : false
+        },
         "noForceCast" : {
           "allOf" : [
             {
@@ -5314,7 +5805,7 @@
               "$ref" : "#/$defs/lintOnlyBase"
             }
           ],
-          "description" : "Flag acquire-style calls that aren't followed by a `defer { release() }` in the same scope when the scope has at least one early exit (`return` / `throw` / `break` / `continue`) after the acquire. Pairing the cleanup as a `defer` immediately after the acquire is Swift's idiomatic way to guarantee the release runs even when a later refactor introduces a new early exit. Without it, the release line at the end of the function is silently skipped.\n\nConfigurable via `pairs` (acquire + release name list). The default catalog covers well-known Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState, etc.). Matching is by member-call name only — false positives on same-named methods from unrelated types are expected and can be suppressed with `// sm:ignore PairAcquireWithDefer` .\n\nFlag-only — auto-inserting the `defer` is unsafe in general because the release's arguments (`objc_sync_exit(obj)`, `os_signpost(.end, … , label)`) can't always be inferred from the acquire site.\n\nSource: https://ioscodereview.com/issues/issue-79-defer-done-right-instruments-is-back-and-wwdc-is-one-week-away/.",
+          "description" : "Flag acquire-style calls that aren't followed by a `defer { release() }` in the same scope when the scope has at least one early exit (`return` / `throw` / `break` / `continue`) after the acquire. Pairing the cleanup as a `defer` immediately after the acquire is Swift's idiomatic way to guarantee the release runs even when a later refactor introduces a new early exit. Without it, the release line at the end of the function is silently skipped.\n\nConfigurable via `pairs` (acquire + release name list). The default catalog covers well-known Apple framework pairs (lock/unlock, beginEditing/endEditing, saveGState/ restoreGState, `OSSignposter` beginInterval/endInterval, etc.). Matching is by member-call name only — false positives on same-named methods from unrelated types are expected and can be suppressed with `// sm:ignore PairAcquireWithDefer` .\n\nFlag-only — auto-inserting the `defer` is unsafe in general because the release's arguments (`objc_sync_exit(obj)`, `os_signpost(.end, … , label)`) can't always be inferred from the acquire site.\n\nSource: https://ioscodereview.com/issues/issue-79-defer-done-right-instruments-is-back-and-wwdc-is-one-week-away/.",
           "properties" : {
             "pairs" : {
               "description" : "Pairs to check. Defaults to a catalog of well-known Apple framework acquire/release names. Configuration replaces the catalog wholesale rather than appending — set this to extend with project-specific pairs (re-listing the defaults if you want to keep them).",
@@ -5348,6 +5839,15 @@
             }
           ],
           "description" : "Lint `AsyncStream { continuation in ... }` (and `AsyncThrowingStream` ) initializer bodies that call `continuation.yield(...)` but never call `continuation.finish(...)` and never set `continuation.onTermination` .\n\nWithout termination handling the stream can leak when the consumer is cancelled — the producer keeps holding resources for a continuation that will never be drained.",
+          "unevaluatedProperties" : false
+        },
+        "requireStrictMemorySafetySetting" : {
+          "allOf" : [
+            {
+              "$ref" : "#/$defs/lintOnlyBase"
+            }
+          ],
+          "description" : "Require `.strictMemorySafety()` in the Swift settings of each target of a package manifest.\n\nStrict memory safety makes the compiler report each use of an unsafe construct that has no `unsafe` marker. A target without the setting accepts unsafe code with no warning. The policy applies to every target, with or without unsafe code today, so that new unsafe code gets the warning.\n\nThe rule reads only a file named `Package.swift` . It checks each `.target` , `.executableTarget` , `.testTarget` and `.macro` call. The `swiftSettings:` argument passes when it holds `.strictMemorySafety()` , or names a top-level variable of the manifest whose value holds it, directly or through another such variable. A `for` loop over `package.targets` that sets `.strictMemorySafety()` passes every target.\n\nLint: A target in `Package.swift` has no `.strictMemorySafety()` in its `swiftSettings` .",
           "unevaluatedProperties" : false
         },
         "requireSubprocessTeardownSequence" : {
@@ -5539,6 +6039,15 @@
         }
       ],
       "description" : "Use angle brackets ( `extension Array<Foo>` ) for generic type extensions instead of type constraints ( `extension Array where Element == Foo` ).\n\nSwift 5.7+ supports angle bracket syntax in extension declarations. When a `where` clause constrains all generic parameters of a known type to concrete types, the angle bracket form is more concise.\n\nKnown types: `Array` , `Set` , `Optional` , `Dictionary` , `Collection` , `Sequence` .\n\nLint: An extension with a `where` clause that can be replaced by angle brackets raises a warning.\n\nRewrite: The `where` clause constraints are moved into angle bracket syntax on the extended type."
+    },
+    "useAnimationWithValue" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag the one-argument `.animation(_:)` view modifier.\n\nThe one-argument form is deprecated since iOS 15. It animates every change in the view, including changes that must not animate. `.animation(_:value:)` animates only the changes of `value` . The iOS 17 form `.animation(_:body:)` animates only the modifiers in its closure.\n\nThe rule does not flag `Binding.animation(_:)` on a `$` projection, or `AnyTransition.animation(_:)` on a transition such as `.opacity` . These forms are not deprecated.\n\nLint: A call `.animation(x)` has exactly one unlabeled argument and no trailing closure.",
+      "unevaluatedProperties" : false
     },
     "useAnyAppleOSAvailability" : {
       "allOf" : [
@@ -5763,6 +6272,15 @@
       "description" : "Flag the pre-`Transferable` drag API.\n\n`.onDrag` builds an `NSItemProvider` , which carries an untyped payload behind a type identifier string. `.draggable` takes a value whose type conforms to `Transferable` , so the compiler checks the payload and the same conformance also serves copy, paste and share.\n\nLint: A call to `.onDrag` , or a reference to `NSItemProvider` , raises a warning.",
       "unevaluatedProperties" : false
     },
+    "useDropDestinationNotOnDrop" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag the `.onDrop(of:perform:)` view modifier.\n\n`.onDrop(of:)` hands the drop an array of `NSItemProvider` values. Each provider carries an untyped payload behind a type identifier string, and the view loads it asynchronously. `.dropDestination(for:)` takes a type that conforms to `Transferable` , so the compiler checks the payload.\n\nThe rule does not flag the `delegate:` form. A `DropDelegate` with `dropUpdated` has no `.dropDestination` equivalent.\n\nLint: A modifier call `.onDrop(of:)` has a `perform:` argument or a trailing closure.",
+      "unevaluatedProperties" : false
+    },
     "useEarlyExits" : {
       "allOf" : [
         {
@@ -5918,6 +6436,14 @@
       ],
       "description" : "Prefer implicit member syntax when the type is known from context.\n\nWhen a return type, type annotation, or parameter type makes the expected type clear, explicit type references in constructor calls and static member accesses are redundant.\n\n```swift // Before static var defaultValue: Bar { Bar(x: 1) } func make() -> Config { Config(debug: true) } func run(mode: Mode = Mode.fast) {}\n\n// After static var defaultValue: Bar { .init(x: 1) } func make() -> Config { .init(debug: true) } func run(mode: Mode = .fast) {} ```\n\nLint: A lint warning is raised when an explicit type can be replaced with implicit member syntax.\n\nRewrite: The explicit type is replaced with a leading dot."
     },
+    "useInlineAlwaysNotUnderscore" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Replace `@inline(__always)` with `@inline(always)` .\n\n`@inline(__always)` is the old, underscore-prefixed spelling. It only suggests inlining. `@inline(always)` guarantees inlining since Swift 6.3.\n\n`@inline(always)` changes how an overridable declaration can dispatch, so the rewrite applies only to a declaration that nothing can override. That is a free or local function, a member of a struct, enum, actor or extension, a `static` / `final` / `private` / `fileprivate` member of a class, or any member of a `final` class.\n\nLint: Using `@inline(__always)` raises a warning.\n\nRewrite: The attribute becomes `@inline(always)` . An overridable class member keeps its text."
+    },
     "useIsDisjoint" : {
       "allOf" : [
         {
@@ -6013,6 +6539,15 @@
       "description" : "`String.data(using: .utf8)` returns `Data?` , even though UTF-8 encoding can never fail. Prefer the non-optional `Data(_:)` initializer that takes a `String.UTF8View` : `Data(\"foo\".utf8)` instead of `\"foo\".data(using: .utf8)` .\n\nLint: A warning is raised for any call of the form `<expr>.data(using: .utf8)` . Other encodings ( `.ascii` , `.unicode` , etc.) are not flagged because they really can fail.",
       "unevaluatedProperties" : false
     },
+    "useOfferCodeSheetOptions" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag the offer code sheet call that the OS 27 StoreKit SDK deprecates.\n\nThe OS 27 StoreKit interface marks `AppStore.presentOfferCodeRedeemSheet(in:)` as `deprecated: 27.0` with the message \"Use `presentOfferCodeRedeemSheet(from:options:)` instead.\" The replacement takes the presenting `UIViewController` and a `Set<RedeemOption>` . It returns the `VerificationResult<Transaction>` of the redemption.\n\nThe `options` parameter has a default value of `[]` . A call with only a `from:` argument therefore resolves to the new method, and the rule does not report it.\n\nLint: A call to `presentOfferCodeRedeemSheet` whose only argument has the label `in:` raises a warning.",
+      "unevaluatedProperties" : false
+    },
     "useOnChangeInitialNotOnAppear" : {
       "allOf" : [
         {
@@ -6092,6 +6627,15 @@
         }
       ],
       "description" : "Flag `onMove(perform:)` outside a `List` or a `Form` .\n\nBefore OS 27, `onMove` only worked inside those two containers, so reordering anywhere else meant hand-rolling it on `draggable` and `dropDestination` with index arithmetic. OS 27 adds `ForEach.reorderable()` paired with `View.reorderContainer(for:move:)` , which works in any container and hands back a `ReorderDifference` to apply.\n\nInside a `List` or a `Form` , `onMove` is still the right call. The rule walks up the ancestors and stays quiet when it finds one.\n\nLint: An `onMove` call with no `List` or `Form` ancestor raises a warning.",
+      "unevaluatedProperties" : false
+    },
+    "useRunsNotEnumerateAttributes" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag the `NSAttributedString` attribute walk in favour of `AttributedString.runs` .\n\n`enumerateAttributes(in:options:using:)` and `enumerateAttribute(_:in:options:using:)` walk the reference type through an Objective-C block with an `NSRange` and an untyped attribute dictionary. `AttributedString.runs` is a Swift collection. Each run carries typed attributes and a `Range<AttributedString.Index>` , and a `for` loop iterates it.\n\nTextKit code that must keep an `NSAttributedString` can ignore the finding with `// sm:ignore` .\n\nLint: A call to `enumerateAttributes` or `enumerateAttribute` with an `in:` argument raises a warning.",
       "unevaluatedProperties" : false
     },
     "useScaledToFit" : {
@@ -6194,7 +6738,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Convert XCTest suites to Swift Testing.\n\nReplaces `import XCTest` with `import Testing` + `import Foundation` , removes `XCTestCase` conformance, converts `setUp` / `tearDown` to `init` / `deinit` , adds `@Test` to test methods, and converts XCT assertions to `#expect` / `#require` .\n\nBails out entirely if the file contains unsupported XCTest functionality (expectations, performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions)."
+      "description" : "Convert XCTest suites to Swift Testing.\n\nReplaces `import XCTest` with `import Testing` + `import Foundation` , removes `XCTestCase` conformance, converts `setUp` / `tearDown` to `init` / `deinit` , adds `@Test` to test methods, and converts XCT assertions to `#expect` / `#require` . `XCTAssertThrowsError` becomes `#expect(throws: (any Error).self) { ... }` , and `XCTAssertNoThrow` becomes `#expect(throws: Never.self) { ... }` . An `XCTAssertThrowsError` with an error handler closure stays unchanged.\n\nBails out entirely if the file contains unsupported XCTest functionality (expectations, performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions)."
     },
     "useSynthesizedInit" : {
       "allOf" : [
@@ -6203,6 +6747,15 @@
         }
       ],
       "description" : "When possible, the synthesized `struct` initializer should be used.\n\nA (non-public) initializer that has the same structure as the memberwise initializer adds code and gives nothing back. Remove it, and let the compiler synthesize the initializer.\n\nSE-0502 changed which properties the compiler puts in that initializer. A property that is less accessible than the rest *and* carries an initial value is now left out, so it no longer drags the initializer down to its own access level. A hand-written initializer that existed only to work around that is redundant on Swift 6.4.\n\nA SwiftUI view is built again on every parent update, so its initializer should only copy its inputs. The rule reads `_input = input` for a `@Binding` input as a plain copy, because the synthesized initializer takes a `Binding` for that input too. A private or fileprivate view whose inputs are `private` only to hide them gets a finding as well. Its inputs can drop `private` with no loss, because the type already hides them.\n\nAn initializer that takes a result-builder closure also gets a finding when a stored property with the same builder attribute gives the same initializer. An example is `init(@ViewBuilder content: () -> Content) { self.content = content() }`. For it, declare `@ViewBuilder let content: Content`. When the initializer stores the closure, declare `@ViewBuilder let content: () -> Content`. The finding message names the declaration to write.\n\nKeep the explicit initializer when its removal changes the behavior. The rule stays silent when the initializer sets up a property wrapper such as `State(initialValue:)`, when a parameter type differs from its property type, when the initializer changes when a builder closure runs, when it has extra statements or an attribute, and when it is `public`.\n\nLint: A (non-public) initializer with the same structure as the synthesized memberwise initializer raises a warning.",
+      "unevaluatedProperties" : false
+    },
+    "useTabNotTabItem" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/lintOnlyBase"
+        }
+      ],
+      "description" : "Flag the `.tabItem` view modifier.\n\nThe `Tab` type supersedes `.tabItem`. A `Tab` declares its label, its selection value and its role in one place, and it supports the sidebar-adaptable `TabView` style, tab sections and customization. `.tabItem` still works, but it gets none of these.\n\n`.tabItem` has a meaning only in a `TabView`, so the rule does not look for the enclosing `TabView`. That also covers a child view that another file puts in a `TabView`.\n\nLint: A modifier call `.tabItem { ... }` .",
       "unevaluatedProperties" : false
     },
     "useTaskCancellationShield" : {
@@ -6266,6 +6819,14 @@
       ],
       "description" : "Prefer `someBool.toggle()` over `someBool = !someBool` .\n\n`Bool.toggle()` (Swift 4.2+) is more concise and clearly communicates the intent. The two forms are equivalent semantically; `toggle()` does not introduce any new evaluation hazards.\n\nLint: A warning is raised for `x = !x` patterns where the LHS and the negated RHS reference the exact same expression text.\n\nRewrite: The expression is rewritten to `x.toggle()` ."
     },
+    "useTopBarPlacement" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Replace `.navigationBarLeading` / `.navigationBarTrailing` with `.topBarLeading` / `.topBarTrailing` .\n\nSwiftUI deprecates the `navigationBar` toolbar placements. The `topBar` placements have the same meaning and work on every platform that has a top bar.\n\nThe rule matches an implicit member (`.navigationBarLeading`) or a member of `ToolbarItemPlacement` . It does not check the type of an implicit member.\n\nLint: Using `.navigationBarLeading` or `.navigationBarTrailing` raises a warning.\n\nRewrite: The member name becomes `topBarLeading` or `topBarTrailing` . Trivia stays."
+    },
     "useTrailingClosures" : {
       "allOf" : [
         {
@@ -6324,8 +6885,13 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation` , this rule converts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds the module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and non-literal expressions are left alone. The `URL(string:relativeTo:)` and `URL(fileURLWithPath:)` initializers are not affected.\n\nRequires configuration via `useURLMacroForURLLiterals.macroName` and `useURLMacroForURLLiterals.moduleName` .\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted.\n\nRewrite: The force-unwrapped URL initializer is replaced with the configured macro.",
+      "description" : "Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.\n\nWhen configured with a macro name like `#URL` and module like `URLFoundation` , this rule converts `URL(string: \"https://example.com\")!` to `#URL(\"https://example.com\")` and adds the module import if not already present.\n\nOnly simple string literals are converted — string interpolations, concatenations, and non-literal expressions are left alone. The `URL(string:relativeTo:)` and `URL(fileURLWithPath:)` initializers are not affected.\n\nRequires configuration via `useURLMacroForURLLiterals.macroName` and `useURLMacroForURLLiterals.moduleName` .\n\nSet `useURLMacroForURLLiterals.flagOptionalLiterals` to `true` to also flag `URL(string: \"...\")` with a plain string literal and no `!` . The rule does not rewrite these calls, because the macro returns a non-optional `URL` and the fix changes the type of the expression. The option is off by default.\n\nLint: A warning is raised for each `URL(string: \"...\")!` that can be converted. With `flagOptionalLiterals` , a warning is also raised for each `URL(string: \"...\")` with no `!` .\n\nRewrite: The force-unwrapped URL initializer is replaced with the configured macro.",
       "properties" : {
+        "flagOptionalLiterals" : {
+          "default" : false,
+          "description" : "When `true` , also flag `URL(string: \"...\")` with a plain string literal and no `!` . These findings are lint only, because the fix changes the optionality of the expression.",
+          "type" : "boolean"
+        },
         "macroName" : {
           "description" : "Name of the URL macro to substitute for `URL(string:)!` , e.g. `\"URL\"` or `\"#URL\"` . When `nil` , the rule is inactive.",
           "type" : "string"
@@ -6344,6 +6910,24 @@
       ],
       "description" : "Lint a `String.Index` walk whose slices feed a byte-level parse\n\n`index(_:offsetBy:)` is grapheme-aware, so each step decodes the boundaries it passes, and each slice it feeds carries a reference back to the parent string. A reader of hex digits, or of any other fixed-width ASCII form, needs neither. `withUTF8` makes the storage contiguous and hands the reader a `Span<UInt8>`, so the same digits are read in one pass with no slice.\n\n```swift var hex = hex guard let raw = hex.withUTF8({ UUID.rawBytes(parsingHex: $0.span) }) else { return nil } ```\n\nProse parsing over a `String` is a legitimate grapheme walk, so the rule fires only when one string is both walked by `index(_:offsetBy:)` and sliced into a fixed-width integer initializer inside the same loop. A slice that goes anywhere else stays silent, and so does a single walk outside a loop.\n\nA helper function the loop calls counts as part of the loop, because a cost behind a call is still paid once per iteration.\n\nLint: A loop that walks a string with `index(_:offsetBy:)` and parses slices of that same string into an integer raises a warning.",
       "unevaluatedProperties" : false
+    },
+    "useUUIDMacroForUUIDLiterals" : {
+      "allOf" : [
+        {
+          "$ref" : "#/$defs/ruleBase"
+        }
+      ],
+      "description" : "Replace force-unwrapped `UUID(uuidString:)` initializers with a configured UUID macro.\n\nA force-unwrapped `UUID(uuidString: \"...\")!` checks the literal at run time and crashes when the literal is not a valid UUID. A UUID macro such as `#UUID(\"...\")` checks the literal at compile time and removes the force unwrap.\n\nThe rule converts only a plain string literal. It leaves an interpolated string, a concatenation and a variable alone. It adds the configured module import when the file does not import that module yet.\n\nThe rule does nothing until `useUUIDMacroForUUIDLiterals.macroName` is set. Set `useUUIDMacroForUUIDLiterals.moduleName` to add the import.\n\nLint: A warning is raised for each `UUID(uuidString: \"...\")!` that the rule can convert.\n\nRewrite: The force-unwrapped initializer is replaced with the configured macro.",
+      "properties" : {
+        "macroName" : {
+          "description" : "Name of the UUID macro that replaces `UUID(uuidString:)!` , for example `\"UUID\"` or `\"#UUID\"` . When `nil` , the rule is inactive.",
+          "type" : "string"
+        },
+        "moduleName" : {
+          "description" : "Module that defines `macroName` . The rewrite adds an `import` of it. When `nil` , the rule adds no import.",
+          "type" : "string"
+        }
+      }
     },
     "useUnavailableNotFatalError" : {
       "allOf" : [

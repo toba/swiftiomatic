@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
+package import Foundation
 
 /// Common behavior used to generate source files.
 package protocol FileGenerator {

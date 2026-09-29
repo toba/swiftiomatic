@@ -1,6 +1,6 @@
-import Foundation
-import SwiftParser
-import SwiftSyntax
+package import Foundation
+package import SwiftParser
+package import SwiftSyntax
 
 /// Enumerates top-level statements in all Swift files within a directory.
 ///

@@ -20,6 +20,30 @@ struct RuleCatalogTests {
         #expect(try #require(RuleCatalog.info(for: "noNestedWithLock")).guidance == .must)
     }
 
+    @Test func errorByDefaultRequiresMustGuidance() {
+        for rule in ConfigurationRegistry.allRuleTypes where rule.defaultRuleValue.lint == .error {
+            #expect(
+                [.must, .mustNot].contains(rule.guidance),
+                "\(rule.key) defaults to error with guidance \(rule.guidance.rawValue)"
+            )
+        }
+    }
+
+    @Test func considerGuidanceNeverDefaultsToError() {
+        for rule in ConfigurationRegistry.allRuleTypes where rule.guidance == .consider {
+            #expect(rule.defaultRuleValue.lint != .error, "\(rule.key) is CONSIDER but defaults to error")
+        }
+    }
+
+    @Test func mustGuidanceIsActiveByDefault() {
+        for rule in ConfigurationRegistry.allRuleTypes where [.must, .mustNot].contains(rule.guidance) {
+            #expect(
+                rule.defaultRuleValue.isActive,
+                "\(rule.key) is \(rule.guidance.rawValue) but is off by default"
+            )
+        }
+    }
+
     @Test func guidanceLevelsMatchTheSwiftFairyScale() throws {
         #expect(
             GuidanceLevel.allCases.map(\.rawValue)

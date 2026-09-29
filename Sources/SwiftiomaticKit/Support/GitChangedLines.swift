@@ -1,5 +1,5 @@
-import Foundation
-import Synchronization
+public import Foundation
+package import Synchronization
 
 /// Reads the changed lines out of a unified diff.
 public enum DiffHunks {

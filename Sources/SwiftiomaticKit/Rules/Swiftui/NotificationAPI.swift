@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Shared helpers for NotificationCenter-modernization lint rules on OS 26+

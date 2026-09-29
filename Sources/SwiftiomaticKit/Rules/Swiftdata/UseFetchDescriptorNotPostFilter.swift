@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Push filters, limits and counts into the fetch instead of running them on the fetched array.

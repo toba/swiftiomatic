@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-@_spi(ExperimentalLanguageFeatures) import SwiftParser
-import SwiftSyntax
+@_spi(ExperimentalLanguageFeatures) package import SwiftParser
+package import SwiftSyntax
 extension Parser {
   /// Parses the given source string and returns the corresponding `SourceFileSyntax` node.
   ///

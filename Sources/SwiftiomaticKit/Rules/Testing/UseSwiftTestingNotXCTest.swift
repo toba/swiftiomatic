@@ -1,10 +1,15 @@
+import Foundation
 import SwiftSyntax
+import SwiftSyntaxBuilder
 
 /// Convert XCTest suites to Swift Testing.
 ///
 /// Replaces `import XCTest` with `import Testing` + `import Foundation` , removes `XCTestCase`
 /// conformance, converts `setUp` / `tearDown` to `init` / `deinit` , adds `@Test` to test methods,
-/// and converts XCT assertions to `#expect` / `#require` .
+/// and converts XCT assertions to `#expect` / `#require` . `XCTAssertThrowsError` becomes
+/// `#expect(throws: (any Error).self) { ... }` , and `XCTAssertNoThrow` becomes
+/// `#expect(throws: Never.self) { ... }` . An `XCTAssertThrowsError` with an error handler closure
+/// stays unchanged.
 ///
 /// Bails out entirely if the file contains unsupported XCTest functionality (expectations,
 /// performance tests, unknown overrides, async/throws tearDown, XCTestCase extensions).
@@ -299,6 +304,19 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
             case "XCTUnwrap":
                 return convertXCTUnwrap(args, originalNode: originalNode, context: context)
 
+            case "XCTAssertThrowsError":
+                return convertThrowsAssert(
+                    call,
+                    errorType: "(any Error).self",
+                    originalNode: originalNode,
+                    context: context
+                )
+
+            case "XCTAssertNoThrow":
+                return convertThrowsAssert(
+                    call, errorType: "Never.self", originalNode: originalNode, context: context
+                )
+
             default: return nil
         }
     }
@@ -412,6 +430,50 @@ final class UseSwiftTestingNotXCTest: StaticFormatRule<BasicRuleValue>, @uncheck
         return ExprSyntax(MacroExpansionExprSyntax(
             pound: .poundToken(), macroName: .identifier("require"), leftParen: .leftParenToken(),
             arguments: LabeledExprListSyntax(requireArgs), rightParen: .rightParenToken()))
+    }
+
+    /// Converts `XCTAssertThrowsError(expr, message)` and `XCTAssertNoThrow(expr, message)` to
+    /// `#expect(throws: <errorType>, message) { expr }` . Returns `nil` when the call has an error
+    /// handler closure or labeled arguments.
+    private static func convertThrowsAssert(
+        _ call: FunctionCallExprSyntax,
+        errorType: ExprSyntax,
+        originalNode: FunctionCallExprSyntax,
+        context: Context
+    ) -> ExprSyntax? {
+        let args = Array(call.arguments)
+        guard args.count == 1 || args.count == 2 else { return nil }
+        guard args.allSatisfy({ $0.label == nil }) else { return nil }
+        guard call.trailingClosure == nil, call.additionalTrailingClosures.isEmpty else {
+            return nil
+        }
+
+        Self.diagnose(.convertAssertion, on: originalNode.calledExpression, context: context)
+
+        var expectArgs = [
+            LabeledExprSyntax(
+                label: .identifier("throws"),
+                colon: .colonToken(trailingTrivia: .space),
+                expression: errorType,
+                trailingComma: args.count == 2 ? .commaToken(trailingTrivia: .space) : nil
+            )
+        ]
+        if args.count == 2 {
+            expectArgs.append(LabeledExprSyntax(expression: args[1].expression.trimmed))
+        }
+
+        let body = ClosureExprSyntax(
+            leftBrace: .leftBraceToken(trailingTrivia: .space),
+            statements: CodeBlockItemListSyntax([
+                CodeBlockItemSyntax(item: .expr(args[0].expression.trimmed))
+            ]),
+            rightBrace: .rightBraceToken(leadingTrivia: .space)
+        )
+
+        return ExprSyntax(MacroExpansionExprSyntax(
+            pound: .poundToken(), macroName: .identifier("expect"), leftParen: .leftParenToken(),
+            arguments: LabeledExprListSyntax(expectArgs),
+            rightParen: .rightParenToken(trailingTrivia: .space), trailingClosure: body))
     }
 
     // MARK: - Compact-pipeline FunctionDecl transform

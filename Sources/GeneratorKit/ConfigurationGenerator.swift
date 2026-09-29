@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
-import ConfigurationKit
+package import Foundation
+package import ConfigurationKit
 
 /// Generates the rule registry file with type arrays for rules and settings. All metadata (names,
 /// defaults, groups) is derived at runtime from the types via protocol witness dispatch on the

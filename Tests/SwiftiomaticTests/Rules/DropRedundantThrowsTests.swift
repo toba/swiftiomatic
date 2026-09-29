@@ -1,5 +1,5 @@
-import Testing
-import SwiftiomaticTestSupport
+package import Testing
+package import SwiftiomaticTestSupport
 @testable import SwiftiomaticKit
 
 @Suite

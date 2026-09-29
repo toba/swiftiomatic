@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 /// Decodes the bytes of a source file into a `String` .
 package enum SourceText {

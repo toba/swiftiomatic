@@ -1,4 +1,5 @@
-import SwiftSyntax
+import Foundation
+package import SwiftSyntax
 
 /// Zero-width and other invisible Unicode characters in string literals are almost always typos or
 /// paste artifacts. They're impossible to see in source and cause string equality, lookup, and URL
@@ -15,6 +16,7 @@ final class FlagInvisibleCharacters: LintSyntaxRule<InvisibleCharactersConfigura
     @unchecked Sendable
 {
     override class var group: ConfigurationGroup? { .literals }
+    override class var guidance: GuidanceLevel { .mustNot }
     override class var defaultValue: InvisibleCharactersConfiguration {
         var config = InvisibleCharactersConfiguration()
         config.lint = .error

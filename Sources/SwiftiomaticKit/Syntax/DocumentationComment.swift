@@ -13,8 +13,9 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Markdown
-import SwiftSyntax
+import Foundation
+package import Markdown
+package import SwiftSyntax
 
 /// A structured representation of information extracted from a documentation comment.
 ///

@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 /// Installed copies of Xcode and the toolchain path each one exposes
 ///

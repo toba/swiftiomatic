@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Flag an in-memory SwiftData store outside tests and previews.

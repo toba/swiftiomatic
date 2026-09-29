@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 /// Generates a Swift file that embeds the JSON Schema as a string literal, making it available at
 /// runtime without SPM resource bundles.

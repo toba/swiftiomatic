@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Lint `dropFirst` / `dropLast` / `prefix` / `suffix` calls inside a loop body, when the receiver

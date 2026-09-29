@@ -10,9 +10,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
-import SwiftSyntax
-import ConfigurationKit
+package import Foundation
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// Collects information about rules in the code base.
 package final class RuleCollector {

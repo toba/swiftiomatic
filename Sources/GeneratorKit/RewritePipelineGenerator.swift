@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 /// Generates `RewritePipeline` , the single tree walk that dispatches every node-local format rule.
 ///

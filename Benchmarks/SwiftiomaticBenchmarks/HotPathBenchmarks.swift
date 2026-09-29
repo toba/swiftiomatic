@@ -3,6 +3,7 @@ import Foundation
 import SwiftParser
 import SwiftSyntax
 @testable import SwiftiomaticKit
+import SwiftOperators
 
 /// Timing for the per-file setup, the pretty printer, and finding emission, each on its own
 ///

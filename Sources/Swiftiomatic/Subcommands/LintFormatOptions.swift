@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
-import ArgumentParser
+package import Foundation
+public import ArgumentParser
 
 /// Common arguments used by the `lint` and `format` subcommands.
 struct LintFormatOptions: ParsableArguments {

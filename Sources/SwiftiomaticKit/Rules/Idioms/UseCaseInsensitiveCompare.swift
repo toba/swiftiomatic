@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Compare or search strings case-insensitively with Foundation's comparison options.

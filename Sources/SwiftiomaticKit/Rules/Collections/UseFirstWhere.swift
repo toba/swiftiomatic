@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Prefer `.first(where:)` over `.filter { ... }.first` .

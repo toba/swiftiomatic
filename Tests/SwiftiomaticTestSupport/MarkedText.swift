@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftSyntax
-import SwiftiomaticKit
+package import SwiftSyntax
+package import SwiftiomaticKit
 
 /// Encapsulates the locations of emoji markers extracted from source text.
 package struct MarkedText {

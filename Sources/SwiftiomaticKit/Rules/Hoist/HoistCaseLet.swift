@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftSyntax
+package import SwiftSyntax
 
 /// Enforce consistent placement of `let` / `var` in case patterns.
 ///

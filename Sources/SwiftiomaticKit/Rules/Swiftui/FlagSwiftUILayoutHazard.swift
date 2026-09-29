@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Flag three SwiftUI layout shapes that lay out wrongly or waste space.

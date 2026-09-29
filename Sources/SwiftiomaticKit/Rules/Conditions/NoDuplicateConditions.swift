@@ -12,6 +12,7 @@ import SwiftSyntax
 /// error is raised.
 final class NoDuplicateConditions: LintSyntaxRule<LintOnlyValue>, @unchecked Sendable {
     override class var group: ConfigurationGroup? { .conditions }
+    override class var guidance: GuidanceLevel { .mustNot }
     override class var defaultValue: LintOnlyValue { .init(lint: .error) }
 
     override func visit(_ node: IfExprSyntax) -> SyntaxVisitorContinueKind {

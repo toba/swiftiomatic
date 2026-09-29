@@ -1,7 +1,7 @@
 // Adapted from kylef/JSONSchema.swift Copyright (c) 2015, Kyle Fuller. All rights reserved. BSD
 // 3-Clause License. See https://github.com/kylef/JSONSchema.swift/blob/master/LICENSE
 
-import Foundation
+package import Foundation
 
 // MARK: - JSON Pointer
 

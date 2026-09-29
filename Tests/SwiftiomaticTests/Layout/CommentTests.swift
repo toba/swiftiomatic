@@ -10,9 +10,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-import SwiftiomaticKit
-import SwiftiomaticTestSupport
-import Testing
+package import SwiftiomaticKit
+package import SwiftiomaticTestSupport
+package import Testing
 
 @Suite
 struct CommentTests: LayoutTesting {

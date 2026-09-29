@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 @testable import SwiftiomaticKit
 import SwiftiomaticTestSupport
 import Testing

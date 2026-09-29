@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import SwiftSyntax
 
 /// Remove redundant `let` / `var` from wildcard patterns.

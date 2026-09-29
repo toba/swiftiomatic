@@ -10,7 +10,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import SwiftSyntax
+import Foundation
+package import SwiftSyntax
 
 /// Imports must be lexicographically ordered and (optionally) logically grouped at the top of each
 /// source file. The order of the import groups is 1) regular imports, 2) declaration imports, 3)

@@ -1,4 +1,4 @@
-import SwiftSyntax
+package import SwiftSyntax
 
 /// Multiline string literal reflow mode.
 package struct ReflowMultilineStringLiterals: LayoutRule {

@@ -13,6 +13,7 @@
 @testable import SwiftiomaticKit
 import SwiftiomaticTestSupport
 import Testing
+import SwiftOperators
 
 @Suite
 struct NoLeadingUnderscoresTests: RuleTesting {

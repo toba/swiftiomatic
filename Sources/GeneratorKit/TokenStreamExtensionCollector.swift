@@ -1,5 +1,5 @@
-import Foundation
-import SwiftSyntax
+package import Foundation
+package import SwiftSyntax
 
 /// Scans Swift files for `extension TokenStream` visit methods that need forwarding stubs in the
 /// generated `TokenStream` subclass.

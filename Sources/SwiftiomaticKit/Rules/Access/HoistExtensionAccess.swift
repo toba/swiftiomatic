@@ -10,7 +10,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import SwiftSyntax
+package import SwiftSyntax
 
 /// Controls placement of access level modifiers on extensions vs. their members.
 ///

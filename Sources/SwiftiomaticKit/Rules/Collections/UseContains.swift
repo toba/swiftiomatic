@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 /// Prefer `contains(where:)` over `filter` -then-count/isEmpty/first patterns, and `contains(_:)`

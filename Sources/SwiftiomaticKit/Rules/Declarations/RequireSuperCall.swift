@@ -1,4 +1,4 @@
-import SwiftSyntax
+package import SwiftSyntax
 
 /// Some `override` d methods on Apple frameworks rely on the parent class running its own
 /// implementation. Forgetting to call `super` is a common source of subtle bugs (memory warnings

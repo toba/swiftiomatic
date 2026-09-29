@@ -12,6 +12,7 @@
 
 import Foundation
 import Synchronization
+import SwiftiomaticKit
 
 /// Manages printing of diagnostics to standard error.
 final class StderrDiagnosticPrinter: Sendable {

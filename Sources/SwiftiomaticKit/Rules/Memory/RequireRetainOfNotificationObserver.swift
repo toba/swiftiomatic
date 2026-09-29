@@ -9,7 +9,7 @@ final class RequireRetainOfNotificationObserver: LintSyntaxRule<LintOnlyValue>, 
 {
     override class var group: ConfigurationGroup? { .memory }
     override class var guidance: GuidanceLevel { .must }
-    override class var defaultValue: LintOnlyValue { .init(lint: .no) }
+    override class var defaultValue: LintOnlyValue { .init(lint: .warn) }
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         guard isAddObserverCall(node) else { return .visitChildren }

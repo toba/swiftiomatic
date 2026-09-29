@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Testing
+package import Testing
 @Suite
 struct IgnoreNodeTests: LayoutTesting {
   @Test func ignoreCodeBlockListItems() {

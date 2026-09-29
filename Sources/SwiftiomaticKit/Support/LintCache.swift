@@ -1,7 +1,7 @@
-import CryptoKit
-import Foundation
-import Synchronization
-import TobaConcurrency
+package import CryptoKit
+package import Foundation
+package import Synchronization
+package import TobaConcurrency
 
 /// On-disk cache of lint findings keyed by `(file content hash, configuration fingerprint)` .
 ///

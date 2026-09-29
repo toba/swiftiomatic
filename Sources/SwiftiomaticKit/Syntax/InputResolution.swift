@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 /// Resolved input source for a `lint` or `format` invocation.
 public enum ResolvedInput: Equatable, Sendable {

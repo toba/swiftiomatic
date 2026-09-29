@@ -1,5 +1,5 @@
-import SwiftSyntax
-import ConfigurationKit
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// Closures should not exceed a configurable body line length.
 final class ClosureBodyLength: LintSyntaxRule<ClosureBodyLengthConfiguration>, @unchecked Sendable {

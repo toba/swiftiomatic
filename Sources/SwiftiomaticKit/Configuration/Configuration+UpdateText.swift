@@ -1,4 +1,4 @@
-import Foundation
+package import Foundation
 
 extension Configuration {
     // Not narrowed to `throws(JSON5Scanner.Error)` because the surrounding scanner type is

@@ -1,5 +1,5 @@
-import SwiftSyntax
-import ConfigurationKit
+package import SwiftSyntax
+package import ConfigurationKit
 
 /// Flag `@unchecked Sendable` conformances. The `@unchecked` opts out of compiler-enforced
 /// data-race safety — the type might still be safe (e.g. all storage is protected by a lock), but

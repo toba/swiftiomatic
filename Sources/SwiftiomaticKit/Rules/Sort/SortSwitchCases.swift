@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import SwiftSyntax
 
 /// Sort switch case items alphabetically within each case.
