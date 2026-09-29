@@ -15,7 +15,7 @@ final class UseCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
 
     static func transform(
         _ memberNode: MemberAccessExprSyntax,
-        original _: MemberAccessExprSyntax,
+        original: MemberAccessExprSyntax,
         parent: Syntax?,
         context: Context
     ) -> ExprSyntax {
@@ -35,20 +35,27 @@ final class UseCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
               let filterAccess = filterCall.calledExpression.as(MemberAccessExprSyntax.self),
               filterAccess.declName.baseName.text == "filter" else { return ExprSyntax(memberNode) }
 
-        // Extract the closure (trailing or inline single arg)
-        let closure: ClosureExprSyntax
+        // Extract the predicate: a trailing closure, or one closure or key path argument.
+        let predicate: ExprSyntax
 
-        if let trailingClosure = filterCall.trailingClosure {
-            closure = trailingClosure
-        } else if filterCall.arguments.count == 1,
-           let closureExpr = filterCall.arguments.first?.expression.as(ClosureExprSyntax.self)
+        if let trailingClosure = filterCall.trailingClosure, filterCall.arguments.isEmpty {
+            predicate = ExprSyntax(trailingClosure)
+        } else if filterCall.trailingClosure == nil, filterCall.arguments.count == 1,
+                  let argument = filterCall.arguments.first, argument.label == nil,
+                  argument.expression.is(ClosureExprSyntax.self)
+                      || argument.expression.is(KeyPathExprSyntax.self)
         {
-            closure = closureExpr
+            predicate = argument.expression
         } else {
             return ExprSyntax(memberNode)
         }
 
-        Self.diagnose(.useCountWhere, on: filterAccess.declName, context: context)
+        // The rewriter passes a rebuilt `memberNode`, whose positions do not map to the source.
+        // Place the finding on the `filter` name of the original node.
+        let originalFilterName = original.base?.as(FunctionCallExprSyntax.self)?
+            .calledExpression.as(MemberAccessExprSyntax.self)?.declName
+        Self.diagnose(
+            .useCountWhere, on: originalFilterName ?? filterAccess.declName, context: context)
 
         // Build: <originalBase>.count(where: { ... })
         let countAccess = MemberAccessExprSyntax(
@@ -61,7 +68,7 @@ final class UseCountWhere: StaticFormatRule<BasicRuleValue>, @unchecked Sendable
             label: .identifier("where"),
             colon: .colonToken(trailingTrivia: .space),
             expression: ExprSyntax(
-                closure
+                predicate
                     .with(\.leadingTrivia, [])
                     .with(\.trailingTrivia, [])
             )

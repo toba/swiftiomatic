@@ -104,7 +104,6 @@ A tolerance is not a ceiling. The ceilings live in `Thresholds/`.
 | `FormatTwoStageCompactGateFile` | `RewritePipeline` plus the ordered structural passes |
 | `CacheStoreCleanRecord` | 100 `LintCache.store` calls for a file that linted clean |
 | `CacheStoreRecordWithFindings` | The same, for a record carrying ten findings |
-| `WhitespaceLintMisSpacedFile` | `WhitespaceLinter.lint` on the stdin path Xcode uses |
 
 The two cache benchmarks measure 100 stores per iteration. One store is too short to time against
 the clock's resolution. Divide by 100 to quote a per-store cost.
@@ -117,11 +116,9 @@ It stays until these baselines are proven. Run it with `RUN_BENCHMARKS` set, in 
 XCTest writes a baseline only as an `.xcbaseline` bundle, and only Xcode reads one. A `swift test`
 run ignores it, which is why that target reports figures and gates nothing.
 
-Three benchmarks moved setup out of the timed region during the port, so their figures do not line
+Two benchmarks moved setup out of the timed region during the port, so their figures do not line
 up with the XCTest ones.
 
-- Whitespace lint now times `WhitespaceLinter.lint` alone. The XCTest block also timed the parse and
-  the context construction.
 - The lint pipeline walk and the two-stage compact pipeline now build the `Context` before
   measurement starts. The XCTest blocks built it inside.
 

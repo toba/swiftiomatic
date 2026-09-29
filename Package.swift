@@ -56,8 +56,6 @@ let package = Package(
                 .product(name: "SwiftWarningControl", package: "swift-syntax"),
             ],
             exclude: ["README.md", "Generated"],
-            // `Lifetimes` lets a `~Escapable` type store a `Span` , as `WhitespaceLinter` does.
-            swiftSettings: [.enableExperimentalFeature("Lifetimes")],
             plugins: [
                 "GenerateCode",
                 .plugin(name: "SwiftiomaticBuildToolPlugin", package: "swiftiomatic-plugins"),

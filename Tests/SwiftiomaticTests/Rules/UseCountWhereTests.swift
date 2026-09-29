@@ -1,4 +1,8 @@
+import Foundation
 @testable import SwiftiomaticKit
+import SwiftOperators
+import SwiftParser
+import SwiftSyntax
 import SwiftiomaticTestSupport
 import Testing
 
@@ -47,6 +51,54 @@ struct UseCountWhereTests: RuleTesting {
         FindingSpec("1️⃣", message: "prefer 'count(where:)' over 'filter(_:).count'"),
       ]
     )
+  }
+
+  @Test func keyPathFilterCount() {
+    assertFormatting(
+      UseCountWhere.self,
+      input: """
+        let n = items.1️⃣filter(\\.isValid).count
+        """,
+      expected: """
+        let n = items.count(where: \\.isValid)
+        """,
+      findings: [
+        FindingSpec("1️⃣", message: "prefer 'count(where:)' over 'filter(_:).count'"),
+      ]
+    )
+  }
+
+  /// In the full lint pipeline the rule receives a rewritten node. A finding placed on that node
+  /// lost its source location, so `sm lint` reported the wrong line or nothing.
+  @Test func lintPipelineReportsSourceLocation() {
+    let source = """
+      func f(parts: [Int]) {
+          let n = parts.filter { $0 > 1 }.count
+          print(n)
+      }
+
+      """
+    let tree = Parser.parse(source: source)
+    let sourceFileSyntax =
+      try! OperatorTable.standardOperators.foldAll(tree).as(SourceFileSyntax.self)!
+
+    var emitted: [Finding] = []
+    let pipeline = LintCoordinator(
+      configuration: .forTesting,
+      findingConsumer: { emitted.append($0) }
+    )
+    pipeline.debugOptions.insert(.disablePrettyPrint)
+    try! pipeline.lint(
+      syntax: sourceFileSyntax,
+      source: source,
+      operatorTable: OperatorTable.standardOperators,
+      assumingFileURL: URL(fileURLWithPath: "/tmp/test.swift")
+    )
+
+    let findings = emitted.filter { $0.ruleID == "useCountWhere" }
+    #expect(findings.count == 1)
+    #expect(findings.first?.location?.line == 2)
+    #expect(findings.first?.location?.column == 19)
   }
 
   @Test func filterWithoutCount() {

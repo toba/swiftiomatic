@@ -74,7 +74,7 @@ struct RuleCatalogTests {
         #expect(finding.ruleID == "noNestedWithLock")
         #expect(finding.guidance == .must)
 
-        let layout = Finding(category: WhitespaceFindingCategory.lineLength, message: "m")
+        let layout = Finding(category: LayoutFindingCategory.trailingComma, message: "m")
         #expect(layout.ruleID == nil)
         #expect(layout.guidance == nil)
     }

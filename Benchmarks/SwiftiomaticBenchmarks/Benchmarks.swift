@@ -18,7 +18,6 @@ let benchmarks: @Sendable () -> Void = {
     registerLintBenchmarks()
     registerFormatBenchmarks()
     registerLintCacheBenchmarks()
-    registerWhitespaceBenchmarks()
     registerHotPathBenchmarks()
 }
 

@@ -47,6 +47,71 @@ struct UseGuardForMainPathTests: RuleTesting {
         )
     }
 
+    @Test func trailingIfFollowedByReturnNil() {
+        assertLint(
+            UseGuardForMainPath.self,
+            """
+            enum Factory {
+                static func accent(named name: String) -> Accent? {
+                    1️⃣if let accentValue = accents[name] {
+                        let accent = Accent(value: accentValue)
+                        accent.isStretchy = stretchyAccents.contains(name)
+                        accent.isWide = wideAccents.contains(name)
+                        return accent
+                    }
+                    return nil
+                }
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.message)]
+        )
+    }
+
+    @Test func trailingIfFollowedByBareReturnOrLiteral() {
+        assertLint(
+            UseGuardForMainPath.self,
+            """
+            func update() {
+                1️⃣if isDirty {
+                    a()
+                    b()
+                    c()
+                }
+                return
+            }
+            func isValid() -> Bool {
+                2️⃣if let value {
+                    a(value)
+                    b(value)
+                    return c(value)
+                }
+                return false
+            }
+            """,
+            findings: [
+                FindingSpec("1️⃣", message: Self.message),
+                FindingSpec("2️⃣", message: Self.message),
+            ]
+        )
+    }
+
+    @Test func trailingIfFollowedByComputedReturnIsIgnored() {
+        assertLint(
+            UseGuardForMainPath.self,
+            """
+            func label() -> String {
+                if let value {
+                    a(value)
+                    b(value)
+                    return c(value)
+                }
+                return fallback(for: key)
+            }
+            """,
+            findings: []
+        )
+    }
+
     @Test func shortTrailingIfIsIgnored() {
         assertLint(
             UseGuardForMainPath.self,
