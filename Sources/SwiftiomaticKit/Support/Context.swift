@@ -1,6 +1,7 @@
 package import Foundation
 package import SwiftSyntax
 package import SwiftOperators
+import SwiftIfConfig
 @_spi(ExperimentalLanguageFeatures) import SwiftWarningControl
 
 /// Context contains the bits that each formatter and linter will need access to.
@@ -51,7 +52,7 @@ package final class Context {
     /// The walk is single-pass and only runs when a rule reaches `warningControlSeverity(of:at:)` ,
     /// which happens when it emits a finding.
     lazy var warningControlRegionTree: WarningControlRegionTree =
-        sourceFileSyntax.warningGroupControlRegionTree()
+        sourceFileSyntax.warningGroupControlRegionTree(configuredRegions: .empty)
 
     /// One `FreeFunctionIndex` per tree, built on first lookup.
     ///

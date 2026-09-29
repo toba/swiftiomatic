@@ -63,6 +63,7 @@ let package = Package(
                 .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "TobaConcurrency", package: "toba-concurrency"),
                 .product(name: "TobaCore", package: "toba-core"),
+                .product(name: "SwiftIfConfig", package: "swift-syntax"),
                 .product(name: "SwiftOperators", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftParserDiagnostics", package: "swift-syntax"),
