@@ -13,10 +13,13 @@ import SwiftSyntax
 /// Lint: Using `@inline(__always)` raises a warning.
 ///
 /// Rewrite: The attribute becomes `@inline(always)` . An overridable class member keeps its text.
+/// The rewrite is off by default because it changes what the code means. A format pass must not
+/// turn an inlining hint into a guarantee unless the project requests it.
 final class UseInlineAlwaysNotUnderscore: StaticFormatRule<BasicRuleValue>, @unchecked Sendable {
     static let rewriteOrder = 623
 
     override class var group: ConfigurationGroup? { .idioms }
+    override class var defaultValue: BasicRuleValue { .init(rewrite: false, lint: .warn) }
 
     static func transform(
         _ node: AttributeSyntax,

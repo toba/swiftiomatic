@@ -15,21 +15,6 @@ struct FormatIdempotencyTests {
         return config
     }
 
-    private func format(_ source: String, configuration: Configuration) throws -> String {
-        let coordinator = RewriteCoordinator(
-            configuration: configuration,
-            findingConsumer: { _ in }
-        )
-        var output = ""
-        try coordinator.format(
-            source: source,
-            assumingFileURL: nil,
-            selection: .infinite,
-            to: &output
-        )
-        return output
-    }
-
     /// Formats twice and requires the second result to match the first.
     ///
     /// - Parameters:
@@ -40,8 +25,8 @@ struct FormatIdempotencyTests {
         configuration: Configuration,
         sourceLocation: SourceLocation = #_sourceLocation
     ) throws {
-        let once = try format(input, configuration: configuration)
-        let twice = try format(once, configuration: configuration)
+        let once = try formatWithPipeline(input, configuration: configuration)
+        let twice = try formatWithPipeline(once, configuration: configuration)
         assertStringsEqualWithDiff(
             twice,
             once,

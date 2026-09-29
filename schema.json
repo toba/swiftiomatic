@@ -2361,7 +2361,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Replace `@inline(__always)` with `@inline(always)` .\n\n`@inline(__always)` is the old, underscore-prefixed spelling. It only suggests inlining. `@inline(always)` guarantees inlining since Swift 6.3.\n\n`@inline(always)` changes how an overridable declaration can dispatch, so the rewrite applies only to a declaration that nothing can override. That is a free or local function, a member of a struct, enum, actor or extension, a `static` / `final` / `private` / `fileprivate` member of a class, or any member of a `final` class.\n\nLint: Using `@inline(__always)` raises a warning.\n\nRewrite: The attribute becomes `@inline(always)` . An overridable class member keeps its text."
+          "description" : "Replace `@inline(__always)` with `@inline(always)` .\n\n`@inline(__always)` is the old, underscore-prefixed spelling. It only suggests inlining. `@inline(always)` guarantees inlining since Swift 6.3.\n\n`@inline(always)` changes how an overridable declaration can dispatch, so the rewrite applies only to a declaration that nothing can override. That is a free or local function, a member of a struct, enum, actor or extension, a `static` / `final` / `private` / `fileprivate` member of a class, or any member of a `final` class.\n\nLint: Using `@inline(__always)` raises a warning.\n\nRewrite: The attribute becomes `@inline(always)` . An overridable class member keeps its text. The rewrite is off by default because it changes what the code means. A format pass must not turn an inlining hint into a guarantee unless the project requests it."
         },
         "useLazyForLongChainOps" : {
           "allOf" : [
@@ -6442,7 +6442,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Replace `@inline(__always)` with `@inline(always)` .\n\n`@inline(__always)` is the old, underscore-prefixed spelling. It only suggests inlining. `@inline(always)` guarantees inlining since Swift 6.3.\n\n`@inline(always)` changes how an overridable declaration can dispatch, so the rewrite applies only to a declaration that nothing can override. That is a free or local function, a member of a struct, enum, actor or extension, a `static` / `final` / `private` / `fileprivate` member of a class, or any member of a `final` class.\n\nLint: Using `@inline(__always)` raises a warning.\n\nRewrite: The attribute becomes `@inline(always)` . An overridable class member keeps its text."
+      "description" : "Replace `@inline(__always)` with `@inline(always)` .\n\n`@inline(__always)` is the old, underscore-prefixed spelling. It only suggests inlining. `@inline(always)` guarantees inlining since Swift 6.3.\n\n`@inline(always)` changes how an overridable declaration can dispatch, so the rewrite applies only to a declaration that nothing can override. That is a free or local function, a member of a struct, enum, actor or extension, a `static` / `final` / `private` / `fileprivate` member of a class, or any member of a `final` class.\n\nLint: Using `@inline(__always)` raises a warning.\n\nRewrite: The attribute becomes `@inline(always)` . An overridable class member keeps its text. The rewrite is off by default because it changes what the code means. A format pass must not turn an inlining hint into a guarantee unless the project requests it."
     },
     "useIsDisjoint" : {
       "allOf" : [

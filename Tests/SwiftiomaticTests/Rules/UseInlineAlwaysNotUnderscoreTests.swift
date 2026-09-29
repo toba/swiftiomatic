@@ -230,4 +230,19 @@ struct UseInlineAlwaysNotUnderscoreTests: RuleTesting {
             findings: []
         )
     }
+
+    @Test func lintOnlyByDefault() {
+        #expect(UseInlineAlwaysNotUnderscore.defaultValue.lint == .warn)
+        #expect(UseInlineAlwaysNotUnderscore.defaultValue.rewrite == false)
+    }
+
+    @Test func defaultFormatKeepsUnderscoredSpelling() throws {
+        let input = """
+            @inline(__always)
+            func foo() {}
+
+            """
+        let output = try formatWithPipeline(input, configuration: Configuration())
+        assertStringsEqualWithDiff(output, input)
+    }
 }

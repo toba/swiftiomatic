@@ -19,28 +19,13 @@ struct CommentWrapIdempotencyTests {
         return c
     }
 
-    private func formatOnce(_ source: String, configuration: Configuration) throws -> String {
-        let coordinator = RewriteCoordinator(
-            configuration: configuration,
-            findingConsumer: { _ in }
-        )
-        var out = ""
-        try coordinator.format(
-            source: source,
-            assumingFileURL: nil,
-            selection: .infinite,
-            to: &out
-        )
-        return out
-    }
-
     private func assertIdempotent(
         _ input: String,
         configuration: Configuration,
         sourceLocation: SourceLocation = #_sourceLocation
     ) throws {
-        let pass1 = try formatOnce(input, configuration: configuration)
-        let pass2 = try formatOnce(pass1, configuration: configuration)
+        let pass1 = try formatWithPipeline(input, configuration: configuration)
+        let pass2 = try formatWithPipeline(pass1, configuration: configuration)
         assertStringsEqualWithDiff(pass2, pass1, "second pass changed output", sourceLocation: sourceLocation)
     }
 
