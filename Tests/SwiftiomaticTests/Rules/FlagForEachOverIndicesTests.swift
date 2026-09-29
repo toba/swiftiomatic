@@ -6,6 +6,8 @@ import SwiftiomaticTestSupport
 struct FlagForEachOverIndicesTests: RuleTesting {
     private static let message =
         "'ForEach' over indices gives each row a positional identity. Iterate the elements, or use 'ForEach($items) { $item in ... }' for bindings"
+    private static let enumeratedMessage =
+        "'$items[index]' from an 'enumerated()' offset is a positional binding, so a removal or a move makes the row edit another element. Use 'ForEach($items, id: ...) { $item in ... }'"
 
     @Test func guidanceIsShouldNot() { #expect(FlagForEachOverIndices.guidance == .shouldNot) }
 
@@ -111,6 +113,58 @@ struct FlagForEachOverIndicesTests: RuleTesting {
             """
             ForEach(Array(tags.enumerated()), id: \\.element.id) { index, tag in
               Text(tag.name)
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func enumeratedOffsetWithBindingProjectionFlagged() {
+        assertLint(
+            FlagForEachOverIndices.self,
+            """
+            ForEach(1️⃣Array(contributors.enumerated()), id: \\.offset) { index, _ in
+              ContributorRow(
+                contributor: $contributors[guarded: index],
+                isEditable: isEditable,
+                onRemove: isEditable ? { remove(at: index) } : nil,
+              )
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.enumeratedMessage)]
+        )
+    }
+
+    @Test func bareEnumeratedOffsetWithBindingProjectionFlagged() {
+        assertLint(
+            FlagForEachOverIndices.self,
+            """
+            ForEach(1️⃣items.enumerated(), id: \\.offset) { index, item in
+              TextField("Name", text: $items[index].name)
+            }
+            """,
+            findings: [FindingSpec("1️⃣", message: Self.enumeratedMessage)]
+        )
+    }
+
+    @Test func enumeratedOffsetWithoutBindingProjectionNotFlagged() {
+        assertLint(
+            FlagForEachOverIndices.self,
+            """
+            ForEach(Array(steps.enumerated()), id: \\.offset) { index, step in
+              Text("\\(index + 1). \\(step.title)")
+            }
+            """,
+            findings: []
+        )
+    }
+
+    @Test func enumeratedOffsetProjectingOtherIndexNotFlagged() {
+        assertLint(
+            FlagForEachOverIndices.self,
+            """
+            ForEach(Array(items.enumerated()), id: \\.offset) { index, item in
+              Toggle(item.name, isOn: $flags[0])
             }
             """,
             findings: []

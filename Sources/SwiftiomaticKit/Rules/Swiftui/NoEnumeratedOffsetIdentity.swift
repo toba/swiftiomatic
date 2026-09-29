@@ -35,7 +35,7 @@ final class NoEnumeratedOffsetIdentity: LintSyntaxRule<LintOnlyValue>, @unchecke
     }
 
     /// Whether `expression` is the key path `\.offset`
-    private static func isOffsetKeyPath(_ expression: ExprSyntax) -> Bool {
+    static func isOffsetKeyPath(_ expression: ExprSyntax) -> Bool {
         guard let keyPath = expression.as(KeyPathExprSyntax.self),
               keyPath.root == nil,
               let only = keyPath.components.firstAndOnly,
@@ -44,7 +44,7 @@ final class NoEnumeratedOffsetIdentity: LintSyntaxRule<LintOnlyValue>, @unchecke
     }
 
     /// The collection that `data` enumerates, for `x.enumerated()` and `Array(x.enumerated())`
-    private static func enumeratedBase(of data: ExprSyntax) -> ExprSyntax? {
+    static func enumeratedBase(of data: ExprSyntax) -> ExprSyntax? {
         if let call = data.as(FunctionCallExprSyntax.self),
            call.constructedTypeName == "Array",
            let only = call.arguments.firstAndOnly,
