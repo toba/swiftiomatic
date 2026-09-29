@@ -1,5 +1,5 @@
 package import Foundation
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Collects the rewrite hooks each rule declares, so `RewritePipelineGenerator` can emit the
 /// dispatch instead of anyone hand-writing it.

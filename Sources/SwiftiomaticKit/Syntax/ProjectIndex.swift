@@ -1,9 +1,9 @@
-package import CryptoKit
+import CryptoKit
 package import Foundation
-package import SwiftOperators
-package import SwiftParser
+import SwiftOperators
+import SwiftParser
 package import SwiftSyntax
-package import Synchronization
+import Synchronization
 
 /// The type facts of every Swift file in one project, for the lint rules that resolve a name
 /// declared in another file.
@@ -150,10 +150,9 @@ package final class ProjectIndex: Sendable {
     /// directory with a `.git` entry, which holds an app project.
     package static func scopeRoot(startingAt path: String) -> URL? {
         var directory = URL(fileURLWithPath: path).standardizedFileURL
-        var isDirectory: ObjCBool = false
-        let exists = FileManager.default.fileExists(
-            atPath: directory.path, isDirectory: &isDirectory)
-        if !exists || !isDirectory.boolValue { directory = directory.deletingLastPathComponent() }
+        if !FileManager.default.directoryExists(atPath: directory.path) {
+            directory = directory.deletingLastPathComponent()
+        }
 
         var gitRoot: URL?
 
@@ -202,23 +201,22 @@ package final class ProjectIndex: Sendable {
         let cached = cacheURL.flatMap(readSummaryCache) ?? [:]
 
         let results = Mutex<[String: FileSummary]>([:])
-        paths.withUnsafeBufferPointer { buffer in
-            DispatchQueue.concurrentPerform(iterations: buffer.count) { index in
-                let path = buffer[index]
-                let source: String
+        let allPaths = paths
+        DispatchQueue.concurrentPerform(iterations: allPaths.count) { index in
+            let path = allPaths[index]
+            let source: String
 
-                if let text = keyedOverrides[path] {
-                    source = text
-                } else if let data = FileManager.default.contents(atPath: path) {
-                    source = String(decoding: data, as: UTF8.self)
-                } else {
-                    return
-                }
-                let hash = LintCache.contentHash(of: source)
-                let summary = cached[path].flatMap { $0.contentHash == hash ? $0 : nil }
-                    ?? summarize(source: source, contentHash: hash)
-                results.withLock { $0[path] = summary }
+            if let text = keyedOverrides[path] {
+                source = text
+            } else if let data = FileManager.default.contents(atPath: path) {
+                source = String(decoding: data, as: UTF8.self)
+            } else {
+                return
             }
+            let hash = LintCache.contentHash(of: source)
+            let summary = cached[path].flatMap { $0.contentHash == hash ? $0 : nil }
+                ?? summarize(source: source, contentHash: hash)
+            results.withLock { $0[path] = summary }
         }
         let summaries = results.withLock { $0 }
 

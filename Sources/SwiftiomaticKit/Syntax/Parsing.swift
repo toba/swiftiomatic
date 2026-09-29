@@ -53,7 +53,7 @@ func parseAndEmitDiagnostics(
     }
     var source = source
     let sourceFile = source.withUTF8 { sourceBytes in
-        operatorTable.foldAll(Parser.parse(
+        unsafe operatorTable.foldAll(Parser.parse(
             source: sourceBytes, experimentalFeatures: experimentalFeaturesSet)) { _ in }
             .as(SourceFileSyntax.self)!
     }

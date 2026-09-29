@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Preserve discretionary line breaks.
 package struct RespectExistingLineBreaks: LayoutRule {

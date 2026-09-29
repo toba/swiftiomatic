@@ -1,6 +1,6 @@
 import Foundation
 package import Testing
-package import SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 @testable import SwiftiomaticKit
 
 @Suite

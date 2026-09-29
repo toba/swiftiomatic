@@ -185,7 +185,7 @@ final class UseLazyForLongChainOps: LintSyntaxRule<LintOnlyValue>, @unchecked Se
 
     /// Reports whether the function enclosing `node` declares an `Optional` return type. The walk
     /// stops at a closure, because a closure without an explicit signature states no return type.
-    private func enclosingFunctionReturnsOptional(_ node: SyntaxProtocol) -> Bool {
+    private func enclosingFunctionReturnsOptional(_ node: any SyntaxProtocol) -> Bool {
         var current: Syntax? = node.parent
 
         while let cursor = current {

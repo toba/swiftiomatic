@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-package import Foundation
+import Foundation
 package import SwiftSyntax
 
 /// Scans the source for `// sm:ignore` directives and records which rules are disabled in which
@@ -433,7 +433,7 @@ private final class RuleStatusCollectionVisitor: SyntaxVisitor {
     ) -> (match: RuleStatusDirectiveMatch, scope: DirectiveScope)? {
         // Most comments are not directives. The byte search is cheaper than the regex.
         guard IgnoreMarker.occurs(in: text.utf8.span),
-              let match = text.firstMatch(of: Self.ignoreRegex) else { return nil }
+              let match = unsafe text.firstMatch(of: Self.ignoreRegex) else { return nil }
         let scope: DirectiveScope = match.output.scope != nil ? .next : .eof
         guard let matchedRuleNames = match.output.ruleNames else { return (.all, scope) }
 

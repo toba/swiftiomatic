@@ -1,8 +1,8 @@
-package import Foundation
+import Foundation
 @testable import SwiftiomaticKit
-package import SwiftiomaticTestSupport
-package import SwiftParser
-package import SwiftSyntax
+import SwiftiomaticTestSupport
+import SwiftParser
+import SwiftSyntax
 package import Testing
 
 @Suite

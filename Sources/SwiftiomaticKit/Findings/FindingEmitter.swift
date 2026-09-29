@@ -44,7 +44,7 @@ final class FindingEmitter {
     ///     other related locations in the source file.
     package func emit(
         _ message: Finding.Message,
-        category: FindingCategorizing,
+        category: any FindingCategorizing,
         severity: Lint = .warn,
         location: Finding.Location? = nil,
         notes: [Finding.Note] = []

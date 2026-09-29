@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-package import SwiftiomaticKit
-package import SwiftiomaticTestSupport
+import SwiftiomaticKit
+import SwiftiomaticTestSupport
 package import Testing
 
 @Suite

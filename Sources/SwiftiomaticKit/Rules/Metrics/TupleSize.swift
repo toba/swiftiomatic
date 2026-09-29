@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 package import ConfigurationKit
 
 /// Tuples with many elements are hard to read; consider a struct instead.

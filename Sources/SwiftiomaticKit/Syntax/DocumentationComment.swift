@@ -47,7 +47,7 @@ package struct DocumentationComment {
     ///
     /// If a brief summary paragraph was extracted from the comment, it will not be present in this
     /// collection.
-    package var bodyNodes: [Markup] = []
+    package var bodyNodes: [any Markup] = []
 
     /// The structural layout of the parameter descriptions in the comment.
     package var parameterLayout: ParameterLayout?
@@ -86,7 +86,7 @@ package struct DocumentationComment {
     }
 
     /// Creates a new `DocumentationComment` from the given `Markup` node.
-    private init(markup: Markup) {
+    private init(markup: any Markup) {
         // Extract the first paragraph as the brief summary. It will *not* be included in the body
         // nodes.
         let remainingChildren: DropFirstSequence<MarkupChildren>
@@ -131,7 +131,7 @@ package struct DocumentationComment {
     /// If parameters were successfully extracted, the provided list is mutated to remove them as a
     /// side effect of this function.
     private mutating func extractParameterOutline(from list: inout UnorderedList) {
-        var unprocessedChildren: [Markup] = []
+        var unprocessedChildren: [any Markup] = []
 
         for child in list.children {
             guard let listItem = child as? ListItem,
@@ -169,7 +169,7 @@ package struct DocumentationComment {
     /// If parameters were successfully extracted, the provided list is mutated to remove them as a
     /// side effect of this function.
     private mutating func extractSeparatedParameters(from list: inout UnorderedList) {
-        var unprocessedChildren: [Markup] = []
+        var unprocessedChildren: [any Markup] = []
 
         for child in list.children {
             guard let listItem = child as? ListItem,
@@ -213,7 +213,7 @@ package struct DocumentationComment {
     ///
     /// If fields were successfully extracted, the provided list is mutated to remove them.
     private mutating func extractSimpleFields(from list: inout UnorderedList) {
-        var unprocessedChildren: [Markup] = []
+        var unprocessedChildren: [any Markup] = []
 
         for child in list.children {
             guard let listItem = child as? ListItem,
@@ -252,20 +252,20 @@ private struct ParameterOutlineMarkupRewriter: MarkupRewriter {
     /// Populated if the list item to which this is applied represents a valid parameter field.
     private(set) var parameterName: String?
 
-    mutating func visitListItem(_ listItem: ListItem) -> Markup? {
+    mutating func visitListItem(_ listItem: ListItem) -> any Markup? {
         // Only recurse into the exact list item we're applying this to; otherwise, return it
         // unchanged.
         guard listItem.isIdentical(to: origin) else { return listItem }
         return defaultVisit(listItem)
     }
 
-    mutating func visitParagraph(_ paragraph: Paragraph) -> Markup? {
+    mutating func visitParagraph(_ paragraph: Paragraph) -> any Markup? {
         // Only recurse into the first paragraph in the list item.
         guard paragraph.indexInParent == 0 else { return paragraph }
         return defaultVisit(paragraph)
     }
 
-    mutating func visitText(_ text: Text) -> Markup? {
+    mutating func visitText(_ text: Text) -> any Markup? {
         // Only manipulate the first text node (of the first paragraph).
         guard text.indexInParent == 0 else { return text }
 
@@ -301,14 +301,14 @@ private struct SimpleFieldMarkupRewriter: MarkupRewriter {
     /// Populated if the list item to which this is applied represents a valid simple field.
     private(set) var paragraph: Paragraph?
 
-    mutating func visitListItem(_ listItem: ListItem) -> Markup? {
+    mutating func visitListItem(_ listItem: ListItem) -> any Markup? {
         // Only recurse into the exact list item we're applying this to; otherwise, return it
         // unchanged.
         guard listItem.isIdentical(to: origin) else { return listItem }
         return defaultVisit(listItem)
     }
 
-    mutating func visitParagraph(_ paragraph: Paragraph) -> Markup? {
+    mutating func visitParagraph(_ paragraph: Paragraph) -> any Markup? {
         // Only recurse into the first paragraph in the list item.
         guard paragraph.indexInParent == 0 else { return paragraph }
         guard let newNode = defaultVisit(paragraph) else { return nil }
@@ -317,7 +317,7 @@ private struct SimpleFieldMarkupRewriter: MarkupRewriter {
         return newParagraph
     }
 
-    mutating func visitText(_ text: Text) -> Markup? {
+    mutating func visitText(_ text: Text) -> any Markup? {
         // Only manipulate the first text node (of the first paragraph).
         guard text.indexInParent == 0 else { return text }
 

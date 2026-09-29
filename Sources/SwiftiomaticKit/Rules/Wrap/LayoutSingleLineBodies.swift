@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 import SwiftSyntaxBuilder
 
 /// Per-file state for `LayoutSingleLineBodies`. The `indentStack` tracks the baseIndent of each

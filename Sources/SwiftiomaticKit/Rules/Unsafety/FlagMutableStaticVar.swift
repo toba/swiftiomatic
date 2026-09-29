@@ -44,7 +44,7 @@ final class FlagMutableStaticVar: LintSyntaxRule<LintOnlyValue>, @unchecked Send
         var current: Syntax? = Syntax(node)
 
         while let candidate = current {
-            if let withAttrs = candidate.asProtocol(WithAttributesSyntax.self),
+            if let withAttrs = candidate.asProtocol((any WithAttributesSyntax).self),
                withAttrs.attributes.globalActorAttribute() != nil { return true }
             current = candidate.parent
         }

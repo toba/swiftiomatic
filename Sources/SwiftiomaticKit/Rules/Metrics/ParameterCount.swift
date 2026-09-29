@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 package import ConfigurationKit
 
 /// Functions and initializers should not declare too many parameters.

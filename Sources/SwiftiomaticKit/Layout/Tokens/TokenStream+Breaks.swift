@@ -83,7 +83,7 @@ extension TokenStream {
             // inserted when visiting the parent node instead so that the break is inserted before
             // any scoping tokens (e.g. `contextualBreakingStart` , `open` ).
             if memberAccessExpr.base != nil,
-               expr.parent?.isProtocol(CallingExprSyntax.self) != true
+               expr.parent?.isProtocol((any CallingExprSyntax).self) != true
             {
                 before(
                     memberAccessExpr.period,
@@ -130,7 +130,7 @@ extension TokenStream {
             // The break after `#endif` is emitted by `visitIfConfigDecl`, which is postfix-aware.
 
             return insertContextualBreaks(base, isTopLevel: false)
-        } else if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
+        } else if let callingExpr = expr.asProtocol((any CallingExprSyntax).self) {
             let calledExpression = callingExpr.calledExpression
             let (hasCompoundExpression, hasMemberAccess) = insertContextualBreaks(
                 calledExpression, isTopLevel: false)

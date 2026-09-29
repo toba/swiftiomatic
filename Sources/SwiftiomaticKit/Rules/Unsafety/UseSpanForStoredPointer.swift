@@ -99,7 +99,7 @@ final class UseSpanForStoredPointer: LintSyntaxRule<LintOnlyValue>, @unchecked S
     /// rule gives is unreachable there. A suppressed conformance such as ~Copyable is not an
     /// inherited type, so it leaves the rule active.
     private func inheritsEscapableType(_ members: MemberBlockSyntax) -> Bool {
-        guard let clause = members.parent?.asProtocol(DeclGroupSyntax.self)?.inheritanceClause
+        guard let clause = members.parent?.asProtocol((any DeclGroupSyntax).self)?.inheritanceClause
         else { return false }
 
         return clause.inheritedTypes.contains { !$0.type.is(SuppressedTypeSyntax.self) }

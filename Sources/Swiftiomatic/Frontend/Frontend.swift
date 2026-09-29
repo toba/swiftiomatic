@@ -44,7 +44,7 @@ class Frontend: @unchecked Sendable {
         ///
         /// For `DecodingError` values, this includes the coding path so the user can identify
         /// exactly which key is invalid. For other errors, falls back to `localizedDescription` .
-        private func descriptionForConfigurationError(_ error: Error) -> String {
+        private func descriptionForConfigurationError(_ error: any Error) -> String {
             guard let decodingError = error as? DecodingError else {
                 return error.localizedDescription
             }

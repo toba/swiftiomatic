@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-package import Foundation
+import Foundation
 @testable package import SwiftiomaticKit
 package import SwiftSyntax
 package import Testing

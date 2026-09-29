@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 package import ConfigurationKit
 
 /// Types and functions should not be excessively nested.

@@ -36,7 +36,7 @@ final class FlagRecursiveObservationTracking: LintSyntaxRule<LintOnlyValue>, @un
         return nil
     }
 
-    private func enclosingFunctionName(of node: SyntaxProtocol) -> String? {
+    private func enclosingFunctionName(of node: any SyntaxProtocol) -> String? {
         var current: Syntax? = node.parent
 
         while let cursor = current {

@@ -1,4 +1,4 @@
-package import Foundation
+import Foundation
 
 /// Controls the order of keys in serialized JSON output.
 package enum KeySortOrder: String, Sendable, CaseIterable {
@@ -209,9 +209,12 @@ extension JSONValue {
                 case "\u{08}": result += "\\b"
                 case "\u{0C}": result += "\\f"
                 default:
-                    result += c.value < 0x20
-                        ? String(format: "\\u%04x", c.value)
-                        : String(c)
+                    if c.value < 0x20 {
+                        let hex = String(c.value, radix: 16)
+                        result += "\\u" + String(repeating: "0", count: 4 - hex.count) + hex
+                    } else {
+                        result += String(c)
+                    }
 
             }
         }

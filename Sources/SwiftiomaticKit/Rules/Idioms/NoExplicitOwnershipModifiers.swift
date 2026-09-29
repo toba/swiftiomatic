@@ -147,7 +147,7 @@ final class NoExplicitOwnershipModifiers: StaticFormatRule<BasicRuleValue>, @unc
         let names = context.noExplicitOwnershipModifiersState.suppressedTypeNames
         var current = node.parent
         while let ancestor = current {
-            if let group = ancestor.asProtocol(DeclGroupSyntax.self) {
+            if let group = ancestor.asProtocol((any DeclGroupSyntax).self) {
                 if let ext = group.as(ExtensionDeclSyntax.self) {
                     let extended = ext.extendedType.trimmedDescription
                     let simpleName = extended.split(separator: ".").last.map(String.init) ?? extended
@@ -166,7 +166,7 @@ final class NoExplicitOwnershipModifiers: StaticFormatRule<BasicRuleValue>, @unc
         var names = Set<String>()
         var current = node.parent
         while let ancestor = current {
-            if let clause = ancestor.asProtocol(WithGenericParametersSyntax.self)?
+            if let clause = ancestor.asProtocol((any WithGenericParametersSyntax).self)?
                 .genericParameterClause
             {
                 for parameter in clause.parameters
@@ -182,7 +182,7 @@ final class NoExplicitOwnershipModifiers: StaticFormatRule<BasicRuleValue>, @unc
                     names.insert(conformance.leftType.trimmedDescription)
                 }
             }
-            if let group = ancestor.asProtocol(DeclGroupSyntax.self),
+            if let group = ancestor.asProtocol((any DeclGroupSyntax).self),
                group.inheritanceClause.map(containsSuppressedType) ?? false
             {
                 names.insert("Self")

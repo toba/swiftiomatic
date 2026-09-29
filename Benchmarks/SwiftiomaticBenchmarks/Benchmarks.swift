@@ -11,7 +11,7 @@ import TobaBenchmark
 /// swift package -Xswiftc -enable-testing benchmark
 /// ```
 let benchmarks: @Sendable () -> Void = {
-    Benchmark.defaultConfiguration = BenchmarkRun.defaultConfiguration(metrics: [
+    unsafe Benchmark.defaultConfiguration = BenchmarkRun.defaultConfiguration(metrics: [
         .wallClock, .instructions, .syscalls, .mallocCountTotal,
     ])
 

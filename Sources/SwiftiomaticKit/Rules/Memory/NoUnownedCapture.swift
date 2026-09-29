@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 package import ConfigurationKit
 
 /// An `unowned` capture in a closure capture list is a latent use-after-free: an `unowned`

@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 package import ConfigurationKit
 
 /// Function bodies should not exceed a configurable line length.

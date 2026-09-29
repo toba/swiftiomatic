@@ -121,7 +121,7 @@ final class DropSemicolons: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     fileprivate static func isCodeBlockItem(
         _ node: some SyntaxProtocol,
-        containingStmtType stmtType: StmtSyntaxProtocol.Type
+        containingStmtType stmtType: any StmtSyntaxProtocol.Type
     ) -> Bool {
         if let codeBlockItem = node.as(CodeBlockItemSyntax.self),
            case let .stmt(stmt) = codeBlockItem.item,

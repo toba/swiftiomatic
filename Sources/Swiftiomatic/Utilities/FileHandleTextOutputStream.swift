@@ -30,7 +30,7 @@ struct FileHandleTextOutputStream: TextOutputStream {
             // `write(_: Data)` raised an Objective-C exception on failure. That stopped the
             // process. `write(contentsOf:)` throws instead, and a closed pipe is not a reason to
             // stop, so the error is ignored.
-            try? fileHandle.write(contentsOf: UnsafeRawBufferPointer(bytes))
+            try? unsafe fileHandle.write(contentsOf: UnsafeRawBufferPointer(bytes))
         }
     }
 }

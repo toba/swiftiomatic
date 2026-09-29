@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Indent #if/#elseif/#else blocks.
 package struct IndentConditionalCompilationBlocks: LayoutRule {

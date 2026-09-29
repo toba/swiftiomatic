@@ -40,7 +40,7 @@ final class UseStaticNotClassFunc: StaticFormatRule<BasicRuleValue>, @unchecked 
     }
 
     private static func classModifier(in decl: DeclSyntax) -> DeclModifierSyntax? {
-        guard let withModifiers = decl.asProtocol(WithModifiersSyntax.self) else { return nil }
+        guard let withModifiers = decl.asProtocol((any WithModifiersSyntax).self) else { return nil }
         return withModifiers.modifiers.contains(.override)
             ? nil
             : withModifiers.modifiers.first { $0.name.tokenKind == .keyword(.class) }

@@ -25,7 +25,7 @@ extension Parser {
   ) -> SourceFileSyntax {
     var source = source
     return source.withUTF8 { sourceBytes in
-      parse(
+      unsafe parse(
         source: sourceBytes,
         experimentalFeatures: experimentalFeatures
       )

@@ -1,5 +1,5 @@
 import Foundation
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Replace force-unwrapped `UUID(uuidString:)` initializers with a configured UUID macro.
 ///

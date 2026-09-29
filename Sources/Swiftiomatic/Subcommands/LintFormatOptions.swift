@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-package import Foundation
+import Foundation
 public import ArgumentParser
 
 /// Common arguments used by the `lint` and `format` subcommands.

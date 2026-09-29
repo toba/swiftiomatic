@@ -7,7 +7,7 @@ import Testing
   /// Parses `source` and returns the inheritance clause of its single top-level type.
   private func clause(_ source: String) throws -> InheritanceClauseSyntax {
     let item = try #require(Parser.parse(source: source).statements.first?.item)
-    let decl = try #require(item.asProtocol(DeclGroupSyntax.self))
+    let decl = try #require(item.asProtocol((any DeclGroupSyntax).self))
     return try #require(decl.inheritanceClause)
   }
 

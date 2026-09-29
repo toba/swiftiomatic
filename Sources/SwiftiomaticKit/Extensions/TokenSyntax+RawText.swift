@@ -25,7 +25,7 @@ extension TokenSyntax {
     /// The result is the same as `text == "literal"`, but the compare allocates no `String`.
     @inline(__always)
     func hasText(_ literal: StaticString) -> Bool {
-        literal.withUTF8Buffer { rawText == SyntaxText(baseAddress: $0.baseAddress, count: $0.count) }
+        literal.withUTF8Buffer { unsafe rawText == SyntaxText(baseAddress: $0.baseAddress, count: $0.count) }
     }
 
     /// Tells if the token text, without trivia, starts with `literal`.
@@ -35,7 +35,7 @@ extension TokenSyntax {
     @inline(__always)
     func hasTextPrefix(_ literal: StaticString) -> Bool {
         literal.withUTF8Buffer {
-            rawText.hasPrefix(SyntaxText(baseAddress: $0.baseAddress, count: $0.count))
+            unsafe rawText.hasPrefix(SyntaxText(baseAddress: $0.baseAddress, count: $0.count))
         }
     }
 }
@@ -73,7 +73,7 @@ extension SyntaxProtocol {
         var done = false
         raw.withEachSyntaxText { text, _ in
             guard !done else { return }
-            for byte in text {
+            for unsafe byte in text {
                 defer { offset += 1 }
                 guard offset >= skippingLeading else { continue }
                 guard offset < end else {

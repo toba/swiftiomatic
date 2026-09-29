@@ -10,7 +10,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-package import Foundation
+import Foundation
 package import SwiftSyntax
 
 /// LayoutCoordinator takes a Syntax node and outputs a well-formatted, re-indented reproduction of
@@ -214,13 +214,12 @@ package final class LayoutCoordinator {
             index += 1
         }
 
-        let endif: StaticString = "#endif"
+        let endif = "#endif".utf8
 
-        if contentEnd - index == endif.utf8CodeUnitCount {
+        if contentEnd - index == endif.count {
             var matches = true
 
-            for offset in 0..<endif.utf8CodeUnitCount
-            where bytes[index + offset] != endif.utf8Start[offset] {
+            for (offset, byte) in endif.enumerated() where bytes[index + offset] != byte {
                 matches = false
                 break
             }

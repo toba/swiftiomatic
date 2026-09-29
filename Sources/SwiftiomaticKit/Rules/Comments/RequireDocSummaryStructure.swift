@@ -11,11 +11,11 @@
 //===----------------------------------------------------------------------===//
 
 package import Markdown
-package import Foundation
-package import SwiftSyntax
-package import NaturalLanguage
-package import Synchronization
-package import TobaConcurrency
+import Foundation
+import SwiftSyntax
+import NaturalLanguage
+import Synchronization
+import TobaConcurrency
 
 /// All documentation comments must begin with a one-line summary of the declaration.
 ///
@@ -238,5 +238,5 @@ fileprivate extension Finding.Message {
 }
 
 struct InlineCodeRemover: MarkupRewriter {
-    mutating func visitInlineCode(_: InlineCode) -> Markup? { nil }
+    mutating func visitInlineCode(_: InlineCode) -> any Markup? { nil }
 }

@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 import SwiftSyntaxBuilder
 
 /// Controls whether switch case bodies are wrapped (multiline) or inlined.

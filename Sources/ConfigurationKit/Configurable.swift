@@ -8,7 +8,7 @@
 private nonisolated(unsafe) let leadingUppercase = /^[A-Z]+(?=[A-Z][a-z])|^[A-Z]+$|^[A-Z]/
 
 package func configurationKey(forTypeName name: String) -> String {
-    name.replacing(leadingUppercase) { $0.output.lowercased() }
+    unsafe name.replacing(leadingUppercase) { $0.output.lowercased() }
 }
 
 /// A configurable item with a key, default value, and optional group membership.

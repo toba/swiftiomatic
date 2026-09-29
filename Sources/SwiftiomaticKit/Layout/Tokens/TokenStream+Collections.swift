@@ -188,7 +188,7 @@ extension TokenStream {
                 // keyword.
                 let isKeywordModified = base.firstToken(viewMode: .sourceAccurate)?
                     .previousToken(viewMode: .all)?
-                    .parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false
+                    .parent?.isProtocol((any KeywordModifiedExprSyntax).self) ?? false
 
                 // When this call is itself a step in an outer member-access chain (e.g.
                 // `coder.decodeObject(...)?.intValue` ), grouping `base.method` here bounds the

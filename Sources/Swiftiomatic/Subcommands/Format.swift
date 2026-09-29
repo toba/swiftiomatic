@@ -75,10 +75,7 @@ extension SwiftiomaticCommand {
                 }
 
                 for path in formatOptions.paths {
-                    var isDir: ObjCBool = false
-                    if FileManager.default.fileExists(atPath: path, isDirectory: &isDir),
-                       isDir.boolValue
-                    {
+                    if FileManager.default.directoryExists(atPath: path) {
                         throw ValidationError(
                             """
                             '--in-place' is required when formatting a directory ('\(path)').

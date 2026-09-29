@@ -109,12 +109,12 @@ private extension String.UTF8View {
     /// `word` is lowercase ASCII.
     func containsASCIICaseInsensitive(_ word: StaticString) -> Bool {
         word.withUTF8Buffer { needle in
-            guard let first = needle.first else { return true }
+            guard let first = unsafe needle.first else { return true }
             var start = startIndex
             while let found = self[start...].firstIndex(where: { $0 | 0x20 == first }) {
                 var candidate = found
                 var matched = true
-                for byte in needle {
+                for unsafe byte in unsafe needle {
                     guard candidate != endIndex, self[candidate] | 0x20 == byte else {
                         matched = false
                         break

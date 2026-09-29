@@ -109,7 +109,7 @@ final class NoUnreadEnvironmentProperty: LintSyntaxRule<LintOnlyValue>, @uncheck
         var current: Syntax? = decl
 
         while let cur = current {
-            if let group = cur.asProtocol(DeclGroupSyntax.self),
+            if let group = cur.asProtocol((any DeclGroupSyntax).self),
                group.modifiers.contains(where: { $0.isPrivateOrFileprivate }) { return true }
             current = cur.parent
         }

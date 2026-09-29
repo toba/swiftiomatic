@@ -159,13 +159,13 @@ struct TypeMemberIndex: Sendable {
     ) -> [any DeclGroupSyntax] {
         var regions = member.root.as(SourceFileSyntax.self)?.statements.compactMap {
             item -> any DeclGroupSyntax? in
-            guard let group = item.item.asProtocol(DeclGroupSyntax.self),
+            guard let group = item.item.asProtocol((any DeclGroupSyntax).self),
                   Self.typeName(of: Syntax(group)) == typeName else { return nil }
             return group
         } ?? []
 
         // A nested type is not a top-level statement, so add its own declaration
-        if let owner = owningDeclaration(of: member)?.asProtocol(DeclGroupSyntax.self),
+        if let owner = owningDeclaration(of: member)?.asProtocol((any DeclGroupSyntax).self),
            !regions.contains(where: { $0.id == owner.id }) { regions.append(owner) }
         return regions
     }
@@ -513,7 +513,7 @@ extension TypeMemberIndex {
     /// class, enum or actor declaration in the same file with the extended simple name. The result
     /// is `nil` when the file does not declare that type.
     static func typeNameToken(of declaration: Syntax) -> TokenSyntax? {
-        if let name = declaration.asProtocol(NamedDeclSyntax.self)?.name { return name }
+        if let name = declaration.asProtocol((any NamedDeclSyntax).self)?.name { return name }
         guard declaration.is(ExtensionDeclSyntax.self),
               let name = typeName(of: declaration) else { return nil }
         let finder = TypeNameFinder(name: name)

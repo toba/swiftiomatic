@@ -1,6 +1,6 @@
-package import Benchmark
-package import SwiftParser
-package import SwiftSyntax
+import Benchmark
+import SwiftParser
+import SwiftSyntax
 @testable import SwiftiomaticKit
 
 /// Timing for full single-file format, the operation Xcode runs against the active file

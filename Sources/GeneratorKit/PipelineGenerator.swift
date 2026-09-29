@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-package import Foundation
+import Foundation
 
 /// Generates the extensions to the lint and format pipelines.
 package final class PipelineGenerator: FileGenerator {

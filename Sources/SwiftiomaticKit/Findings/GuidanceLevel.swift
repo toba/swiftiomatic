@@ -1,4 +1,4 @@
-package import ConfigurationKit
+import ConfigurationKit
 
 /// How strong the advice of a rule is.
 ///

@@ -1,7 +1,7 @@
-package import CryptoKit
+import CryptoKit
 package import Foundation
-package import Synchronization
-package import TobaConcurrency
+import Synchronization
+import TobaConcurrency
 
 /// On-disk cache of lint findings keyed by `(file content hash, configuration fingerprint)` .
 ///
@@ -197,11 +197,9 @@ package final class LintCache: Sendable {
     /// the tree, so the cache goes to the user cache directory instead.
     package static func defaultRoot(startingAt startPath: String) -> URL {
         var directory = URL(fileURLWithPath: startPath).standardizedFileURL
-        var isDirectory: ObjCBool = false
-        let exists = FileManager.default.fileExists(
-            atPath: directory.path, isDirectory: &isDirectory
-        )
-        if !exists || !isDirectory.boolValue { directory = directory.deletingLastPathComponent() }
+        if !FileManager.default.directoryExists(atPath: directory.path) {
+            directory = directory.deletingLastPathComponent()
+        }
 
         while true {
             let manifest = directory.appendingPathComponent("Package.swift", isDirectory: false)
@@ -237,7 +235,7 @@ package final class LintCache: Sendable {
 
     /// SHA-256 of the given bytes, hex-encoded. The bytes do not have to be valid UTF-8.
     package static func contentHash(of bytes: Span<UInt8>) -> String {
-        bytes.withUnsafeBytes { hexEncode(SHA256.hash(data: $0)) }
+        bytes.withUnsafeBytes { unsafe hexEncode(SHA256.hash(data: $0)) }
     }
 
     /// Returns `true` if the `SM_LINT_NO_CACHE` environment variable disables caching. Any
@@ -362,17 +360,17 @@ package final class LintCache: Sendable {
     /// `digest.map { String(format: "%02x", $0) }.joined()` pattern, which allocates a `String` per
     /// byte plus an intermediate array.
     static func hexEncode<S: Sequence>(_ bytes: S) -> String where S.Element == UInt8 {
-        let table: StaticString = "0123456789abcdef"
-        return table.withUTF8Buffer { hex in
-            var result = ""
-            result.reserveCapacity(64)
-            for byte in bytes {
-                result.append(Character(Unicode.Scalar(hex[Int(byte >> 4)])))
-                result.append(Character(Unicode.Scalar(hex[Int(byte & 0x0F)])))
-            }
-            return result
+        var result = ""
+        result.reserveCapacity(64)
+        for byte in bytes {
+            result.append(Character(Unicode.Scalar(hexDigits[Int(byte >> 4)])))
+            result.append(Character(Unicode.Scalar(hexDigits[Int(byte & 0x0F)])))
         }
+        return result
     }
+
+    /// The lowercase hex digits, as ASCII bytes
+    private static let hexDigits: [UInt8] = Array("0123456789abcdef".utf8)
 }
 
 package extension LintCache.Location {

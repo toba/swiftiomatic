@@ -1,4 +1,4 @@
-package import Foundation
+import Foundation
 
 /// Generates `TokenStream+Generated.swift` , a final subclass of `TokenStreamBase` containing only
 /// the `override func visit/visitPost` forwarding stubs found by `TokenStreamExtensionCollector` .

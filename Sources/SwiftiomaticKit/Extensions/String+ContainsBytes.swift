@@ -5,14 +5,14 @@ extension String {
     /// precheck before a syntax walk that looks for the same text.
     func containsBytes(_ literal: StaticString) -> Bool {
         literal.withUTF8Buffer { needle in
-            guard let first = needle.first else { return true }
+            guard let first = unsafe needle.first else { return true }
             let search = { (haystack: UnsafeBufferPointer<UInt8>) -> Bool in
                 guard haystack.count >= needle.count else { return false }
                 var index = 0
                 let last = haystack.count - needle.count
                 while index <= last {
-                    if haystack[index] == first,
-                       UnsafeBufferPointer(rebasing: haystack[index..<index + needle.count])
+                    if unsafe haystack[index] == first,
+                       unsafe UnsafeBufferPointer(rebasing: haystack[index..<index + needle.count])
                            .elementsEqual(needle)
                     {
                         return true

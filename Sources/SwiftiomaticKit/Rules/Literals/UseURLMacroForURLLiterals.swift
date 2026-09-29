@@ -1,5 +1,5 @@
 import Foundation
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Replace force-unwrapped `URL(string:)` initializers with a configured URL macro.
 ///

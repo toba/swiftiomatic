@@ -23,7 +23,7 @@ package enum Indent: Hashable, Codable, Sendable {
 
     private enum CodingKeys: CodingKey { case tabs, spaces }
 
-    package init(from decoder: Decoder) throws {
+    package init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let spacesCount = try container.decodeIfPresent(Int.self, forKey: .spaces)
         let tabsCount = try container.decodeIfPresent(Int.self, forKey: .tabs)
@@ -47,7 +47,7 @@ package enum Indent: Hashable, Codable, Sendable {
             debugDescription: "One of \"tabs\" or \"spaces\" must be specified"))
     }
 
-    package func encode(to encoder: Encoder) throws {
+    package func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         switch self {

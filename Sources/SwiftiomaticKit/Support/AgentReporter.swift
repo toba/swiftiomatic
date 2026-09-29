@@ -1,6 +1,6 @@
 public import Foundation
-package import Synchronization
-package import TobaConcurrency
+import Synchronization
+import TobaConcurrency
 
 /// Collects lint findings and renders them as compact JSON for an agent to triage.
 ///

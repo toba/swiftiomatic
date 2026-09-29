@@ -276,7 +276,7 @@ extension DropRedundantEscaping {
                      .closureExpr,
                      .subscriptDecl: return .free
                 case .structDecl, .classDecl, .enumDecl, .actorDecl:
-                    let name = node.asProtocol(NamedDeclSyntax.self)?.name.text ?? ""
+                    let name = node.asProtocol((any NamedDeclSyntax).self)?.name.text ?? ""
                     return .member(conformances: index.conformances[name] ?? [])
                 case let .extensionDecl(decl):
                     // an extension of a type declared elsewhere hides that type's conformances

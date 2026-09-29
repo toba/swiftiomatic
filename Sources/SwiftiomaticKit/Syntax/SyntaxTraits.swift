@@ -21,20 +21,20 @@ extension FunctionCallExprSyntax: CallingExprSyntax {}
 extension SubscriptCallExprSyntax: CallingExprSyntax {}
 
 extension Syntax {
-    func asProtocol(_: CallingExprSyntax.Protocol) -> CallingExprSyntax? {
-        asProtocol(SyntaxProtocol.self) as? CallingExprSyntax
+    func asProtocol(_: (any CallingExprSyntax).Type) -> any CallingExprSyntax? {
+        asProtocol((any SyntaxProtocol).self) as? any CallingExprSyntax
     }
-    func isProtocol(_: CallingExprSyntax.Protocol) -> Bool {
-        asProtocol(CallingExprSyntax.self) != nil
+    func isProtocol(_: (any CallingExprSyntax).Type) -> Bool {
+        asProtocol((any CallingExprSyntax).self) != nil
     }
 }
 
 extension ExprSyntax {
-    func asProtocol(_: CallingExprSyntax.Protocol) -> CallingExprSyntax? {
-        Syntax(self).asProtocol(SyntaxProtocol.self) as? CallingExprSyntax
+    func asProtocol(_: (any CallingExprSyntax).Type) -> any CallingExprSyntax? {
+        Syntax(self).asProtocol((any SyntaxProtocol).self) as? any CallingExprSyntax
     }
-    func isProtocol(_: CallingExprSyntax.Protocol) -> Bool {
-        asProtocol(CallingExprSyntax.self) != nil
+    func isProtocol(_: (any CallingExprSyntax).Type) -> Bool {
+        asProtocol((any CallingExprSyntax).self) != nil
     }
 }
 
@@ -49,20 +49,20 @@ extension TryExprSyntax: KeywordModifiedExprSyntax {}
 extension UnsafeExprSyntax: KeywordModifiedExprSyntax {}
 
 extension Syntax {
-    func asProtocol(_: KeywordModifiedExprSyntax.Protocol) -> KeywordModifiedExprSyntax? {
-        asProtocol(SyntaxProtocol.self) as? KeywordModifiedExprSyntax
+    func asProtocol(_: (any KeywordModifiedExprSyntax).Type) -> any KeywordModifiedExprSyntax? {
+        asProtocol((any SyntaxProtocol).self) as? any KeywordModifiedExprSyntax
     }
-    func isProtocol(_: KeywordModifiedExprSyntax.Protocol) -> Bool {
-        asProtocol(KeywordModifiedExprSyntax.self) != nil
+    func isProtocol(_: (any KeywordModifiedExprSyntax).Type) -> Bool {
+        asProtocol((any KeywordModifiedExprSyntax).self) != nil
     }
 }
 
 extension ExprSyntax {
-    func asProtocol(_: KeywordModifiedExprSyntax.Protocol) -> KeywordModifiedExprSyntax? {
-        Syntax(self).asProtocol(SyntaxProtocol.self) as? KeywordModifiedExprSyntax
+    func asProtocol(_: (any KeywordModifiedExprSyntax).Type) -> any KeywordModifiedExprSyntax? {
+        Syntax(self).asProtocol((any SyntaxProtocol).self) as? any KeywordModifiedExprSyntax
     }
-    func isProtocol(_: KeywordModifiedExprSyntax.Protocol) -> Bool {
-        asProtocol(KeywordModifiedExprSyntax.self) != nil
+    func isProtocol(_: (any KeywordModifiedExprSyntax).Type) -> Bool {
+        asProtocol((any KeywordModifiedExprSyntax).self) != nil
     }
 }
 
@@ -71,30 +71,30 @@ protocol CommaSeparatedListSyntax: SyntaxCollection
     where Element: WithTrailingCommaSyntax & Equatable
 {
     /// The node used for trailing comma handling; inserted immediately after this node.
-    var lastNodeForTrailingComma: SyntaxProtocol? { get }
+    var lastNodeForTrailingComma: any SyntaxProtocol? { get }
 }
 
 extension ArrayElementListSyntax: CommaSeparatedListSyntax {
-    var lastNodeForTrailingComma: SyntaxProtocol? { last?.expression }
+    var lastNodeForTrailingComma: any SyntaxProtocol? { last?.expression }
 }
 extension DictionaryElementListSyntax: CommaSeparatedListSyntax {
-    var lastNodeForTrailingComma: SyntaxProtocol? { last }
+    var lastNodeForTrailingComma: any SyntaxProtocol? { last }
 }
 extension LabeledExprListSyntax: CommaSeparatedListSyntax {
-    var lastNodeForTrailingComma: SyntaxProtocol? { last?.expression }
+    var lastNodeForTrailingComma: any SyntaxProtocol? { last?.expression }
 }
 extension ClosureCaptureListSyntax: CommaSeparatedListSyntax {
-    var lastNodeForTrailingComma: SyntaxProtocol? {
+    var lastNodeForTrailingComma: any SyntaxProtocol? {
         if let initializer = last?.initializer { initializer } else { last?.name }
     }
 }
 extension EnumCaseParameterListSyntax: CommaSeparatedListSyntax {
-    var lastNodeForTrailingComma: SyntaxProtocol? {
+    var lastNodeForTrailingComma: any SyntaxProtocol? {
         if let defaultValue = last?.defaultValue { defaultValue } else { last?.type }
     }
 }
 extension FunctionParameterListSyntax: CommaSeparatedListSyntax {
-    var lastNodeForTrailingComma: SyntaxProtocol? {
+    var lastNodeForTrailingComma: any SyntaxProtocol? {
         if let defaultValue = last?.defaultValue {
             defaultValue
         } else if let ellipsis = last?.ellipsis {
@@ -105,20 +105,20 @@ extension FunctionParameterListSyntax: CommaSeparatedListSyntax {
     }
 }
 extension GenericParameterListSyntax: CommaSeparatedListSyntax {
-    var lastNodeForTrailingComma: SyntaxProtocol? {
+    var lastNodeForTrailingComma: any SyntaxProtocol? {
         if let inheritedType = last?.inheritedType { inheritedType } else { last?.name }
     }
 }
 extension TuplePatternElementListSyntax: CommaSeparatedListSyntax {
-    var lastNodeForTrailingComma: SyntaxProtocol? { last?.pattern }
+    var lastNodeForTrailingComma: any SyntaxProtocol? { last?.pattern }
 }
 extension TupleTypeElementListSyntax: CommaSeparatedListSyntax {
-    var lastNodeForTrailingComma: SyntaxProtocol? { last?.type }
+    var lastNodeForTrailingComma: any SyntaxProtocol? { last?.type }
 }
 
 extension SyntaxProtocol {
     func asProtocol(_: (any CommaSeparatedListSyntax).Protocol) -> any CommaSeparatedListSyntax? {
-        Syntax(self).asProtocol(SyntaxProtocol.self) as? any CommaSeparatedListSyntax
+        Syntax(self).asProtocol((any SyntaxProtocol).self) as? any CommaSeparatedListSyntax
     }
     func isProtocol(_: (any CommaSeparatedListSyntax).Protocol) -> Bool {
         asProtocol((any CommaSeparatedListSyntax).self) != nil

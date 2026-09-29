@@ -142,7 +142,7 @@ extension TokenStream {
 
         // Check for an anchor token inside of the expression to end a group starting with the `try`
         // keyword.
-        if !(node.parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false),
+        if !(node.parent?.isProtocol((any KeywordModifiedExprSyntax).self) ?? false),
            let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
         {
             before(node.tryKeyword, tokens: .open)
@@ -160,7 +160,7 @@ extension TokenStream {
 
         // Check for an anchor token inside of the expression to end a group starting with the
         // `await` keyword.
-        if !(node.parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false),
+        if !(node.parent?.isProtocol((any KeywordModifiedExprSyntax).self) ?? false),
            let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
         {
             before(node.awaitKeyword, tokens: .open)
@@ -177,7 +177,7 @@ extension TokenStream {
 
         // Check for an anchor token inside of the expression to end a group starting with the
         // `unsafe` keyword.
-        if !(node.parent?.isProtocol(KeywordModifiedExprSyntax.self) ?? false),
+        if !(node.parent?.isProtocol((any KeywordModifiedExprSyntax).self) ?? false),
            let anchorToken = connectingTokenForKeywordModifiedExpr(inSubExpr: node.expression)
         {
             before(node.unsafeKeyword, tokens: .open)
@@ -194,12 +194,12 @@ extension TokenStream {
     /// - Returns: The token that should end the group that is started by the modifier keyword, or
     ///   nil if there should be no group.
     func connectingTokenForKeywordModifiedExpr(inSubExpr expr: ExprSyntax) -> TokenSyntax? {
-        if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
+        if let modifiedExpr = expr.asProtocol((any KeywordModifiedExprSyntax).self) {
             // If we were called from a keyword-modified expression like `try` , `await` , or
             // `unsafe` , recursively drill into the child expression.
             return connectingTokenForKeywordModifiedExpr(inSubExpr: modifiedExpr.expression)
         }
-        if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
+        if let callingExpr = expr.asProtocol((any CallingExprSyntax).self) {
             return connectingTokenForKeywordModifiedExpr(inSubExpr: callingExpr.calledExpression)
         }
         if let memberAccessExpr = expr.as(MemberAccessExprSyntax.self),

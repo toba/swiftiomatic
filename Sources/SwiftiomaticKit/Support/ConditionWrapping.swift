@@ -119,7 +119,7 @@ private func conditionWrapping(
 /// that are known to wrap an expression, e.g. try expressions, are handled by checking the
 /// expression that they contain.
 func isCompoundExpression(_ expr: ExprSyntax) -> Bool {
-    if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
+    if let modifiedExpr = expr.asProtocol((any KeywordModifiedExprSyntax).self) {
         return isCompoundExpression(modifiedExpr.expression)
     }
     switch Syntax(expr).as(SyntaxEnum.self) {
@@ -134,10 +134,10 @@ func isCompoundExpression(_ expr: ExprSyntax) -> Bool {
 /// `foo.bar(...)` , `foo.bar(...).baz(...)` ). Used to detect method-chaining RHS expressions in
 /// assignments so the formatter prefers breaking at dots rather than after `=` .
 func isMemberAccessChain(_ expr: ExprSyntax) -> Bool {
-    if let modifiedExpr = expr.asProtocol(KeywordModifiedExprSyntax.self) {
+    if let modifiedExpr = expr.asProtocol((any KeywordModifiedExprSyntax).self) {
         return isMemberAccessChain(modifiedExpr.expression)
     }
-    if let callingExpr = expr.asProtocol(CallingExprSyntax.self) {
+    if let callingExpr = expr.asProtocol((any CallingExprSyntax).self) {
         return callingExpr.calledExpression.is(MemberAccessExprSyntax.self)
             || isMemberAccessChain(callingExpr.calledExpression)
     }
@@ -148,10 +148,10 @@ func isMemberAccessChain(_ expr: ExprSyntax) -> Bool {
 /// subscript call — e.g. `obj.method().prop`, `Type.where({}).fetchOne()`. Pure property chains
 /// like `a.b.c` return false because they rarely wrap and don't cause alignment inconsistency.
 func isMultiStepCallChain(_ expr: ExprSyntax) -> Bool {
-    if let mod = expr.asProtocol(KeywordModifiedExprSyntax.self) {
+    if let mod = expr.asProtocol((any KeywordModifiedExprSyntax).self) {
         return isMultiStepCallChain(mod.expression)
     }
-    if let calling = expr.asProtocol(CallingExprSyntax.self) {
+    if let calling = expr.asProtocol((any CallingExprSyntax).self) {
         // This node IS a call — count it if the member base is itself a chain.
         if let member = calling.calledExpression.as(MemberAccessExprSyntax.self),
             let base = member.base { return isMemberAccessChain(base) }

@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 package import ConfigurationKit
 
 /// Flag `@unchecked Sendable` conformances. The `@unchecked` opts out of compiler-enforced

@@ -10,7 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-package import SwiftSyntax
+import SwiftSyntax
 package import SwiftiomaticKit
 
 /// Encapsulates the locations of emoji markers extracted from source text.

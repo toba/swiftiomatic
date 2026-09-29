@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Computed properties and subscripts that declare both `get` and `set` accessors should list them
 /// in a consistent order. The default order is `get` then `set` , matching common Swift style.

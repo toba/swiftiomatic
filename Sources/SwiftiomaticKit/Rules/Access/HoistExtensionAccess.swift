@@ -249,7 +249,7 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
             if decl.is(IfConfigDeclSyntax.self) { return nil }
 
             // Get the access level of this member.
-            guard let modifiers = decl.asProtocol(WithModifiersSyntax.self)?.modifiers,
+            guard let modifiers = decl.asProtocol((any WithModifiersSyntax).self)?.modifiers,
                   let accessModifier = modifiers.accessLevelModifier,
                   case let .keyword(keyword) = accessModifier.name.tokenKind else { return nil }
 
@@ -353,7 +353,7 @@ final class HoistExtensionAccess: StructuralFormatRule<ExtensionAccessControlCon
 
         let leadingTrivia = decl.leadingTrivia
         guard var attributed = decl.with(\.leadingTrivia, [])
-            .asProtocol(WithAttributesSyntax.self)
+            .asProtocol((any WithAttributesSyntax).self)
         else { return decl }
 
         var attributesToInsert = spiAttributes.map {

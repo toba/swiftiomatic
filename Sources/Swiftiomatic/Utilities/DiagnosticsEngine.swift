@@ -232,7 +232,7 @@ final class DiagnosticsEngine: Sendable {
     /// Converts a diagnostic message from the syntax parser into a diagnostic message that can be
     /// used by the `TSCBasic` diagnostics engine and returns it.
     private func diagnosticMessage(
-        for message: SwiftDiagnostics.DiagnosticMessage,
+        for message: any SwiftDiagnostics.DiagnosticMessage,
         at location: SourceLocation
     ) -> Diagnostic {
         let severity: Diagnostic.Severity

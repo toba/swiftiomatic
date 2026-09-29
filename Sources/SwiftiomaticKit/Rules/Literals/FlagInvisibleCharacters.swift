@@ -1,5 +1,5 @@
 import Foundation
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Zero-width and other invisible Unicode characters in string literals are almost always typos or
 /// paste artifacts. They're impossible to see in source and cause string equality, lookup, and URL

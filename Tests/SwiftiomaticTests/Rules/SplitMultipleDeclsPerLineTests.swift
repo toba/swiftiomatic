@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 @testable import SwiftiomaticKit
-package import SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 package import Testing
 
 @Suite

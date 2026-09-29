@@ -1,4 +1,3 @@
-import SwiftiomaticTestSupport
 @testable package import SwiftiomaticKit
 
 extension Configuration {

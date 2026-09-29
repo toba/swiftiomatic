@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Enforce switch case label indentation style.
 ///

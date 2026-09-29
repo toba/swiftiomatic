@@ -382,7 +382,7 @@ extension TokenStream {
         if let call = expression.as(FunctionCallExprSyntax.self) {
             if let memberAccess = call.calledExpression.as(MemberAccessExprSyntax.self),
                 let base = memberAccess.base,
-                base.asProtocol(CallingExprSyntax.self) != nil { return false }
+                base.asProtocol((any CallingExprSyntax).self) != nil { return false }
             return true
         }
 
@@ -488,9 +488,9 @@ extension TokenStream {
         var deepestBase: ExprSyntax?
 
         while true {
-            if let modifiedExpr = current.asProtocol(KeywordModifiedExprSyntax.self) {
+            if let modifiedExpr = current.asProtocol((any KeywordModifiedExprSyntax).self) {
                 current = modifiedExpr.expression
-            } else if let callingExpr = current.asProtocol(CallingExprSyntax.self) {
+            } else if let callingExpr = current.asProtocol((any CallingExprSyntax).self) {
                 current = callingExpr.calledExpression
             } else if let memberAccess = current.as(MemberAccessExprSyntax.self) {
                 guard let base = memberAccess.base else { break }
@@ -799,8 +799,8 @@ extension TokenStream {
 
         while let parent = current {
             if parent.is(ConditionElementSyntax.self) { return true }
-            if parent.asProtocol(SyntaxProtocol.self) is StmtSyntaxProtocol { return false }
-            if parent.asProtocol(SyntaxProtocol.self) is DeclSyntaxProtocol { return false }
+            if parent.asProtocol((any SyntaxProtocol).self) is any StmtSyntaxProtocol { return false }
+            if parent.asProtocol((any SyntaxProtocol).self) is any DeclSyntaxProtocol { return false }
             if parent.is(CodeBlockSyntax.self) { return false }
             if parent.is(CodeBlockItemSyntax.self) { return false }
             current = parent.parent

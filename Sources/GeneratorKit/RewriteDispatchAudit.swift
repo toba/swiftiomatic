@@ -1,5 +1,5 @@
 package import Foundation
-package import SwiftParser
+import SwiftParser
 package import SwiftSyntax
 
 /// A rewrite hook a rule can declare.

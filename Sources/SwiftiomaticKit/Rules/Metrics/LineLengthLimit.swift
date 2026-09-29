@@ -1,5 +1,5 @@
 import Foundation
-package import SwiftSyntax
+import SwiftSyntax
 package import ConfigurationKit
 
 /// Source lines should not exceed a configurable character count.

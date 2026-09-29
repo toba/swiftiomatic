@@ -8,24 +8,24 @@ import Foundation
 /// containers are never reached on this path. If a future caller needs them, implement them rather
 /// than removing the trap.
 final class JSONValueEncoder: Encoder {
-    var codingPath: [CodingKey] = []
+    var codingPath: [any CodingKey] = []
     var userInfo: [CodingUserInfoKey: Any] = [:]
     var values: [String: JSONValue] = [:]
 
     func container<Key: CodingKey>(keyedBy _: Key.Type) -> KeyedEncodingContainer<Key> {
         KeyedEncodingContainer(JSONValueKeyedContainer<Key>(encoder: self))
     }
-    func unkeyedContainer() -> UnkeyedEncodingContainer {
+    func unkeyedContainer() -> any UnkeyedEncodingContainer {
         preconditionFailure("JSONValueEncoder does not support unkeyed containers; see type doc.")
     }
 
-    func singleValueContainer() -> SingleValueEncodingContainer {
+    func singleValueContainer() -> any SingleValueEncodingContainer {
         JSONValueSingleContainer(encoder: self)
     }
 
     private struct JSONValueKeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
         let encoder: JSONValueEncoder
-        var codingPath: [CodingKey] = []
+        var codingPath: [any CodingKey] = []
 
         mutating func encodeNil(forKey key: Key) { encoder.values[key.stringValue] = .null }
         mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
@@ -38,7 +38,7 @@ final class JSONValueEncoder: Encoder {
             preconditionFailure(
                 "JSONValueEncoder does not support nested keyed containers; see type doc.")
         }
-        mutating func nestedUnkeyedContainer(forKey _: Key) -> UnkeyedEncodingContainer {
+        mutating func nestedUnkeyedContainer(forKey _: Key) -> any UnkeyedEncodingContainer {
             preconditionFailure(
                 "JSONValueEncoder does not support nested unkeyed containers; see type doc.")
         }
@@ -52,7 +52,7 @@ final class JSONValueEncoder: Encoder {
 
     private struct JSONValueSingleContainer: SingleValueEncodingContainer {
         let encoder: JSONValueEncoder
-        var codingPath: [CodingKey] = []
+        var codingPath: [any CodingKey] = []
         mutating func encodeNil() { encoder.values["_singleValue"] = .null }
         mutating func encode<T: Encodable>(_ value: T) throws {
             encoder.values["_singleValue"] = try JSONValueBuilder.build(value)
@@ -66,7 +66,7 @@ final class JSONValueEncoder: Encoder {
 /// `JSONEncoder` + `JSONDecoder` . Used by `JSONValueEncoder` to convert `Encodable` rule and
 /// setting values into typed JSON.
 final class JSONValueBuilder: Encoder {
-    var codingPath: [CodingKey]
+    var codingPath: [any CodingKey]
     var userInfo: [CodingUserInfoKey: Any] = [:]
 
     final class Storage {
@@ -74,7 +74,7 @@ final class JSONValueBuilder: Encoder {
     }
     fileprivate let storage: Storage
 
-    init(codingPath: [CodingKey] = []) {
+    init(codingPath: [any CodingKey] = []) {
         self.codingPath = codingPath
         storage = Storage()
     }
@@ -86,12 +86,12 @@ final class JSONValueBuilder: Encoder {
         return KeyedEncodingContainer(KeyedContainer<Key>(storage: storage, codingPath: codingPath))
     }
 
-    func unkeyedContainer() -> UnkeyedEncodingContainer {
+    func unkeyedContainer() -> any UnkeyedEncodingContainer {
         if case .array = storage.value {} else { storage.value = .array([]) }
         return UnkeyedContainer(storage: storage, codingPath: codingPath)
     }
 
-    func singleValueContainer() -> SingleValueEncodingContainer {
+    func singleValueContainer() -> any SingleValueEncodingContainer {
         SingleContainer(storage: storage, codingPath: codingPath)
     }
 
@@ -114,7 +114,7 @@ final class JSONValueBuilder: Encoder {
 
 private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     let storage: JSONValueBuilder.Storage
-    var codingPath: [CodingKey]
+    var codingPath: [any CodingKey]
 
     private func write(_ key: String, _ value: JSONValue) {
         guard case var .object(dict) = storage.value else {
@@ -171,7 +171,7 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     ) -> KeyedEncodingContainer<NestedKey> {
         preconditionFailure("JSONValueBuilder does not support nestedContainer.")
     }
-    mutating func nestedUnkeyedContainer(forKey _: Key) -> UnkeyedEncodingContainer {
+    mutating func nestedUnkeyedContainer(forKey _: Key) -> any UnkeyedEncodingContainer {
         preconditionFailure("JSONValueBuilder does not support nestedUnkeyedContainer.")
     }
     mutating func superEncoder() -> any Encoder {
@@ -184,7 +184,7 @@ private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
 
 private struct UnkeyedContainer: UnkeyedEncodingContainer {
     let storage: JSONValueBuilder.Storage
-    var codingPath: [CodingKey]
+    var codingPath: [any CodingKey]
     var count: Int {
         if case let .array(arr) = storage.value { return arr.count }
         return 0
@@ -225,7 +225,7 @@ private struct UnkeyedContainer: UnkeyedEncodingContainer {
     ) -> KeyedEncodingContainer<NestedKey> {
         preconditionFailure("JSONValueBuilder does not support nestedContainer in unkeyed.")
     }
-    mutating func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
+    mutating func nestedUnkeyedContainer() -> any UnkeyedEncodingContainer {
         preconditionFailure("JSONValueBuilder does not support nestedUnkeyedContainer.")
     }
     mutating func superEncoder() -> any Encoder {
@@ -235,7 +235,7 @@ private struct UnkeyedContainer: UnkeyedEncodingContainer {
 
 private struct SingleContainer: SingleValueEncodingContainer {
     let storage: JSONValueBuilder.Storage
-    var codingPath: [CodingKey]
+    var codingPath: [any CodingKey]
 
     mutating func encodeNil() throws { storage.value = .null }
     mutating func encode(_ v: Bool) throws { storage.value = .bool(v) }

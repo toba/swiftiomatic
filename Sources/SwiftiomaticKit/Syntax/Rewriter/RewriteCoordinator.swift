@@ -62,9 +62,7 @@ package final class RewriteCoordinator {
         guard FileManager.default.isReadableFile(atPath: url.path) else {
             throw SwiftiomaticError.fileNotReadable
         }
-        var isDir: ObjCBool = false
-
-        if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir), isDir.boolValue {
+        if FileManager.default.directoryExists(atPath: url.path) {
             throw SwiftiomaticError.isDirectory
         }
 

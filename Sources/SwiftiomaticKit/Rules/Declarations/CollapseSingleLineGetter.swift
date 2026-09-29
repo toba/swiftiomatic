@@ -37,7 +37,7 @@ final class CollapseSingleLineGetter: StaticFormatRule<BasicRuleValue>, @uncheck
               acc.attributes.isEmpty,
               // Preserve any accessor modifier (`mutating`/`nonmutating`/`borrowing`/ `consuming`
               // get) — collapsing would drop it and break compilation.
-              acc.modifier == nil,
+              acc.modifiers.isEmpty,
               acc.effectSpecifiers == nil else { return node }
 
         Self.diagnose(.removeExtraneousGetBlock, on: acc, context: context)

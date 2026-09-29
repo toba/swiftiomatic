@@ -2,7 +2,7 @@ package import TobaCore
 package import Foundation
 // this module calls the RegexComponent overloads of split, contains and replacing. the import is
 // what emits the autolink record for them, because TobaCore now ships dynamic and keeps its own
-package import RegexBuilder
+import RegexBuilder
 @_exported import ConfigurationKit
 
 /// Holds the complete set of configured values and defaults.
@@ -296,14 +296,7 @@ package struct Configuration: Sendable, Equatable {
     /// Returns the URL of the configuration file that applies to the given file or directory.
     package static func url(forConfigurationFileApplyingTo url: URL) -> URL? {
         var candidateDirectory = url.absoluteURL.standardized
-        var isDirectory: ObjCBool = false
-
-        if FileManager.default.fileExists(
-            atPath: candidateDirectory.path,
-            isDirectory: &isDirectory
-        ),
-            isDirectory.boolValue
-        {
+        if FileManager.default.directoryExists(atPath: candidateDirectory.path) {
             candidateDirectory.appendPathComponent("placeholder")
         }
 

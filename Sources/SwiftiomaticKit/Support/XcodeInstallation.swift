@@ -56,9 +56,7 @@ package enum XcodeInstallation {
                 let application = directory.appending(path: name)
                 let bin = application.appending(path: toolchainBinPath)
 
-                var isDirectory: ObjCBool = false
-                guard fileManager.fileExists(atPath: bin.path, isDirectory: &isDirectory),
-                      isDirectory.boolValue,
+                guard fileManager.directoryExists(atPath: bin.path),
                       seen.insert(application.standardizedFileURL.path).inserted else { continue }
 
                 found.append(Toolchain(

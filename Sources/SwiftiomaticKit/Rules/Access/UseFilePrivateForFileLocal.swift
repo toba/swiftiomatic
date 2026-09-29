@@ -10,7 +10,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Declarations at file scope with effective private access should be consistently declared as
 /// either `fileprivate` or `private` , determined by configuration.
@@ -56,7 +56,7 @@ final class UseFilePrivateForFileLocal: StructuralFormatRule<
                     }
                 case .functionDecl, .variableDecl, .classDecl, .structDecl, .enumDecl,
                      .protocolDecl, .typeAliasDecl:
-                    guard let modifiers = decl.asProtocol(WithModifiersSyntax.self)?.modifiers
+                    guard let modifiers = decl.asProtocol((any WithModifiersSyntax).self)?.modifiers
                     else { continue }
 
                     for modifier in modifiers

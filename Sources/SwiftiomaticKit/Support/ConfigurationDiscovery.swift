@@ -1,5 +1,5 @@
 package import Foundation
-package import Synchronization
+import Synchronization
 
 /// Finds the configuration file that applies to a path, and caches the result for each directory.
 ///
@@ -20,9 +20,9 @@ package final class ConfigurationDiscovery: Sendable {
     /// `nil` when the walk up to the root finds no configuration file.
     package func configurationFileURL(applyingTo url: URL) -> URL? {
         var directory = url.absoluteURL.standardized
-        var isDirectory: ObjCBool = false
-        let exists = FileManager.default.fileExists(atPath: directory.path, isDirectory: &isDirectory)
-        if !exists || !isDirectory.boolValue { directory.deleteLastPathComponent() }
+        if !FileManager.default.directoryExists(atPath: directory.path) {
+            directory.deleteLastPathComponent()
+        }
 
         var visited: [String] = []
         var result: URL?

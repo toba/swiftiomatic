@@ -74,7 +74,7 @@ package struct Finding: Sendable {
     }
 
     /// The category associated with the finding.
-    package let category: FindingCategorizing
+    package let category: any FindingCategorizing
 
     /// The finding's message.
     package let message: Message
@@ -99,7 +99,7 @@ package struct Finding: Sendable {
 
     /// Creates a new finding with the given category, message, optional location, and notes.
     init(
-        category: FindingCategorizing,
+        category: any FindingCategorizing,
         message: Message,
         severity: Lint = .warn,
         location: Location? = nil,

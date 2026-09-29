@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 
 /// Enforce a consistent file header comment, or remove file headers entirely.
 ///

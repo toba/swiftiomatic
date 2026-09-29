@@ -151,5 +151,5 @@ private func fingerprint(of roots: [URL], files extras: [URL], skipSchema: Bool)
         hasher.update(data: Data([0]))
         hasher.update(data: data)
     }
-    return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+    return hasher.finalize().map { ($0 < 0x10 ? "0" : "") + String($0, radix: 16) }.joined()
 }

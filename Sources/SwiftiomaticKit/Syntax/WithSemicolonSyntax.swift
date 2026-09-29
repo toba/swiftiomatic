@@ -21,11 +21,11 @@ extension CodeBlockItemSyntax: WithSemicolonSyntax {}
 extension MemberBlockItemSyntax: WithSemicolonSyntax {}
 
 extension SyntaxProtocol {
-    func asProtocol(_: WithSemicolonSyntax.Protocol) -> WithSemicolonSyntax? {
-        Syntax(self).asProtocol(SyntaxProtocol.self) as? WithSemicolonSyntax
+    func asProtocol(_: (any WithSemicolonSyntax).Type) -> any WithSemicolonSyntax? {
+        Syntax(self).asProtocol((any SyntaxProtocol).self) as? any WithSemicolonSyntax
     }
 
-    func isProtocol(_: WithSemicolonSyntax.Protocol) -> Bool {
-        asProtocol(WithSemicolonSyntax.self) != nil
+    func isProtocol(_: (any WithSemicolonSyntax).Type) -> Bool {
+        asProtocol((any WithSemicolonSyntax).self) != nil
     }
 }

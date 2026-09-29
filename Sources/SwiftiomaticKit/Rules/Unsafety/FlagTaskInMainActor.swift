@@ -37,7 +37,7 @@ final class FlagTaskInMainActor: LintSyntaxRule<LintOnlyValue>, @unchecked Senda
         var current: Syntax? = node.parent
 
         while let parent = current {
-            if let withAttrs = parent.asProtocol(WithAttributesSyntax.self),
+            if let withAttrs = parent.asProtocol((any WithAttributesSyntax).self),
                withAttrs.attributes.attribute(named: "MainActor") != nil { return true }
             current = parent.parent
         }

@@ -17,11 +17,11 @@ import Testing
 extension URL {
   fileprivate var realpath: URL {
     return self.path.withCString { path in
-      guard let realpath = Darwin.realpath(path, nil) else {
+      guard let realpath = unsafe Darwin.realpath(path, nil) else {
         return self
       }
-      let result = URL(fileURLWithPath: String(cString: realpath))
-      free(realpath)
+      let result = URL(fileURLWithPath: unsafe String(cString: realpath))
+      unsafe free(realpath)
       return result
     }
   }

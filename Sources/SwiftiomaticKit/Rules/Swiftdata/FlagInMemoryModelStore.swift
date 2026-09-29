@@ -70,7 +70,7 @@ final class FlagInMemoryModelStore: LintSyntaxRule<LintOnlyValue>, @unchecked Se
         var current = node.parent
 
         while let cur = current {
-            if let inheritance = cur.asProtocol(DeclGroupSyntax.self)?.inheritanceClause,
+            if let inheritance = cur.asProtocol((any DeclGroupSyntax).self)?.inheritanceClause,
                inheritance.inheritedTypes.contains(where: {
                    $0.type.trimmedDescription.hasSuffix("PreviewProvider")
                }) { return true }

@@ -11,7 +11,7 @@
 //===----------------------------------------------------------------------===//
 
 @testable import SwiftiomaticKit
-package import SwiftiomaticTestSupport
+import SwiftiomaticTestSupport
 package import Testing
 
 // FIXME: We should place the diagnostic somewhere in the comment, not on the declaration.

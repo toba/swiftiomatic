@@ -178,8 +178,8 @@ final class FlagSupersededFrameworkAPI: LintSyntaxRule<LintOnlyValue>, @unchecke
               let decl = member.parent?.parent?.parent?.parent else { return nil }
 
         if !decl.is(ProtocolDeclSyntax.self),
-           let type = decl.asProtocol(NamedDeclSyntax.self),
-           let group = decl.asProtocol(DeclGroupSyntax.self)
+           let type = decl.asProtocol((any NamedDeclSyntax).self),
+           let group = decl.asProtocol((any DeclGroupSyntax).self)
         {
             return OwningType(
                 name: Syntax(type.name), attributes: group.attributes,

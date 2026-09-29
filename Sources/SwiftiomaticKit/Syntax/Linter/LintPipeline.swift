@@ -44,7 +44,7 @@ extension LintPipeline {
     /// this to balance their `visit` and `visitPost` pairs.
     @inline(__always)
     func existingRule<R: InstanceSyntaxRule & AnyObject>(_: R.Type, _ index: Int) -> R? {
-        rules[index].map { unsafeDowncast($0, to: R.self) }
+        rules[index].map { unsafe unsafeDowncast($0, to: R.self) }
     }
 
     /// The instance of the rule at `index` , created on first use.
@@ -53,7 +53,7 @@ extension LintPipeline {
     /// downcast is unchecked in release builds.
     @inline(__always)
     func rule<R: InstanceSyntaxRule & AnyObject>(_: R.Type, at index: Int) -> R {
-        if let cached = rules[index] { return unsafeDowncast(cached, to: R.self) }
+        if let cached = rules[index] { return unsafe unsafeDowncast(cached, to: R.self) }
         let rule = R(context: context)
         rules[index] = rule
         return rule

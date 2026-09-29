@@ -1,6 +1,6 @@
-public import Foundation
-package import Synchronization
-package import TobaConcurrency
+import Foundation
+import Synchronization
+import TobaConcurrency
 
 /// Collects lint findings as structured records and renders them as a JSON array.
 ///

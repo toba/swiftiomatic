@@ -23,7 +23,7 @@ private final class TemporaryPackage {
 @Suite struct LintCacheTests {
     @Test func hexEncodeMatchesStringFormat() {
         let bytes: [UInt8] = [0x00, 0x0f, 0x10, 0xab, 0xff]
-        let expected = bytes.map { String(format: "%02x", $0) }.joined()
+        let expected = bytes.map { ($0 < 0x10 ? "0" : "") + String($0, radix: 16) }.joined()
         #expect(LintCache.hexEncode(bytes) == expected)
     }
 

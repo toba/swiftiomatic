@@ -1,4 +1,4 @@
-package import SwiftSyntax
+import SwiftSyntax
 package import ConfigurationKit
 
 /// Type bodies (class, struct, enum, actor, protocol, extension) should not exceed a configurable
