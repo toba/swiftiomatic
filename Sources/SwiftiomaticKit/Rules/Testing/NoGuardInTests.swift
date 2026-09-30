@@ -1,10 +1,14 @@
 import SwiftSyntax
 
-/// Convert `guard` statements in test functions to `try #require(...)` / `#expect(...)` (Swift
-/// Testing) or `try XCTUnwrap(...)` / `XCTAssert(...)` (XCTest).
+/// Convert `guard` statements in test functions to `try #require(...)` (Swift Testing) or
+/// `try XCTUnwrap(...)` (XCTest).
 ///
 /// Guard statements in tests obscure the test intent behind control flow. Replacing them with
-/// direct assertions or unwraps makes the test linear and the failure message immediate.
+/// direct unwraps makes the test linear and the failure message immediate.
+///
+/// A boolean condition keeps its early exit. Under Swift Testing it becomes `try #require(...)`,
+/// which throws on failure. XCTest has no throwing boolean check, and `XCTAssert` does not stop the
+/// test, so a guard with a boolean condition stays a guard there.
 ///
 /// Lint: A warning is raised for each `guard` that can be converted.
 ///
@@ -43,7 +47,6 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     static func willEnter(_ node: ClassDeclSyntax, context: Context) {
         let state = context.noGuardInTestsState
         let was = state.testContext.pushClass(node, context: context)
-        // Stash via stack — use functionStack as a generic stack? Use a dedicated stack instead.
         state.classStack.append(was)
     }
 
@@ -99,9 +102,12 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     /// its absolute offset indexes a different point of the original text and the location
     /// converter names the wrong line.
     static func willEnter(_ node: CodeBlockItemListSyntax, context: Context) {
-        guard context.noGuardInTestsState.insideTestFunction else { return }
+        let state = context.noGuardInTestsState
+        guard state.insideTestFunction else { return }
 
-        for guardStmt in convertibleGuards(in: node).values {
+        let useSwiftTesting = state.testContext.importsTesting
+
+        for guardStmt in convertibleGuards(in: node, useSwiftTesting: useSwiftTesting).values {
             Self.diagnose(.convertGuard, on: guardStmt.guardKeyword, context: context)
         }
     }
@@ -112,7 +118,8 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     /// preceding statements bind decide convertibility, so one walk serves both. Two walks drift,
     /// and the reported set then stops matching the rewritten set.
     private static func convertibleGuards(
-        in node: CodeBlockItemListSyntax
+        in node: CodeBlockItemListSyntax,
+        useSwiftTesting: Bool
     ) -> [Int: GuardStmtSyntax] {
         var declaredNames = Set<String>()
         var found = [Int: GuardStmtSyntax]()
@@ -121,7 +128,11 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
             collectDeclaredNames(from: item, into: &declaredNames)
 
             guard let guardStmt = item.item.as(GuardStmtSyntax.self),
-                isConvertible(guardStmt, declaredNames: declaredNames) else { continue }
+                isConvertible(
+                    guardStmt,
+                    declaredNames: declaredNames,
+                    useSwiftTesting: useSwiftTesting
+                ) else { continue }
 
             found[index] = guardStmt
         }
@@ -169,10 +180,13 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         _ node: CodeBlockItemListSyntax,
         context: Context
     ) -> CodeBlockItemListSyntax {
-        let convertible = convertibleGuards(in: node)
+        let state = context.noGuardInTestsState
+        let convertible = convertibleGuards(
+            in: node,
+            useSwiftTesting: state.testContext.importsTesting
+        )
         guard !convertible.isEmpty else { return node }
 
-        let state = context.noGuardInTestsState
         var newItems = [CodeBlockItemSyntax]()
 
         for (index, item) in node.enumerated() {
@@ -193,9 +207,12 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
     ///   - guard: The statement to test.
     ///   - declaredNames: The names the preceding statements of the same block already bind. A
     ///     `guard` that rebinds one of them cannot become a `let` .
+    ///   - useSwiftTesting: Whether the file uses Swift Testing. Only `#require` can replace a
+    ///     boolean condition and keep the early exit.
     private static func isConvertible(
         _ guard: GuardStmtSyntax,
-        declaredNames: Set<String>
+        declaredNames: Set<String>,
+        useSwiftTesting: Bool
     ) -> Bool {
         guard isValidElseBlock(`guard`.body) else { return false }
 
@@ -206,7 +223,8 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                     if declaredNames.contains(name) { return false }
                     if binding.initializer?.value.containsAwait == true { return false }
                 case .matchingPattern: return false
-                case let .expression(expr): if expr.containsAwait { return false }
+                case let .expression(expr):
+                    if !useSwiftTesting || expr.containsAwait { return false }
                 case .availability: return false
                 #if compiler(>=6.0)
                     @unknown default: return false
@@ -247,14 +265,15 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
                     state.addedTryStatement = true
 
                 case let .expression(expr):
-                    let assertExpr = buildAssertExpr(
+                    // only Swift Testing reaches here, see isConvertible
+                    let requireExpr = buildRequireExpr(
                         for: expr,
-                        useSwiftTesting: useSwiftTesting,
                         assertionMessage: assertionMessage
                     )
-                    var codeBlockItem = CodeBlockItemSyntax(item: .expr(assertExpr))
+                    var codeBlockItem = CodeBlockItemSyntax(item: .expr(requireExpr))
                     codeBlockItem.leadingTrivia = trivia
                     replacements.append(codeBlockItem)
+                    state.addedTryStatement = true
 
                 default: break
             }
@@ -267,34 +286,34 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
 
     private static func isValidElseBlock(_ body: CodeBlockSyntax) -> Bool {
         let stmts = body.statements.map(\.item)
-        let nonTrivial = stmts.filter { stmt in stmt.trimmedDescription.isEmpty == false }
 
-        if nonTrivial.count == 1, nonTrivial[0].is(ReturnStmtSyntax.self) { return true }
+        if stmts.count == 1, stmts[0].is(ReturnStmtSyntax.self) { return true }
 
-        guard nonTrivial.last?.is(ReturnStmtSyntax.self) == true else { return false }
-
-        if nonTrivial.count == 2 {
-            if let callExpr = extractFunctionCall(from: nonTrivial[0]) {
-                let name = callExpr.calledExpression.trimmedDescription
-                return name == "XCTFail" || name == "Issue.record"
-            }
-        }
-
-        return false
+        guard stmts.count == 2,
+              stmts[1].is(ReturnStmtSyntax.self),
+              let callExpr = extractFunctionCall(from: stmts[0]) else { return false }
+        return isFailureCall(callExpr)
     }
 
     private static func extractAssertionMessage(
         from body: CodeBlockSyntax
     ) -> LabeledExprListSyntax? {
         for stmt in body.statements {
-            if let callExpr = extractFunctionCall(from: stmt.item) {
-                let name = callExpr.calledExpression.trimmedDescription
-
-                if name == "XCTFail" || name == "Issue.record",
-                   !callExpr.arguments.isEmpty { return callExpr.arguments }
-            }
+            if let callExpr = extractFunctionCall(from: stmt.item),
+               isFailureCall(callExpr),
+               !callExpr.arguments.isEmpty { return callExpr.arguments }
         }
         return nil
+    }
+
+    /// Reports whether `call` is `XCTFail(...)` or `Issue.record(...)`
+    private static func isFailureCall(_ call: FunctionCallExprSyntax) -> Bool {
+        if let reference = call.calledExpression.as(DeclReferenceExprSyntax.self) {
+            return reference.baseName.hasText("XCTFail")
+        }
+        guard let member = call.calledExpression.as(MemberAccessExprSyntax.self),
+            let base = member.base?.as(DeclReferenceExprSyntax.self) else { return false }
+        return base.baseName.hasText("Issue") && member.declName.baseName.hasText("record")
     }
 
     private static func extractFunctionCall(
@@ -368,21 +387,17 @@ final class NoGuardInTests: StaticFormatRule<BasicRuleValue>, @unchecked Sendabl
         )
     }
 
-    private static func buildAssertExpr(
+    private static func buildRequireExpr(
         for expr: ExprSyntax,
-        useSwiftTesting: Bool,
         assertionMessage: LabeledExprListSyntax?
     ) -> ExprSyntax {
-        let args = buildArgList(expression: expr.trimmed, assertionMessage: assertionMessage)
-
-        return useSwiftTesting
-            ? ExprSyntax(MacroExpansionExprSyntax(
-                pound: .poundToken(), macroName: .identifier("expect"),
-                leftParen: .leftParenToken(), arguments: args, rightParen: .rightParenToken()))
-            : ExprSyntax(FunctionCallExprSyntax(
-                calledExpression: ExprSyntax(DeclReferenceExprSyntax(baseName: .identifier(
-                    "XCTAssert"))), leftParen: .leftParenToken(), arguments: args,
-                rightParen: .rightParenToken()))
+        ExprSyntax(TryExprSyntax(
+            tryKeyword: .keyword(.try, trailingTrivia: .space),
+            expression: buildMacroCall(
+                name: "require",
+                expression: expr.trimmed,
+                assertionMessage: assertionMessage
+            )))
     }
 
     private static func buildArgList(

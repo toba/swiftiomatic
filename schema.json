@@ -3554,7 +3554,7 @@
           "$ref" : "#/$defs/ruleBase"
         }
       ],
-      "description" : "Convert `guard` statements in test functions to `try #require(...)` / `#expect(...)` (Swift Testing) or `try XCTUnwrap(...)` / `XCTAssert(...)` (XCTest).\n\nGuard statements in tests obscure the test intent behind control flow. Replacing them with direct assertions or unwraps makes the test linear and the failure message immediate.\n\nLint: A warning is raised for each `guard` that can be converted.\n\nRewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the signature if needed."
+      "description" : "Convert `guard` statements in test functions to `try #require(...)` (Swift Testing) or `try XCTUnwrap(...)` (XCTest).\n\nGuard statements in tests obscure the test intent behind control flow. Replacing them with direct unwraps makes the test linear and the failure message immediate.\n\nA boolean condition keeps its early exit. Under Swift Testing it becomes `try #require(...)`, which throws on failure. XCTest has no throwing boolean check, and `XCTAssert` does not stop the test, so a guard with a boolean condition stays a guard there.\n\nLint: A warning is raised for each `guard` that can be converted.\n\nRewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the signature if needed."
     },
     "noHelperMethodInView" : {
       "allOf" : [
@@ -5487,7 +5487,7 @@
               "$ref" : "#/$defs/ruleBase"
             }
           ],
-          "description" : "Convert `guard` statements in test functions to `try #require(...)` / `#expect(...)` (Swift Testing) or `try XCTUnwrap(...)` / `XCTAssert(...)` (XCTest).\n\nGuard statements in tests obscure the test intent behind control flow. Replacing them with direct assertions or unwraps makes the test linear and the failure message immediate.\n\nLint: A warning is raised for each `guard` that can be converted.\n\nRewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the signature if needed."
+          "description" : "Convert `guard` statements in test functions to `try #require(...)` (Swift Testing) or `try XCTUnwrap(...)` (XCTest).\n\nGuard statements in tests obscure the test intent behind control flow. Replacing them with direct unwraps makes the test linear and the failure message immediate.\n\nA boolean condition keeps its early exit. Under Swift Testing it becomes `try #require(...)`, which throws on failure. XCTest has no throwing boolean check, and `XCTAssert` does not stop the test, so a guard with a boolean condition stays a guard there.\n\nLint: A warning is raised for each `guard` that can be converted.\n\nRewrite: The `guard` is replaced with assertion/unwrap statements and `throws` is added to the signature if needed."
         },
         "requireFinalOnXCTestCase" : {
           "allOf" : [

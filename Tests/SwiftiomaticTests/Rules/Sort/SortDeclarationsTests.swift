@@ -1,241 +1,317 @@
-@testable import SwiftiomaticKit
-import SwiftiomaticTestSupport
 package import Testing
+import SwiftiomaticTestSupport
+@testable import SwiftiomaticKit
 
 @Suite
 struct SortDeclarationsTests: RuleTesting {
+    @Test func sortEnumCasesBetweenMarkers() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                enum FeatureFlags {
+                  // swiftiomatic:sort:begin
+                  1️⃣case upsellB
+                  case fooFeature
+                  case barFeature
+                  case upsellA
+                  // swiftiomatic:sort:end
 
-  @Test func sortEnumCasesBetweenMarkers() {
-    assertFormatting(
-      SortDeclarations.self,
-      input: """
-        enum FeatureFlags {
-          // swiftiomatic:sort:begin
-          1️⃣case upsellB
-          case fooFeature
-          case barFeature
-          case upsellA
-          // swiftiomatic:sort:end
+                  var anUnsortedProperty: Foo {
+                    Foo()
+                  }
+                }
+                """,
+            expected: """
+                enum FeatureFlags {
+                  // swiftiomatic:sort:begin
+                  case barFeature
+                  case fooFeature
+                  case upsellA
+                  case upsellB
+                  // swiftiomatic:sort:end
 
-          var anUnsortedProperty: Foo {
-            Foo()
-          }
-        }
-        """,
-      expected: """
-        enum FeatureFlags {
-          // swiftiomatic:sort:begin
-          case barFeature
-          case fooFeature
-          case upsellA
-          case upsellB
-          // swiftiomatic:sort:end
+                  var anUnsortedProperty: Foo {
+                    Foo()
+                  }
+                }
+                """,
+            findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
+        )
+    }
 
-          var anUnsortedProperty: Foo {
-            Foo()
-          }
-        }
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "sort declarations alphabetically"),
-      ]
-    )
-  }
+    @Test func endMarkerBeforeClosingBrace() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                struct S {
+                  // swiftiomatic:sort:begin
+                  /// b
+                  1️⃣var b = 1
+                  var c = 1
+                  var a = 1  // trailing a
+                  // swiftiomatic:sort:end
+                }
+                """,
+            expected: """
+                struct S {
+                  // swiftiomatic:sort:begin
+                  var a = 1  // trailing a
+                  /// b
+                  var b = 1
+                  var c = 1
+                  // swiftiomatic:sort:end
+                }
+                """,
+            findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
+        )
+    }
 
-  @Test func alreadySorted() {
-    assertFormatting(
-      SortDeclarations.self,
-      input: """
-        enum FeatureFlags {
-          // swiftiomatic:sort:begin
-          case barFeature
-          case fooFeature
-          case upsellA
-          case upsellB
-          // swiftiomatic:sort:end
-        }
-        """,
-      expected: """
-        enum FeatureFlags {
-          // swiftiomatic:sort:begin
-          case barFeature
-          case fooFeature
-          case upsellA
-          case upsellB
-          // swiftiomatic:sort:end
-        }
-        """,
-      findings: []
-    )
-  }
+    @Test func docCommentsMoveWithDeclarations() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                struct S {
+                  // swiftiomatic:sort:begin
+                  /// doc b
+                  1️⃣var b = 1
 
-  @Test func noMarkers() {
-    assertFormatting(
-      SortDeclarations.self,
-      input: """
-        enum FeatureFlags {
-          case upsellB
-          case fooFeature
-          case barFeature
-          case upsellA
-        }
-        """,
-      expected: """
-        enum FeatureFlags {
-          case upsellB
-          case fooFeature
-          case barFeature
-          case upsellA
-        }
-        """,
-      findings: []
-    )
-  }
+                  /// doc c
+                  var c = 1
+                  /// doc a
+                  var a = 1
+                  // swiftiomatic:sort:end
+                  var z = 0
+                }
+                """,
+            expected: """
+                struct S {
+                  // swiftiomatic:sort:begin
+                  /// doc a
+                  var a = 1
+                  /// doc b
+                  var b = 1
 
-  @Test func sortTopLevelDeclarations() {
-    assertFormatting(
-      SortDeclarations.self,
-      input: """
-        let anUnsortedGlobal = 0
+                  /// doc c
+                  var c = 1
+                  // swiftiomatic:sort:end
+                  var z = 0
+                }
+                """,
+            findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
+        )
+    }
 
-        // swiftiomatic:sort:begin
-        1️⃣let sortThisGlobal = 1
-        public let thisGlobalIsSorted = 2
-        private let anotherSortedGlobal = 5
-        let sortAllOfThem = 8
-        // swiftiomatic:sort:end
+    @Test func endMarkerAtEndOfFile() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                // swiftiomatic:sort:begin
+                1️⃣let b = 1
+                let a = 1
+                // swiftiomatic:sort:end
+                """,
+            expected: """
+                // swiftiomatic:sort:begin
+                let a = 1
+                let b = 1
+                // swiftiomatic:sort:end
+                """,
+            findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
+        )
+    }
 
-        let anotherUnsortedGlobal = 9
-        """,
-      expected: """
-        let anUnsortedGlobal = 0
+    @Test func alreadySorted() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                enum FeatureFlags {
+                  // swiftiomatic:sort:begin
+                  case barFeature
+                  case fooFeature
+                  case upsellA
+                  case upsellB
+                  // swiftiomatic:sort:end
+                }
+                """,
+            expected: """
+                enum FeatureFlags {
+                  // swiftiomatic:sort:begin
+                  case barFeature
+                  case fooFeature
+                  case upsellA
+                  case upsellB
+                  // swiftiomatic:sort:end
+                }
+                """,
+            findings: []
+        )
+    }
 
-        // swiftiomatic:sort:begin
-        private let anotherSortedGlobal = 5
-        let sortAllOfThem = 8
-        let sortThisGlobal = 1
-        public let thisGlobalIsSorted = 2
-        // swiftiomatic:sort:end
+    @Test func noMarkers() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                enum FeatureFlags {
+                  case upsellB
+                  case fooFeature
+                  case barFeature
+                  case upsellA
+                }
+                """,
+            expected: """
+                enum FeatureFlags {
+                  case upsellB
+                  case fooFeature
+                  case barFeature
+                  case upsellA
+                }
+                """,
+            findings: []
+        )
+    }
 
-        let anotherUnsortedGlobal = 9
-        """,
-      findings: [
-        FindingSpec("1️⃣", message: "sort declarations alphabetically"),
-      ]
-    )
-  }
+    @Test func sortTopLevelDeclarations() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                let anUnsortedGlobal = 0
 
-  @Test func singleItemNotSorted() {
-    assertFormatting(
-      SortDeclarations.self,
-      input: """
-        enum Flags {
-          // swiftiomatic:sort:begin
-          case onlyOne
-          // swiftiomatic:sort:end
-        }
-        """,
-      expected: """
-        enum Flags {
-          // swiftiomatic:sort:begin
-          case onlyOne
-          // swiftiomatic:sort:end
-        }
-        """,
-      findings: []
-    )
-  }
+                // swiftiomatic:sort:begin
+                1️⃣let sortThisGlobal = 1
+                public let thisGlobalIsSorted = 2
+                private let anotherSortedGlobal = 5
+                let sortAllOfThem = 8
+                // swiftiomatic:sort:end
 
-  @Test func sortUsesLocalizedCompare() {
-    assertFormatting(
-      SortDeclarations.self,
-      input: """
-        enum Flags {
-          // swiftiomatic:sort:begin
-          case upsella
-          case upsellA
-          case upsellb
-          case upsellB
-          // swiftiomatic:sort:end
-        }
-        """,
-      expected: """
-        enum Flags {
-          // swiftiomatic:sort:begin
-          case upsella
-          case upsellA
-          case upsellb
-          case upsellB
-          // swiftiomatic:sort:end
-        }
-        """,
-      findings: []
-    )
-  }
+                let anotherUnsortedGlobal = 9
+                """,
+            expected: """
+                let anUnsortedGlobal = 0
 
-  /// A marker inside a nested type still sorts, when the full pipeline runs with its source
-  /// precheck.
-  @Test func sortsMarkedRegionInNestedType() {
-    assertFormatting(
-      SortDeclarations.self,
-      input: """
-        struct Outer {
-          enum Inner {
-            // swiftiomatic:sort:begin
-            1️⃣case b
-            case a
-            // swiftiomatic:sort:end
-            case c
-          }
-        }
-        """,
-      expected: """
-        struct Outer {
-          enum Inner {
-            // swiftiomatic:sort:begin
-            case a
-            case b
-            // swiftiomatic:sort:end
-            case c
-          }
-        }
-        """,
-      findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
-    )
-  }
+                // swiftiomatic:sort:begin
+                private let anotherSortedGlobal = 5
+                let sortAllOfThem = 8
+                let sortThisGlobal = 1
+                public let thisGlobalIsSorted = 2
+                // swiftiomatic:sort:end
 
-  @Test func sortsRegionMarkedByBlockComment() {
-    assertFormatting(
-      SortDeclarations.self,
-      input: """
-        enum E {
-          /* swiftiomatic:sort:begin */
-          1️⃣case b
-          case a
-          /* swiftiomatic:sort:end */
-          case c
-        }
-        """,
-      expected: """
-        enum E {
-          /* swiftiomatic:sort:begin */
-          case a
-          case b
-          /* swiftiomatic:sort:end */
-          case c
-        }
-        """,
-      findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
-    )
-  }
+                let anotherUnsortedGlobal = 9
+                """,
+            findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
+        )
+    }
 
-  // MARK: - Source precheck
+    @Test func singleItemNotSorted() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                enum Flags {
+                  // swiftiomatic:sort:begin
+                  case onlyOne
+                  // swiftiomatic:sort:end
+                }
+                """,
+            expected: """
+                enum Flags {
+                  // swiftiomatic:sort:begin
+                  case onlyOne
+                  // swiftiomatic:sort:end
+                }
+                """,
+            findings: []
+        )
+    }
 
-  @Test func precheckNeedsBeginMarker() {
-    #expect(SortDeclarations.sourceCanMatch("enum E {\n  // swiftiomatic:sort:begin\n}"))
-    #expect(SortDeclarations.sourceCanMatch("/* swiftiomatic:sort:begin */"))
-    #expect(!SortDeclarations.sourceCanMatch("enum E { case b, a }"))
-    #expect(!SortDeclarations.sourceCanMatch("// swiftiomatic:sort:end"))
-    #expect(!SortDeclarations.sourceCanMatch(""))
-  }
+    @Test func sortUsesLocalizedCompare() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                enum Flags {
+                  // swiftiomatic:sort:begin
+                  case upsella
+                  case upsellA
+                  case upsellb
+                  case upsellB
+                  // swiftiomatic:sort:end
+                }
+                """,
+            expected: """
+                enum Flags {
+                  // swiftiomatic:sort:begin
+                  case upsella
+                  case upsellA
+                  case upsellb
+                  case upsellB
+                  // swiftiomatic:sort:end
+                }
+                """,
+            findings: []
+        )
+    }
+
+    /// A marker inside a nested type still sorts, when the full pipeline runs with its source
+    /// precheck.
+    @Test func sortsMarkedRegionInNestedType() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                struct Outer {
+                  enum Inner {
+                    // swiftiomatic:sort:begin
+                    1️⃣case b
+                    case a
+                    // swiftiomatic:sort:end
+                    case c
+                  }
+                }
+                """,
+            expected: """
+                struct Outer {
+                  enum Inner {
+                    // swiftiomatic:sort:begin
+                    case a
+                    case b
+                    // swiftiomatic:sort:end
+                    case c
+                  }
+                }
+                """,
+            findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
+        )
+    }
+
+    @Test func sortsRegionMarkedByBlockComment() {
+        assertFormatting(
+            SortDeclarations.self,
+            input: """
+                enum E {
+                  /* swiftiomatic:sort:begin */
+                  1️⃣case b
+                  case a
+                  /* swiftiomatic:sort:end */
+                  case c
+                }
+                """,
+            expected: """
+                enum E {
+                  /* swiftiomatic:sort:begin */
+                  case a
+                  case b
+                  /* swiftiomatic:sort:end */
+                  case c
+                }
+                """,
+            findings: [FindingSpec("1️⃣", message: "sort declarations alphabetically")]
+        )
+    }
+
+    // MARK: - Source precheck
+
+    @Test func precheckNeedsBeginMarker() {
+        #expect(SortDeclarations.sourceCanMatch("enum E {\n  // swiftiomatic:sort:begin\n}"))
+        #expect(SortDeclarations.sourceCanMatch("/* swiftiomatic:sort:begin */"))
+        #expect(!SortDeclarations.sourceCanMatch("enum E { case b, a }"))
+        #expect(!SortDeclarations.sourceCanMatch("// swiftiomatic:sort:end"))
+        #expect(!SortDeclarations.sourceCanMatch(""))
+    }
 }

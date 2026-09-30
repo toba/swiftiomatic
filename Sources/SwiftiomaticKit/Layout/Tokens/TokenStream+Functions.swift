@@ -35,7 +35,11 @@ extension TokenStream {
         let firstTokenAfterAttributes = node.modifiers.firstToken(viewMode: .sourceAccurate)
             ?? node.funcKeyword
         before(firstTokenAfterAttributes, tokens: .open)
-        after(node.funcKeyword, tokens: .break)
+        // a line break the source puts after func must not wrap the name
+        after(
+            node.funcKeyword,
+            tokens: .break(.continue, newlines: .elective(ignoresDiscretionary: true))
+        )
 
         if hasArguments || node.genericParameterClause != nil {
             after(node.signature.parameterClause.leftParen, tokens: .close)
@@ -144,10 +148,7 @@ extension TokenStream {
             after(node.returnClause.lastToken(viewMode: .sourceAccurate), tokens: .close)
         }
 
-        arrangeAttributeList(
-            node.attributes,
-            separateByLineBreaks: breakBetweenDeclAttributes
-        )
+        arrangeAttributeList(node.attributes, separateByLineBreaks: breakBetweenDeclAttributes)
 
         if let genericWhereClause = node.genericWhereClause {
             arrangeGenericWhereClause(genericWhereClause, trailingClose: nil)
@@ -208,10 +209,7 @@ extension TokenStream {
     ) where BodyContents.Element: SyntaxProtocol {
         before(node.firstToken(viewMode: .sourceAccurate), tokens: .open)
 
-        arrangeAttributeList(
-            attributes,
-            separateByLineBreaks: breakBetweenDeclAttributes
-        )
+        arrangeAttributeList(attributes, separateByLineBreaks: breakBetweenDeclAttributes)
         arrangeBracesAndContents(of: body, contentsKeyPath: bodyContentsKeyPath)
 
         if let genericWhereClause {
@@ -251,10 +249,7 @@ extension TokenStream {
     }
 
     func visitAccessorDecl(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
-        arrangeAttributeList(
-            node.attributes,
-            separateByLineBreaks: breakBetweenDeclAttributes
-        )
+        arrangeAttributeList(node.attributes, separateByLineBreaks: breakBetweenDeclAttributes)
         arrangeBracesAndContents(of: node.body, contentsKeyPath: \.statements)
         return .visitChildren
     }

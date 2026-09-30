@@ -35,31 +35,10 @@ final class HoistCaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sen
         parent _: Syntax?,
         context: Context
     ) -> MatchingPatternConditionSyntax {
-        switch context.configuration[Self.self].placement {
-            case .eachBinding:
-                if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
-                    Self.diagnose(
-                        .distributeLetInBoundCaseVariables(specifier),
-                        on: node.pattern,
-                        context: context
-                    )
-                    var result = node
-                    result.pattern = PatternSyntax(replacement)
-                    return result
-                }
-            case .outerPattern:
-                if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
-                    Self.diagnose(
-                        .hoistLetFromBoundCaseVariables(specifier),
-                        on: node.pattern,
-                        context: context
-                    )
-                    var result = node
-                    result.pattern = PatternSyntax(replacement)
-                    return result
-                }
-        }
-        return node
+        guard let pattern = rewrittenPattern(node.pattern, context: context) else { return node }
+        var result = node
+        result.pattern = pattern
+        return result
     }
 
     static func transform(
@@ -68,33 +47,11 @@ final class HoistCaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sen
         parent _: Syntax?,
         context: Context
     ) -> SwitchCaseItemSyntax {
-        switch context.configuration[Self.self].placement {
-            case .eachBinding:
-                if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
-                    Self.diagnose(
-                        .distributeLetInBoundCaseVariables(specifier),
-                        on: node.pattern,
-                        context: context
-                    )
-                    var result = node
-                    result.pattern = PatternSyntax(replacement)
-                    result.leadingTrivia = node.leadingTrivia
-                    return result
-                }
-            case .outerPattern:
-                if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
-                    Self.diagnose(
-                        .hoistLetFromBoundCaseVariables(specifier),
-                        on: node.pattern,
-                        context: context
-                    )
-                    var result = node
-                    result.pattern = PatternSyntax(replacement)
-                    result.leadingTrivia = node.leadingTrivia
-                    return result
-                }
-        }
-        return node
+        guard let pattern = rewrittenPattern(node.pattern, context: context) else { return node }
+        var result = node
+        result.pattern = pattern
+        result.leadingTrivia = node.leadingTrivia
+        return result
     }
 
     static func transform(
@@ -103,33 +60,12 @@ final class HoistCaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sen
         parent _: Syntax?,
         context: Context
     ) -> StmtSyntax {
-        guard node.caseKeyword != nil else { return StmtSyntax(node) }
-
-        switch context.configuration[Self.self].placement {
-            case .eachBinding:
-                if let (replacement, specifier) = distributeLetVarThroughPattern(node.pattern) {
-                    Self.diagnose(
-                        .distributeLetInBoundCaseVariables(specifier),
-                        on: node.pattern,
-                        context: context
-                    )
-                    var result = node
-                    result.pattern = PatternSyntax(replacement)
-                    return StmtSyntax(result)
-                }
-            case .outerPattern:
-                if let (replacement, specifier) = hoistLetVarFromPattern(node.pattern) {
-                    Self.diagnose(
-                        .hoistLetFromBoundCaseVariables(specifier),
-                        on: node.pattern,
-                        context: context
-                    )
-                    var result = node
-                    result.pattern = PatternSyntax(replacement)
-                    return StmtSyntax(result)
-                }
-        }
-        return StmtSyntax(node)
+        guard node.caseKeyword != nil,
+              let pattern = rewrittenPattern(node.pattern, context: context)
+        else { return StmtSyntax(node) }
+        var result = node
+        result.pattern = pattern
+        return StmtSyntax(result)
     }
 
     static func transform(
@@ -138,33 +74,42 @@ final class HoistCaseLet: StaticFormatRule<CaseLetConfiguration>, @unchecked Sen
         parent _: Syntax?,
         context: Context
     ) -> CatchItemSyntax {
-        guard let pattern = node.pattern else { return node }
+        guard let catchPattern = node.pattern,
+              let pattern = rewrittenPattern(catchPattern, context: context) else { return node }
+        var result = node
+        result.pattern = pattern
+        return result
+    }
 
+    /// Rewrites `pattern` to the configured placement and reports the change
+    ///
+    /// - Returns: The rewritten pattern, or `nil` when `pattern` already has the placement.
+    private static func rewrittenPattern(
+        _ pattern: PatternSyntax,
+        context: Context
+    ) -> PatternSyntax? {
         switch context.configuration[Self.self].placement {
             case .eachBinding:
-                if let (replacement, specifier) = distributeLetVarThroughPattern(pattern) {
-                    Self.diagnose(
-                        .distributeLetInBoundCaseVariables(specifier),
-                        on: pattern,
-                        context: context
-                    )
-                    var result = node
-                    result.pattern = PatternSyntax(replacement)
-                    return result
+                guard let (replacement, specifier) = distributeLetVarThroughPattern(pattern) else {
+                    return nil
                 }
+                Self.diagnose(
+                    .distributeLetInBoundCaseVariables(specifier),
+                    on: pattern,
+                    context: context
+                )
+                return PatternSyntax(replacement)
             case .outerPattern:
-                if let (replacement, specifier) = hoistLetVarFromPattern(pattern) {
-                    Self.diagnose(
-                        .hoistLetFromBoundCaseVariables(specifier),
-                        on: pattern,
-                        context: context
-                    )
-                    var result = node
-                    result.pattern = PatternSyntax(replacement)
-                    return result
+                guard let (replacement, specifier) = hoistLetVarFromPattern(pattern) else {
+                    return nil
                 }
+                Self.diagnose(
+                    .hoistLetFromBoundCaseVariables(specifier),
+                    on: pattern,
+                    context: context
+                )
+                return PatternSyntax(replacement)
         }
-        return node
     }
 }
 
@@ -271,8 +216,7 @@ extension HoistCaseLet {
 
         // Enum case: .foo(let x, let y)
         if let functionCall = expression.as(FunctionCallExprSyntax.self),
-           functionCall.calledExpression.is(MemberAccessExprSyntax.self)
-        {
+           functionCall.calledExpression.is(MemberAccessExprSyntax.self) {
             return hoistFromArguments(functionCall.arguments, exprPattern: exprPattern)
         }
 
@@ -370,9 +314,15 @@ private final class BindIdentifiersRewriter: SyntaxRewriter {
             return super.visit(node)
         }
 
+        // the specifier takes the line break and indent that led the identifier
+        var specifier = bindingSpecifier
+        specifier.leadingTrivia = identifier.leadingTrivia
+        var bareIdentifier = identifier
+        bareIdentifier.leadingTrivia = []
+
         let binding = ValueBindingPatternSyntax(
-            bindingSpecifier: bindingSpecifier,
-            pattern: identifier
+            bindingSpecifier: specifier,
+            pattern: bareIdentifier
         )
         var result = node
         result.pattern = PatternSyntax(binding)
@@ -387,8 +337,11 @@ private final class UnbindIdentifiersRewriter: SyntaxRewriter {
         guard let binding = node.pattern.as(ValueBindingPatternSyntax.self) else {
             return ExprSyntax(node)
         }
+        // the pattern takes the line break, indent and comments that led the specifier
+        var pattern = binding.pattern
+        pattern.leadingTrivia = binding.bindingSpecifier.leadingTrivia
         var result = node
-        result.pattern = binding.pattern
+        result.pattern = pattern
         return .init(result)
     }
 }

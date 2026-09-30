@@ -40,7 +40,20 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
     /// Per-file mutable state held as a typed lazy property on `Context` .
     final class State {
         var importsTesting = false
-        var allIdentifiers = Set<String>()
+        var sourceFile: SourceFileSyntax?
+
+        /// Every identifier in the file, built on the first rename that checks for a collision
+        lazy var allIdentifiers = Self.identifiers(in: sourceFile)
+
+        private static func identifiers(in sourceFile: SourceFileSyntax?) -> Set<String> {
+            guard let sourceFile else { return [] }
+            var names = Set<String>()
+
+            for token in sourceFile.tokens(viewMode: .sourceAccurate) {
+                if case let .identifier(name) = token.tokenKind { names.insert(name) }
+            }
+            return names
+        }
     }
 
     private static let swiftKeywords: Set<String> = [
@@ -62,9 +75,7 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
             if let importDecl = stmt.item.as(ImportDeclSyntax.self),
                 importDecl.path.first?.name.text == "Testing" { state.importsTesting = true }
         }
-        for token in node.tokens(viewMode: .sourceAccurate) {
-            if case let .identifier(name) = token.tokenKind { state.allIdentifiers.insert(name) }
-        }
+        state.sourceFile = node
     }
 
     // MARK: - Static transform
@@ -111,25 +122,16 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
             let trimmed = String(bareName.dropFirst(5))
             guard !trimmed.isEmpty else { return DeclSyntax(node) }
             newIdentifier = "`\(trimmed)`"
-        } else if isBackticked {
-            // `testFeature` and `test_feature` carry no space, so the name becomes a plain
-            // identifier once the prefix and any leading underscore go.
-            var remainder = String(bareName.dropFirst(4))
-            while remainder.hasPrefix("_") { remainder = String(remainder.dropFirst()) }
-            guard let first = remainder.first, first.isLetter else { return DeclSyntax(node) }
-            remainder = first.lowercased() + remainder.dropFirst()
-            guard remainder.isBareIdentifier else { return DeclSyntax(node) }
-            if Self.swiftKeywords.contains(remainder) { return DeclSyntax(node) }
-            if state.allIdentifiers.contains(remainder) { return DeclSyntax(node) }
-            newIdentifier = remainder
         } else {
-            let afterTest = bareName.dropFirst(4)
-            guard !afterTest.isEmpty, let first = afterTest.first else { return DeclSyntax(node) }
-            if first.isNumber { return DeclSyntax(node) }
-
-            let remainder = first.lowercased() + afterTest.dropFirst()
-            if Self.swiftKeywords.contains(remainder) { return DeclSyntax(node) }
-            if state.allIdentifiers.contains(remainder) { return DeclSyntax(node) }
+            // A name without a space becomes a plain identifier once the prefix and any separator
+            // underscore go, backticked or not.
+            let remainder = Self.lowercasingLeadingWord(String(
+                bareName.dropFirst(4).drop { $0 == "_" }
+            ))
+            guard remainder.first?.isLetter == true,
+                  remainder.isBareIdentifier,
+                  !Self.swiftKeywords.contains(remainder),
+                  !state.allIdentifiers.contains(remainder) else { return DeclSyntax(node) }
             newIdentifier = remainder
         }
 
@@ -155,8 +157,8 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
         let bareName = isBackticked ? String(rawIdent.dropFirst().dropLast()) : rawIdent
 
         if isBackticked, bareName.contains(" ") {
-            // A name that already carries spaces is a raw identifier phrase. Only a leading
-            // `test` word is redundant, and the case of every other word is the author's choice.
+            // A name that already carries spaces is a raw identifier phrase. Only a leading `test`
+            // word is redundant, and the case of every other word is the author's choice.
             guard let phrase = Self.droppingLeadingTestWord(bareName) else {
                 return DeclSyntax(node)
             }
@@ -181,8 +183,8 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
         guard phrase.contains(where: { $0.isLetter }) else { return DeclSyntax(node) }
 
         guard phrase.contains(" ") else {
-            // A single-word phrase needs no backticks. An unbackticked name already has that
-            // form, so only a backticked one changes.
+            // A single-word phrase needs no backticks. An unbackticked name already has that form,
+            // so only a backticked one changes.
             guard isBackticked,
                   phrase.isBareIdentifier,
                   !Self.swiftKeywords.contains(phrase),
@@ -227,8 +229,8 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
         context: Context
     ) -> DeclSyntax {
         Self.diagnose(message, on: node.name, context: context)
-        return DeclSyntax(
-            node.with(\.name, node.name.with(\.tokenKind, .identifier(newIdentifier))))
+        return DeclSyntax(node.with(\.name, node.name.with(\.tokenKind, .identifier(newIdentifier)))
+        )
     }
 
     /// Reports whether the `@Test` attribute on `node` names the test explicitly.
@@ -244,9 +246,40 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
         return first.expression.is(StringLiteralExprSyntax.self)
     }
 
+    /// Lowercases the first word of a camelCase name, treating a leading acronym as one word
+    ///
+    /// `URLSession` becomes `urlSession`, `URLs` becomes `urls`, and `Feature` becomes `feature`.
+    private static func lowercasingLeadingWord(_ name: String) -> String {
+        let chars = Array(name)
+        let runLength = chars.prefix { $0.isUppercase }.count
+        guard runLength > 1, runLength < chars.count
+        else { return name.prefix(runLength).lowercased() + name.dropFirst(runLength) }
+
+        let next = chars[runLength]
+        let lowered: Int
+
+        if !next.isLowercase {
+            lowered = runLength
+        } else if isPluralSuffix(chars, at: runLength) {
+            lowered = runLength + 1
+        } else {
+            // the last capital starts the next word
+            lowered = runLength - 1
+        }
+        return String(chars[..<lowered]).lowercased() + String(chars[lowered...])
+    }
+
+    /// Reports whether `chars[index]` is an `s` that pluralizes the acronym before it, such as the
+    /// `s` in `URLs` or `IDsMatch`.
+    private static func isPluralSuffix(_ chars: [Character], at index: Int) -> Bool {
+        guard chars[index] == "s" else { return false }
+        let after = index + 1
+        return after == chars.count || !chars[after].isLowercase
+    }
+
     /// Splits a camelCase / PascalCase identifier into its constituent words, treating underscores
     /// and letter↔digit transitions as boundaries and keeping acronym runs together (`URLSession` →
-    /// `["URL", "Session"]`).
+    /// `["URL", "Session"]`). A plural `s` stays with its acronym (`URLs` → `["URLs"]`).
     private static func splitIdentifierWords(_ identifier: String) -> [String] {
         let chars = Array(identifier)
         var words: [String] = []
@@ -267,7 +300,12 @@ final class UseSwiftTestingNames: StaticFormatRule<SwiftTestingNamesConfiguratio
             if let prev {
                 if c.isUppercase, prev.isLowercase || prev.isNumber {
                     isBoundary = true
-                } else if c.isUppercase, prev.isUppercase, let next, next.isLowercase {
+                } else if c.isUppercase,
+                   prev.isUppercase,
+                   let next,
+                   next.isLowercase,
+                   !isPluralSuffix(chars, at: i + 1)
+                {
                     isBoundary = true  // end of an acronym run, e.g. `URLSession`
                 } else if c.isNumber, prev.isLetter {
                     isBoundary = true
@@ -325,6 +363,7 @@ package struct SwiftTestingNamesConfiguration: SyntaxRuleValue {
     package init(from decoder: any Decoder) throws {
         self.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
+
         if let rewrite = try container.decodeIfPresent(Bool.self, forKey: .rewrite) {
             self.rewrite = rewrite
         }
